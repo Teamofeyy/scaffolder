@@ -22,11 +22,14 @@ COPY api/src api/src
 RUN cargo build --release --locked --manifest-path api/Cargo.toml \
     && cp target/release/scaf-api /scaf-api
 
+FROM busybox:1.36.1-musl AS busybox
+
 FROM gcr.io/distroless/cc-debian12:nonroot
 
 WORKDIR /app
 
 COPY --from=builder /scaf-api /usr/local/bin/scaf-api
+COPY --from=busybox /bin/busybox /busybox
 
 EXPOSE 8000
 
