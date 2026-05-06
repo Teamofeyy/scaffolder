@@ -9,8 +9,12 @@ use axum::{
     response::IntoResponse,
 };
 use color_eyre::Result;
-use tower_http::cors::{Any, CorsLayer};
-use tracing::{debug, info};
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::TraceLayer,
+};
+use tracing::{debug, error, info};
+use tracing_subscriber::EnvFilter;
 use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_swagger_ui::SwaggerUi;
@@ -33,11 +37,19 @@ struct ApiDoc;
 #[tokio::main]
 async fn main() -> Result<()> {
     color_eyre::install()?;
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
+        )
+        .init();
     let app = app();
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
-    info!("Server started at: {}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000")
+        .await
+        .expect("failed to bind backend listener");
+    info!("Server started at: {}", listener.local_addr()?);
+    axum::serve(listener, app)
+        .await
+        .expect("backend server failed");
     Ok(())
 }
 
@@ -56,6 +68,7 @@ fn app() -> Router {
 
     router
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs", api_doc))
+        .layer(TraceLayer::new_for_http())
         .layer(cors) // подключаем CORS
 }
 
@@ -79,16 +92,19 @@ async fn health_check() -> impl IntoResponse {
 async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
     debug!("Got a generate request");
     match generate_project(req).await {
-        Ok(archive) => Response::builder()
-            .header(header::CONTENT_TYPE, "application/zip")
-            .header(
-                header::CONTENT_DISPOSITION,
-                format!("attachment; filename=\"{}\"", archive.file_name),
-            )
-            .body(Body::from(archive.bytes))
-            .unwrap(),
+        Ok(archive) => {
+            info!(file_name = %archive.file_name, "Project archive generated");
+            Response::builder()
+                .header(header::CONTENT_TYPE, "application/zip")
+                .header(
+                    header::CONTENT_DISPOSITION,
+                    format!("attachment; filename=\"{}\"", archive.file_name),
+                )
+                .body(Body::from(archive.bytes))
+                .unwrap()
+        }
         Err(err) => {
-            eprintln!("Error: {err:?}");
+            error!(error = ?err, "Failed to generate project archive");
             Response::builder()
                 .status(500)
                 .body(Body::from("Internal Server Error"))
