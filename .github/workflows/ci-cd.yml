@@ -1,0 +1,190 @@
+name: ci-cd
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+  RUST_VERSION: "1.88.0"
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          components: rustfmt, clippy
+
+      - name: Set up Python for pre-commit
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install frontend dependencies
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit checks
+        run: pre-commit run --all-files --show-diff-on-failure
+
+      - name: Run backend tests
+        working-directory: apps/api
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Build frontend
+        working-directory: apps/web
+        run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.event_name != 'pull_request' && vars.DOCKERHUB_USERNAME != ''
+
+    permissions:
+      contents: read
+
+    env:
+      BACKEND_IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/scaffolder-backend
+      FRONTEND_IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/scaffolder-frontend
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./apps/api
+          file: ./apps/api/Dockerfile
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}
+            ${{ env.BACKEND_IMAGE }}:latest
+          cache-from: type=registry,ref=${{ env.BACKEND_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.BACKEND_IMAGE }}:buildcache,mode=max
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./apps/web
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }}
+            ${{ env.FRONTEND_IMAGE }}:latest
+          cache-from: type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache,mode=max
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/main'
+
+    env:
+      APP_DIR: ${{ secrets.VDS_APP_DIR }}
+      BACKEND_IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/scaffolder-backend
+      FRONTEND_IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/scaffolder-frontend
+      IMAGE_TAG: ${{ github.sha }}
+      DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      DOMAIN: ${{ secrets.DOMAIN }}
+      ACME_EMAIL: ${{ secrets.ACME_EMAIL }}
+      HTTP_PORT: "80"
+      HTTPS_PORT: "443"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Prepare deployment directories
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VDS_HOST }}
+          username: ${{ secrets.VDS_USER }}
+          key: ${{ secrets.VDS_SSH_KEY }}
+          port: ${{ secrets.VDS_PORT || 22 }}
+          script: |
+            mkdir -p "${{ env.APP_DIR }}/deploy/caddy"
+
+      - name: Upload deployment files
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.VDS_HOST }}
+          username: ${{ secrets.VDS_USER }}
+          key: ${{ secrets.VDS_SSH_KEY }}
+          port: ${{ secrets.VDS_PORT || 22 }}
+          source: "compose.production.yaml,deploy/caddy/Caddyfile"
+          target: ${{ env.APP_DIR }}
+          overwrite: true
+
+      - name: Deploy on VDS
+        uses: appleboy/ssh-action@v1
+        env:
+          APP_DIR: ${{ env.APP_DIR }}
+          BACKEND_IMAGE: ${{ env.BACKEND_IMAGE }}
+          FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          DOCKERHUB_USERNAME: ${{ env.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ env.DOCKERHUB_TOKEN }}
+          DOMAIN: ${{ env.DOMAIN }}
+          ACME_EMAIL: ${{ env.ACME_EMAIL }}
+          HTTP_PORT: ${{ env.HTTP_PORT }}
+          HTTPS_PORT: ${{ env.HTTPS_PORT }}
+        with:
+          host: ${{ secrets.VDS_HOST }}
+          username: ${{ secrets.VDS_USER }}
+          key: ${{ secrets.VDS_SSH_KEY }}
+          port: ${{ secrets.VDS_PORT || 22 }}
+          envs: APP_DIR,BACKEND_IMAGE,FRONTEND_IMAGE,IMAGE_TAG,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,DOMAIN,ACME_EMAIL,HTTP_PORT,HTTPS_PORT
+          script: |
+            set -eu
+            mkdir -p "$APP_DIR/deploy/caddy"
+            cd "$APP_DIR"
+
+            cat > .env <<EOF
+            DOMAIN=$DOMAIN
+            ACME_EMAIL=$ACME_EMAIL
+            HTTP_PORT=$HTTP_PORT
+            HTTPS_PORT=$HTTPS_PORT
+            BACKEND_IMAGE=$BACKEND_IMAGE
+            FRONTEND_IMAGE=$FRONTEND_IMAGE
+            IMAGE_TAG=$IMAGE_TAG
+            EOF
+
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker compose -f compose.production.yaml pull
+            docker compose -f compose.production.yaml up -d --remove-orphans
+            docker image prune -f

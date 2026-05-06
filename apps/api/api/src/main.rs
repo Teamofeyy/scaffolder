@@ -35,7 +35,7 @@ async fn main() -> Result<()> {
     color_eyre::install()?;
     tracing_subscriber::fmt::init();
     let app = app();
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
     info!("Server started at: {}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
     Ok(())

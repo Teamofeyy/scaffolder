@@ -19,7 +19,7 @@ export interface BuildResponse {
 }
 
 // URL агента (можно вынести в env переменные)
-const AGENT_URL = process.env.NEXT_PUBLIC_AGENT_URL || 'https://scaffolder.teamofey.tech'
+const AGENT_URL = 'http://127.0.0.1:8000'
 
 /**
  * Маппинг значений фронтенда в значения бэкенда
