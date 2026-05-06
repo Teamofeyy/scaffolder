@@ -121,7 +121,7 @@ export async function buildProject(config: ProjectConfig): Promise<Blob> {
   const backendConfig = mapConfigToBackend(config)
 
   try {
-    const response = await axios.post(`${AGENT_URL}/build`, backendConfig, {
+    const response = await axios.post(`${AGENT_URL}/generate`, backendConfig, {
       responseType: 'blob',
       timeout: 300000, // 5 минут таймаут для сборки
       validateStatus: (status) => status === 200, // Только 200 считается успехом
