@@ -170,7 +170,7 @@ jobs:
           port: ${{ secrets.VDS_PORT || 22 }}
           envs: APP_DIR,BACKEND_IMAGE,FRONTEND_IMAGE,IMAGE_TAG,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,DOMAIN,ACME_EMAIL,HTTP_PORT,HTTPS_PORT
           script: |
-            set -eu
+            set -euo pipefail
             mkdir -p "$APP_DIR/deploy/caddy"
             cd "$APP_DIR"
 
@@ -186,5 +186,19 @@ jobs:
 
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker compose -f compose.production.yaml pull
-            docker compose -f compose.production.yaml up -d --remove-orphans
+            if ! docker compose -f compose.production.yaml up -d --remove-orphans; then
+              echo "Deploy failed, collecting container diagnostics..."
+              docker compose -f compose.production.yaml ps || true
+              docker compose -f compose.production.yaml logs --no-color --tail=200 backend frontend caddy || true
+
+              for service in backend frontend caddy; do
+                container="scaffolder-$service"
+                echo "===== inspect $container ====="
+                docker inspect "$container" --format 'State: {{json .State}}' || true
+                docker inspect "$container" --format 'Health: {{json .State.Health}}' || true
+              done
+              exit 1
+            fi
+
+            docker compose -f compose.production.yaml ps
             docker image prune -f
