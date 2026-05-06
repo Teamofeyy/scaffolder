@@ -26,10 +26,7 @@ out
 .vscode
 
 # rust
-target
-
-# rust cargo
-Cargo.lock
+targe
 
 # docker
 docker-data
