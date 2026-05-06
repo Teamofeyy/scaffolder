@@ -56,7 +56,9 @@ fn patch_package_json(workspace: &Path, config: &ProjectConfig, plan: &ResolvedP
     }
 
     {
-        let obj = root.as_object_mut().expect("package root must be an object");
+        let obj = root
+            .as_object_mut()
+            .expect("package root must be an object");
         obj.insert(
             "name".to_owned(),
             Value::String(normalize_package_name(&config.project_name)),
@@ -132,12 +134,13 @@ fn dependencies_for_feature(feature: &Feature) -> &'static [(&'static str, &'sta
 }
 
 fn parse_dependency(raw: &str) -> (String, String) {
-    if let Some(idx) = raw.rfind('@') {
-        if idx > 0 && idx + 1 < raw.len() {
-            let name = &raw[..idx];
-            let version = &raw[idx + 1..];
-            return (name.to_owned(), version.to_owned());
-        }
+    if let Some(idx) = raw.rfind('@')
+        && idx > 0
+        && idx + 1 < raw.len()
+    {
+        let name = &raw[..idx];
+        let version = &raw[idx + 1..];
+        return (name.to_owned(), version.to_owned());
     }
     (raw.to_owned(), "latest".to_owned())
 }
@@ -297,7 +300,11 @@ struct PatchEditSpec {
     only_if_styling: Vec<crate::schema::Styling>,
 }
 
-fn apply_patch_bundles(workspace: &Path, config: &ProjectConfig, plan: &ResolvedPlan) -> Result<()> {
+fn apply_patch_bundles(
+    workspace: &Path,
+    config: &ProjectConfig,
+    plan: &ResolvedPlan,
+) -> Result<()> {
     let bundle_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../templates/patches/bundles");
     let candidates = patch_bundle_candidates_in_apply_order(config, plan);
 
@@ -341,7 +348,10 @@ fn patch_bundle_candidates(config: &ProjectConfig, plan: &ResolvedPlan) -> Vec<S
     ]
 }
 
-fn patch_bundle_candidates_in_apply_order(config: &ProjectConfig, plan: &ResolvedPlan) -> Vec<String> {
+fn patch_bundle_candidates_in_apply_order(
+    config: &ProjectConfig,
+    plan: &ResolvedPlan,
+) -> Vec<String> {
     // We want layered behavior: default first, then more specific bundles.
     // `patch_bundle_candidates` returns most-specific -> default; reverse it.
     let mut keys = patch_bundle_candidates(config, plan);
@@ -420,10 +430,14 @@ fn apply_patch_edit(
         return Ok(());
     }
 
-    if !target_path.exists() && matches!(edit.mode.as_str(), "append" | "insertAfter" | "insertBefore" | "replace") {
-        if edit.skip_if_missing_target {
-            return Ok(());
-        }
+    if !target_path.exists()
+        && matches!(
+            edit.mode.as_str(),
+            "append" | "insertAfter" | "insertBefore" | "replace"
+        )
+        && edit.skip_if_missing_target
+    {
+        return Ok(());
     }
 
     let template_raw = fs::read_to_string(&template_path)?;
@@ -468,7 +482,12 @@ fn apply_patch_edit(
                 )
             })?;
             let insert_at = pos + anchor.len();
-            let out = format!("{}{}{}", &existing[..insert_at], rendered, &existing[insert_at..]);
+            let out = format!(
+                "{}{}{}",
+                &existing[..insert_at],
+                rendered,
+                &existing[insert_at..]
+            );
             fs::write(&target_path, out)?;
         }
         "insertBefore" => {
@@ -533,10 +552,7 @@ mod tests {
 
         let ordered = reorder_package_json_top_keys(map);
         let keys: Vec<_> = ordered.keys().map(String::as_str).collect();
-        assert_eq!(
-            keys[..5],
-            ["name", "private", "version", "type", "scripts"]
-        );
+        assert_eq!(keys[..5], ["name", "private", "version", "type", "scripts"]);
         assert!(keys.contains(&"dependencies"));
         assert!(keys.contains(&"devDependencies"));
         assert!(keys.iter().position(|&k| k == "dependencies").unwrap() > 4);
@@ -544,7 +560,9 @@ mod tests {
 
     #[test]
     fn reorder_candidates_prefers_most_specific() {
-        use crate::schema::{Framework, Linting, PackageManager, Routing, StateManagement, Styling};
+        use crate::schema::{
+            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
+        };
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::React,
@@ -567,7 +585,9 @@ mod tests {
 
     #[test]
     fn bundle_apply_order_is_layered_default_first() {
-        use crate::schema::{Framework, Linting, PackageManager, Routing, StateManagement, Styling};
+        use crate::schema::{
+            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
+        };
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::React,

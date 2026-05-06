@@ -507,6 +507,6 @@ pub struct FeatureMeta {
 pub fn build_types() {
     let out_path = Path::new("../../types.ts");
 
-    ProjectConfig::export_to(&out_path).unwrap();
-    Framework::export_to(&out_path).unwrap();
+    ProjectConfig::export_to(out_path).unwrap();
+    Framework::export_to(out_path).unwrap();
 }

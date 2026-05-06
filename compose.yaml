@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     image: ${BACKEND_IMAGE:-scaffolder/scaffolder-backend}:${IMAGE_TAG:-local}
     container_name: scaffolder-backend
-    restart: unless-stopped 
+    restart: unless-stopped
     expose:
       - "8000"
     healthcheck:

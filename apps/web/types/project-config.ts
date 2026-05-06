@@ -320,4 +320,3 @@ export function generateProjectStructure(config: ProjectConfig): FileStructure {
   // Возвращаем корень проекта с корректными вложениями
   return folder(config.projectName || "my-project", merged)
 }
-

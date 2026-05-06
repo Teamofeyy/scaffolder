@@ -178,4 +178,3 @@ export function downloadFile(blob: Blob, filename: string) {
   document.body.removeChild(link)
   window.URL.revokeObjectURL(url)
 }
-

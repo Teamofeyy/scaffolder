@@ -32,5 +32,3 @@ repos:
         entry: bash -lc 'cd apps/web && npm run typecheck'
         language: system
         pass_filenames: false
-
-        

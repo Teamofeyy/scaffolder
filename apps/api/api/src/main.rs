@@ -59,13 +59,7 @@ fn app() -> Router {
         .layer(cors) // подключаем CORS
 }
 
-#[utoipa::path(
-    get,
-    path = "/health",
-    responses(
-        
-    )
-)]
+#[utoipa::path(get, path = "/health", responses())]
 async fn health_check() -> impl IntoResponse {
     debug!("Got a healthcheck request");
     let res = "Healthy".to_string();
@@ -78,7 +72,7 @@ async fn health_check() -> impl IntoResponse {
     request_body = ProjectConfig,
     responses(
         (status = 200,
-         description = "ZIP successfully generated", 
+         description = "ZIP successfully generated",
          content_type = "application/zip")
     )
 )]
@@ -94,7 +88,7 @@ async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
             .body(Body::from(archive.bytes))
             .unwrap(),
         Err(err) => {
-            eprintln!("Error: {:?}", err);
+            eprintln!("Error: {err:?}");
             Response::builder()
                 .status(500)
                 .body(Body::from("Internal Server Error"))
