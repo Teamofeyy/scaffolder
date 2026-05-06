@@ -129,16 +129,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Prepare deployment directories
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VDS_HOST }}
-          username: ${{ secrets.VDS_USER }}
-          key: ${{ secrets.VDS_SSH_KEY }}
-          port: ${{ secrets.VDS_PORT || 22 }}
-          script: |
-            mkdir -p "${{ env.APP_DIR }}/deploy/caddy"
-
       - name: Upload deployment files
         uses: appleboy/scp-action@v1
         with:
@@ -146,7 +136,7 @@ jobs:
           username: ${{ secrets.VDS_USER }}
           key: ${{ secrets.VDS_SSH_KEY }}
           port: ${{ secrets.VDS_PORT || 22 }}
-          source: "compose.production.yaml,deploy/caddy/Caddyfile"
+          source: "compose.production.yaml,Caddyfile"
           target: ${{ env.APP_DIR }}
           overwrite: true
 
@@ -171,7 +161,6 @@ jobs:
           envs: APP_DIR,BACKEND_IMAGE,FRONTEND_IMAGE,IMAGE_TAG,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,DOMAIN,ACME_EMAIL,HTTP_PORT,HTTPS_PORT
           script: |
             set -euo pipefail
-            mkdir -p "$APP_DIR/deploy/caddy"
             cd "$APP_DIR"
 
             cat > .env <<EOF
