@@ -47,17 +47,15 @@ async fn main() -> Result<()> {
         .await
         .expect("failed to bind backend listener");
     info!("Server started at: {}", listener.local_addr()?);
-    match axum::serve(listener, app).await {
-        Ok(()) => {
-            error!("Backend server exited unexpectedly without shutdown signal");
-            std::process::exit(1);
-        }
-        Err(err) => {
-            error!(error = ?err, "Backend server failed");
-            return Err(err.into());
-        }
+    if let Err(err) = axum::serve(listener, app).await {
+        error!(error = ?err, "Backend server failed");
+        return Err(err.into());
     }
-    Ok(())
+
+    error!("Backend server exited unexpectedly without shutdown signal");
+    Err(color_eyre::eyre::eyre!(
+        "backend server exited unexpectedly without shutdown signal"
+    ))
 }
 
 fn app() -> Router {
