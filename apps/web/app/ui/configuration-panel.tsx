@@ -9,8 +9,30 @@ import { Settings2, Package, Palette, Search } from "lucide-react"
 import { ConfigurationPanelProps, ConfigKey, ConfigValue, popularDependencies, Linting } from "@/types/project-config"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+import { useEffect, useState } from "react"
+
+export interface Feature {
+  name: string;
+  label: string;
+  description: string;
+  category: string;
+  requires: string[];
+  conflicts: string[];
+}
+
+type FeaturesByCategory = Record<string, Feature[]>;
+
+function groupByCategory(features: Feature[]): FeaturesByCategory {
+  return features.reduce((acc, f) => {
+    const cat = f.category.toLowerCase(); // на всякий случай
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(f);
+    return acc;
+  }, {} as FeaturesByCategory);
+}
 
 export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProps) {
+  const [features, setFeatures] = useState<Feature[]>([]);
   const updateConfig = (key: ConfigKey, value: ConfigValue) => {
     setConfig({ ...config, [key]: value })
   }
@@ -18,6 +40,14 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
   const updateLinting = (value: Linting) => {
     setConfig({ ...config, linting: value })
   }
+
+  useEffect(() => {
+    fetch("/api/features")
+      .then((res) => res.json())
+      .then(setFeatures);
+  }, []);
+
+  const grouped = groupByCategory(features);
 
   return (
     <Card className="shadow-lg border-border/50">
@@ -54,9 +84,9 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="react">React</SelectItem>
-                  <SelectItem value="nextjs">NextJs</SelectItem>
-                  <SelectItem value="vite">Vue</SelectItem>
+                  {grouped["framework"]?.map((f) => (
+                    <SelectItem key={f.name} value={f.name}>{f.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -68,10 +98,9 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="npm">npm</SelectItem>
-                  <SelectItem value="pnpm">pnpm</SelectItem>
-                  <SelectItem value="yarn">yarn</SelectItem>
-                  <SelectItem value="bun">bun</SelectItem>
+                  {grouped["package-manager"]?.map((f) => (
+                    <SelectItem key={f.name} value={f.name}>{f.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
