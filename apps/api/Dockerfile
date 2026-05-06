@@ -22,17 +22,20 @@ COPY api/src api/src
 RUN cargo build --release --locked --manifest-path api/Cargo.toml \
     && cp target/release/scaf-api /scaf-api
 
-FROM busybox:1.36.1-musl AS busybox
-
-FROM gcr.io/distroless/cc-debian12:nonroot
+FROM debian:bookworm-slim
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates wget \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /scaf-api /usr/local/bin/scaf-api
-COPY --from=busybox /bin/busybox /busybox
+
+RUN useradd --create-home --uid 10001 appuser
 
 EXPOSE 8000
 
-USER nonroot:nonroot
+USER appuser:appuser
 
 ENTRYPOINT ["/usr/local/bin/scaf-api"]

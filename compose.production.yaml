@@ -6,7 +6,7 @@ services:
     expose:
       - "8000"
     healthcheck:
-      test: ["CMD", "/busybox", "wget", "--spider", "-q", "http://127.0.0.1:8000/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8000/health"]
       interval: 15s
       timeout: 5s
       retries: 5
