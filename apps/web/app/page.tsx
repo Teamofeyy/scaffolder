@@ -6,7 +6,6 @@ import { ConfigurationPanel } from "./ui/configuration-panel"
 import { PreviewPanel } from "./ui/preview-panel"
 import { GenerateButton } from "./ui/generate-button"
 import { ProjectConfig } from "@/types/project-config"
-import Snowfall from "react-snowfall"
 
 export default function ScaffolderPage() {
   const [config, setConfig] = useState<ProjectConfig>({
@@ -23,7 +22,6 @@ export default function ScaffolderPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <Snowfall color="#FFF" />
       <Header />
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">

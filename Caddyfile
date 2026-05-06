@@ -12,7 +12,7 @@
 		X-Frame-Options "SAMEORIGIN"
 	}
 
-	@backend path /health /docs /docs/* /redoc /redoc/* /openapi.json
+	@backend path /health /docs /docs/* /redoc /redoc/* /openapi.json /build
 	handle @backend {
 		reverse_proxy backend:8000
 	}
