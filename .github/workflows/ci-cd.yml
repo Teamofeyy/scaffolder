@@ -111,7 +111,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: docker
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
 
     env:
       APP_DIR: ${{ secrets.VDS_APP_DIR }}
