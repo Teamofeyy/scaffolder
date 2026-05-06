@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Build dependencies for common Rust crates and TLS support.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends pkg-config libssl-dev ca-certificates \
+    && apt-get install -y --no-install-recommends pkg-config libssl-dev ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy workspace manifests first to improve layer caching.
