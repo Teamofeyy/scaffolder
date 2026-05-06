@@ -11,15 +11,10 @@ RUN apt-get update \
 COPY Cargo.toml Cargo.lock ./
 COPY api/Cargo.toml api/Cargo.toml
 
-# Prebuild dependency graph cache.
-RUN mkdir -p api/src \
-    && echo "fn main() {}" > api/src/main.rs \
-    && cargo build --release --locked --manifest-path api/Cargo.toml \
-    && rm -rf api/src
-
-# Copy real sources and build final binary.
+# Copy sources and build the real binary.
 COPY api/src api/src
 RUN cargo build --release --locked --manifest-path api/Cargo.toml \
+    && test "$(stat -c%s target/release/scaf-api)" -gt 1000000 \
     && cp target/release/scaf-api /scaf-api
 
 FROM debian:bookworm-slim

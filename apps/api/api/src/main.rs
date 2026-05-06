@@ -47,9 +47,16 @@ async fn main() -> Result<()> {
         .await
         .expect("failed to bind backend listener");
     info!("Server started at: {}", listener.local_addr()?);
-    axum::serve(listener, app)
-        .await
-        .expect("backend server failed");
+    match axum::serve(listener, app).await {
+        Ok(()) => {
+            error!("Backend server exited unexpectedly without shutdown signal");
+            std::process::exit(1);
+        }
+        Err(err) => {
+            error!(error = ?err, "Backend server failed");
+            return Err(err.into());
+        }
+    }
     Ok(())
 }
 
