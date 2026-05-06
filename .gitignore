@@ -1,0 +1,48 @@
+# dependencies
+node_modules
+
+# pnpm
+.pnpm-store
+
+# turbo
+.turbo
+
+# next.js
+.next
+out
+
+# env
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+
+# macOS
+.DS_Store
+
+# vscode
+.vscode
+
+# rust
+target
+
+# rust cargo
+Cargo.lock
+
+# docker
+docker-data
+
+# build
+dist
+build
+
+# coverage
+coverage
+
+# generated
+generated
+
+# idea
+.idea
