@@ -9,11 +9,7 @@ services:
     expose:
       - "8000"
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "python -c \"from urllib.request import urlopen; import sys; sys.exit(0 if urlopen('http://127.0.0.1:8000/health').status == 200 else 1)\""
-        ]
+      test: ["CMD", "/busybox", "wget", "--spider", "-q", "http://127.0.0.1:8000/health"]
       interval: 15s
       timeout: 5s
       retries: 5
