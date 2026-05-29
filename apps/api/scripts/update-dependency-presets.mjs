@@ -26,7 +26,35 @@ async function latestVersion(packageName) {
   }
 
   versionCache.set(packageName, version)
-  return version
+  return { version, versions: Object.keys(metadata?.versions ?? {}) }
+}
+
+function parseVersion(version) {
+  const match = version.match(/^(\d+)\.(\d+)\.(\d+)$/)
+  if (!match) return null
+
+  return {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3]),
+    raw: version,
+  }
+}
+
+function currentMajor(range) {
+  const match = range.replace(/^[~^]/, '').match(/^(\d+)\./)
+  return match ? Number(match[1]) : undefined
+}
+
+function newestSameMajor(versions, major) {
+  return versions
+    .map(parseVersion)
+    .filter((version) => version && version.major === major)
+    .sort((left, right) => {
+      if (left.major !== right.major) return right.major - left.major
+      if (left.minor !== right.minor) return right.minor - left.minor
+      return right.patch - left.patch
+    })[0]?.raw
 }
 
 async function updateDependencyMap(dependencies) {
@@ -35,7 +63,13 @@ async function updateDependencyMap(dependencies) {
   for (const packageName of Object.keys(dependencies)) {
     const current = dependencies[packageName]
     const prefix = current.startsWith('~') ? '~' : '^'
-    dependencies[packageName] = `${prefix}${await latestVersion(packageName)}`
+    const metadata = await latestVersion(packageName)
+    const major = currentMajor(current)
+    const nextVersion = major === undefined
+      ? metadata.version
+      : newestSameMajor(metadata.versions, major) ?? metadata.version
+
+    dependencies[packageName] = `${prefix}${nextVersion}`
   }
 }
 
