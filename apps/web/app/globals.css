@@ -182,7 +182,7 @@
   .app-shell::after {
     content: "npm create vite@latest  pnpm dlx create  yarn create  bun create";
     position: fixed;
-    top: 5.5rem;
+    top: 4.7rem;
     left: -4rem;
     z-index: -1;
     width: 120vw;
@@ -191,11 +191,11 @@
     background: color-mix(in srgb, var(--primary) 9%, transparent);
     color: color-mix(in srgb, var(--primary) 48%, transparent);
     font-family: var(--font-mono);
-    font-size: clamp(1.2rem, 3vw, 3rem);
+    font-size: clamp(1rem, 2.6vw, 2.6rem);
     font-weight: 700;
     line-height: 1;
     letter-spacing: 0;
-    padding: 0.7rem 0;
+    padding: 0.55rem 0;
     white-space: nowrap;
     pointer-events: none;
   }
@@ -209,5 +209,9 @@
     box-shadow:
       0 20px 60px color-mix(in srgb, var(--primary) 12%, transparent),
       inset 0 1px 0 color-mix(in srgb, white 12%, transparent);
+  }
+
+  .terminal-hero > div:last-child {
+    padding-block: 0.8rem;
   }
 }

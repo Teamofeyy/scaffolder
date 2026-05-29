@@ -38,16 +38,16 @@ export function PreviewPanel({ config }: PreviewPanelProps) {
   }, [config])
 
   return (
-    <Card className="shadow-lg border-border/50">
-      <CardHeader>
+    <Card className="gap-4 border-border/50 py-4 shadow-lg">
+      <CardHeader className="px-5">
         <CardTitle className="flex items-center gap-2">
           <Eye className="h-5 w-5 text-primary" />
           Предпросмотр структуры
         </CardTitle>
         <CardDescription>Файлы и папки вашего проекта</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-125 w-full rounded-md border border-border/50 bg-muted/20 p-4">
+      <CardContent className="px-5">
+        <ScrollArea className="h-[420px] w-full rounded-md border border-border/50 bg-muted/20 p-3">
           {tree ? (
             <FileTree data={tree} />
           ) : (

@@ -26,17 +26,17 @@ export default function ScaffolderPage() {
     <div className="app-shell min-h-screen">
       <Header />
 
-      <main className="container relative z-10 mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-10 grid gap-6 lg:grid-cols-[1fr_420px] lg:items-end">
-          <div className="space-y-4">
+      <main className="relative z-10 mx-auto max-w-[1600px] px-5 py-5">
+        <div className="mb-6 grid gap-5 lg:grid-cols-[1fr_360px] lg:items-end">
+          <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
               <Boxes className="h-4 w-4" />
               template runtime
             </div>
-            <h1 className="max-w-3xl text-5xl font-bold tracking-tight text-balance md:text-6xl">
+            <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-balance md:text-5xl">
             Scaffolder
           </h1>
-            <p className="max-w-2xl text-xl text-muted-foreground text-pretty">
+            <p className="max-w-2xl text-lg text-muted-foreground text-pretty">
             Создайте идеальную структуру для вашего следующего проекта за считанные секунды
           </p>
           </div>
@@ -55,7 +55,7 @@ export default function ScaffolderPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(520px,0.95fr)] mb-5">
           <ConfigurationPanel config={config} setConfig={setConfig} />
           <PreviewPanel config={config} />
         </div>
