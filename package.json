@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "deps:update-presets": "node apps/api/scripts/update-dependency-presets.mjs"
   },
   "keywords": [],
   "author": "",

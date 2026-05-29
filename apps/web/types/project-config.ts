@@ -1,4 +1,19 @@
-export type Framework = "nextjs" | "react" | "vue"
+export type Framework =
+  | "react"
+  | "nextjs"
+  | "angular-ts"
+  | "ember-ts"
+  | "lit-ts"
+  | "marko-ts"
+  | "nuxt-ts"
+  | "preact-ts"
+  | "preact-ts-official"
+  | "qwik-ts"
+  | "react-ts"
+  | "solid-ts"
+  | "svelte-ts"
+  | "vue-ts"
+  | "vue"
 export type Routing =
   | "app-router"
   | "pages-router"
@@ -22,6 +37,7 @@ export interface ProjectConfig {
   stateManagement: StateManagement
   routing: Routing
   dependencies: string[]
+  devDependencies: string[]
 }
 
 /* ---------------------------------------------------
@@ -81,37 +97,11 @@ export interface GenerateButtonProps {
 }
 
 // --------------------------------------
-// POPULAR DEPENDENCIES (for all frameworks)
-// --------------------------------------
-
-export interface DependencyOption {
-  id: string
-  label: string
-  description?: string
-  dev?: boolean
-}
-
-export const popularDependencies: DependencyOption[] = [
-  { id: "axios", label: "axios", description: "HTTP client for browsers and Node.js" },
-  { id: "zod", label: "zod", description: "Type-safe schema validation" },
-  { id: "date-fns", label: "date-fns", description: "Modern date utility library" },
-  { id: "lodash", label: "lodash", description: "Utility library for arrays, objects and more" },
-  { id: "clsx", label: "clsx", description: "Tiny utility for constructing className strings" },
-  { id: "zustand", label: "zustand", description: "Small, fast state-management solution" },
-  { id: "jotai", label: "jotai", description: "Primitive and flexible state management for React" },
-  { id: "framer-motion", label: "framer-motion", description: "Production-ready animation library for React" },
-  { id: "react-hook-form", label: "react-hook-form", description: "React hooks for forms validation" },
-  { id: "bcrypt", label: "bcrypt", description: "Library to hash passwords" },
-  { id: "jsonwebtoken", label: "jsonwebtoken", description: "JWT implementation for auth" },
-  { id: "uuid", label: "uuid", description: "Generate RFC4122 UUIDs" },
-  { id: "dotenv", label: "dotenv", description: "Loads environment variables from .env file" },
-  { id: "cors", label: "cors", description: "Express middleware for enabling CORS" },
-]
-
-// --------------------------------------
 // FRAMEWORK BLOCKS — корректная вложенность
 // --------------------------------------
-export const frameworkBlocks = {
+type BlockFactory = () => FileNode[]
+
+export const frameworkBlocks: Partial<Record<Framework, BlockFactory>> = {
   react: () => [
     folder("public", [file("vite.svg")]),
 
@@ -157,7 +147,7 @@ export const frameworkBlocks = {
 // --------------------------------------
 // ROUTING BLOCKS — исправлено, без "src/routes"
 // --------------------------------------
-export const routingBlocks = {
+export const routingBlocks: Partial<Record<Routing, BlockFactory>> = {
   // --- React Router ---
   "react-router": () => [
     folder("src", [
@@ -206,7 +196,7 @@ export const routingBlocks = {
 // --------------------------------------
 // STYLING BLOCKS
 // --------------------------------------
-export const stylingBlocks = {
+export const stylingBlocks: Partial<Record<Styling, BlockFactory>> = {
   tailwind: () => [],
   "css-modules": () => [],
   "styled-components": () => [],
@@ -215,7 +205,7 @@ export const stylingBlocks = {
 // --------------------------------------
 // STATE MANAGEMENT BLOCKS
 // --------------------------------------
-export const stateBlocks = {
+export const stateBlocks: Record<StateManagement, BlockFactory> = {
   none: () => [],
 
   zustand: () => [

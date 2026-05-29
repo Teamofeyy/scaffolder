@@ -18,6 +18,7 @@ export default function ScaffolderPage() {
     stateManagement: "none",
     routing: "react-router",
     dependencies: [],
+    devDependencies: [],
   })
 
   return (

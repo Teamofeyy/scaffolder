@@ -1,21 +1,33 @@
 import axios from 'axios'
 import { ProjectConfig } from '@/types/project-config'
 
-// Типы для бэкенда
-export interface MasterConfig {
-  appName: string
-  packageManager: string
+export interface BackendProjectConfig {
+  project_name: string
   framework: string
-  routing?: string
-  styling?: string
-  stateManager?: string
+  package_manager: string
+  styling: string
   linting?: 'eslint' | 'biome' | 'none'
-  extraDependencies?: string[]
+  state_management: string
+  routing: string
+  dependencies: string[]
+  dev_dependencies: string[]
 }
 
 export interface BuildResponse {
   success: boolean
   error?: string
+}
+
+export interface ProjectTreeNode {
+  name: string
+  type: 'file' | 'folder'
+  children?: ProjectTreeNode[]
+}
+
+export interface DependencySearchResult {
+  name: string
+  version: string
+  description?: string
 }
 
 // URL агента (можно вынести в env переменные)
@@ -24,57 +36,17 @@ const AGENT_URL = '/api'
 /**
  * Маппинг значений фронтенда в значения бэкенда
  */
-export function mapConfigToBackend(config: ProjectConfig): MasterConfig {
-  // Маппинг framework
-  const framework = config.framework
-
-  // Маппинг routing
-  let routing: string | undefined
-  if (framework === 'react' && (config.routing === 'react-router' || config.routing === 'react-router-data')) {
-    routing = 'react-router'
-  } else if (framework === 'vue' && config.routing === 'vue-router') {
-    routing = 'vue-router'
-  } else if (framework === 'nextjs') {
-    routing = config.routing
-  }
-
-  // Маппинг styling
-  let styling: string | undefined
-  if (config.styling === 'tailwind') {
-    styling = 'tailwind'
-  } else if (config.styling === 'css-modules') {
-    styling = 'css-modules'
-  } else if (config.styling === 'styled-components') {
-    // styled-components не поддерживается бэкендом, используем css-modules
-    styling = 'css-modules'
-  }
-
-  // Маппинг stateManager
-  let stateManager: string | undefined
-  if (config.stateManagement === 'redux') {
-    stateManager = 'redux-toolkit'
-  } else if (config.stateManagement === 'zustand') {
-    stateManager = 'zustand'
-  } else if (config.stateManagement === 'jotai') {
-    // Jotai не поддерживается бэкендом
-    stateManager = undefined
-  }
-
-  // Маппинг linting (только для Next.js)
-  let linting: MasterConfig['linting'] | undefined
-  if (framework === 'nextjs') {
-    linting = config.linting
-  }
-
+export function mapConfigToBackend(config: ProjectConfig): BackendProjectConfig {
   return {
-    appName: config.projectName,
-    packageManager: config.packageManager,
-    framework,
-    routing,
-    styling,
-    stateManager,
-    linting,
-    extraDependencies: config.dependencies,
+    project_name: config.projectName,
+    framework: config.framework,
+    package_manager: config.packageManager,
+    styling: config.styling,
+    linting: config.linting,
+    state_management: config.stateManagement,
+    routing: config.routing,
+    dependencies: config.dependencies,
+    dev_dependencies: config.devDependencies,
   }
 }
 
@@ -163,6 +135,32 @@ export async function buildProject(config: ProjectConfig): Promise<Blob> {
     }
     throw error
   }
+}
+
+export async function previewProject(config: ProjectConfig): Promise<ProjectTreeNode> {
+  const validation = validateConfig(config)
+  const backendConfig = mapConfigToBackend({
+    ...config,
+    projectName: validation.valid ? config.projectName : 'my-project',
+  })
+
+  const response = await axios.post(`${AGENT_URL}/preview`, backendConfig, {
+    timeout: 30000,
+  })
+
+  return response.data
+}
+
+export async function searchDependencies(query: string): Promise<DependencySearchResult[]> {
+  const params = new URLSearchParams({
+    q: query,
+    limit: '10',
+  })
+  const response = await axios.get(`${AGENT_URL}/dependencies/search?${params.toString()}`, {
+    timeout: 10000,
+  })
+
+  return response.data
 }
 
 /**
