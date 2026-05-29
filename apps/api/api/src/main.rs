@@ -1,14 +1,18 @@
 use crate::{
-    generation_service::generate_project,
+    generation_service::{generate_project, preview_project_tree},
+    npm_registry::search_dependencies as search_npm_dependencies,
     schema::{FeatureResponse, ProjectConfig, feature_registry_for_api},
 };
 use axum::{
     Json, Router,
     body::Body,
+    extract::Query,
     http::{Response, StatusCode, header},
     response::IntoResponse,
+    routing::{get, post},
 };
 use color_eyre::Result;
+use serde::Deserialize;
 use tower_http::{
     cors::{Any, CorsLayer},
     trace::TraceLayer,
@@ -21,6 +25,7 @@ use utoipa_swagger_ui::SwaggerUi;
 
 pub mod archive;
 pub mod generation_service;
+pub mod npm_registry;
 pub mod operations;
 pub mod resolver;
 pub mod schema;
@@ -73,6 +78,8 @@ fn app() -> Router {
 
     router
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs", api_doc))
+        .route("/preview", post(preview))
+        .route("/dependencies/search", get(search_dependencies))
         .layer(TraceLayer::new_for_http())
         .layer(cors) // подключаем CORS
 }
@@ -114,6 +121,38 @@ async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
                 .status(500)
                 .body(Body::from("Internal Server Error"))
                 .unwrap()
+        }
+    }
+}
+
+async fn preview(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
+    debug!("Got a preview request");
+    match preview_project_tree(req) {
+        Ok(tree) => Json(tree).into_response(),
+        Err(err) => {
+            error!(error = ?err, "Failed to preview project structure");
+            (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct DependencySearchQuery {
+    q: String,
+    limit: Option<usize>,
+}
+
+async fn search_dependencies(Query(query): Query<DependencySearchQuery>) -> impl IntoResponse {
+    let q = query.q.trim();
+    if q.len() < 2 {
+        return Json(Vec::<crate::schema::DependencySearchResult>::new()).into_response();
+    }
+
+    match search_npm_dependencies(q, query.limit.unwrap_or(10)).await {
+        Ok(results) => Json(results).into_response(),
+        Err(err) => {
+            error!(error = ?err, query = %q, "Failed to search npm dependencies");
+            (StatusCode::BAD_GATEWAY, "Failed to search npm registry").into_response()
         }
     }
 }

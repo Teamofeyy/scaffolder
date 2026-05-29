@@ -224,6 +224,7 @@ mod tests {
             state_management: StateManagement::None,
             routing: Routing::None,
             dependencies: vec![],
+            dev_dependencies: vec![],
         }
     }
 
@@ -265,6 +266,7 @@ mod tests {
             state_management: StateManagement::Redux,
             routing: Routing::None,
             dependencies: vec![],
+            dev_dependencies: vec![],
         };
 
         let err = resolve_from_config(&cfg).expect_err("resolver should fail");
