@@ -188,15 +188,15 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
   }, [dependencyQuery]);
 
   return (
-    <Card className="shadow-lg border-border/50">
-      <CardHeader>
+    <Card className="gap-4 border-border/50 py-4 shadow-lg">
+      <CardHeader className="px-5">
         <CardTitle className="flex items-center gap-2">
           <Settings2 className="h-5 w-5 text-primary" />
           Конфигурация проекта
         </CardTitle>
         <CardDescription>Настройте параметры вашего нового проекта</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-5">
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="basic">Основное</TabsTrigger>
@@ -204,7 +204,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
             <TabsTrigger value="tools">Инструменты</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="basic" className="space-y-6 mt-6">
+          <TabsContent value="basic" className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="projectName">Название проекта</Label>
               <Input
@@ -217,7 +217,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
 
             <div className="space-y-2">
               <Label>Фреймворк</Label>
-              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Фреймворк">
+              <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 2xl:grid-cols-4" role="radiogroup" aria-label="Фреймворк">
                 {frameworkOptions.map((option) => {
                   const selected = config.framework === option.value
                   return (
@@ -227,7 +227,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "min-h-16 rounded-md border p-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "min-h-14 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
                           ? "border-primary bg-primary/10 text-foreground"
                           : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
@@ -296,7 +296,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
 
           </TabsContent>
 
-          <TabsContent value="styling" className="space-y-6 mt-6">
+          <TabsContent value="styling" className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="styling" className="flex items-center gap-2">
                 <Palette className="h-4 w-4" />
@@ -312,7 +312,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "min-h-14 rounded-md border p-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
                           ? "border-primary bg-primary/10 text-foreground"
                           : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
@@ -342,7 +342,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "min-h-14 rounded-md border p-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
                           ? "border-primary bg-primary/10 text-foreground"
                           : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
@@ -358,7 +358,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
             </div>
           </TabsContent>
 
-          <TabsContent value="tools" className="space-y-6 mt-6">
+          <TabsContent value="tools" className="space-y-4 mt-4">
             {/* Linting options */}
             <div className="space-y-2">
               <Label htmlFor="linting" className="flex items-center gap-2">
@@ -375,7 +375,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                         role="radio"
                         aria-checked={selected}
                         className={cn(
-                          "min-h-14 rounded-md border p-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           selected
                             ? "border-primary bg-primary/10 text-foreground"
                             : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
@@ -416,7 +416,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                 onChange={(e) => setDependencyQuery(e.target.value)}
               />
 
-              <ScrollArea className="h-56 w-full rounded-md border border-border/50 bg-muted/20">
+              <ScrollArea className="h-48 w-full rounded-md border border-border/50 bg-muted/20">
                 <div className="p-2 space-y-1">
                   {dependencyItems.map((dep) => {
                     const selectedProd = config.dependencies.some((item) => dependencyName(item) === dep.name)

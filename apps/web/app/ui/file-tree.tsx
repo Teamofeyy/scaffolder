@@ -25,7 +25,7 @@ export function FileTree({ data, level = 0 }: FileTreeProps) {
       <div
         style={{ paddingLeft: `${level * 12}px` }}
         className={cn(
-          "flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-accent/50 cursor-pointer transition-colors",
+          "flex items-center gap-2 py-1 px-2 rounded-md hover:bg-accent/50 cursor-pointer transition-colors",
         )}
         onClick={() => isFolder && setIsOpen(!isOpen)}
       >
