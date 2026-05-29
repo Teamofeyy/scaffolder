@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Boxes, Terminal } from "lucide-react"
 import { Header } from "./ui/header"
 import { ConfigurationPanel } from "./ui/configuration-panel"
 import { PreviewPanel } from "./ui/preview-panel"
@@ -22,17 +23,36 @@ export default function ScaffolderPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="app-shell min-h-screen">
       <Header />
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="mb-12 text-center space-y-4">
-          <h1 className="text-5xl font-bold tracking-tight text-balance bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+      <main className="container relative z-10 mx-auto max-w-7xl px-4 py-8">
+        <div className="mb-10 grid gap-6 lg:grid-cols-[1fr_420px] lg:items-end">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+              <Boxes className="h-4 w-4" />
+              template runtime
+            </div>
+            <h1 className="max-w-3xl text-5xl font-bold tracking-tight text-balance md:text-6xl">
             Scaffolder
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
+            <p className="max-w-2xl text-xl text-muted-foreground text-pretty">
             Создайте идеальную структуру для вашего следующего проекта за считанные секунды
           </p>
+          </div>
+
+          <div className="terminal-hero" aria-hidden="true">
+            <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3 text-xs text-muted-foreground">
+              <Terminal className="h-4 w-4 text-primary" />
+              scaffold.config
+            </div>
+            <div className="space-y-2 p-4 font-mono text-sm">
+              <p><span className="text-primary">framework</span> = react</p>
+              <p><span className="text-primary">style</span> = tailwind</p>
+              <p><span className="text-primary">deps</span> = npm registry</p>
+              <p className="text-primary">archive ready in &lt; 5s</p>
+            </div>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
