@@ -23,6 +23,7 @@ use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_swagger_ui::SwaggerUi;
 
+pub mod ai_proxy;
 pub mod archive;
 pub mod generation_service;
 pub mod npm_registry;
@@ -80,6 +81,7 @@ fn app() -> Router {
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs", api_doc))
         .route("/preview", post(preview))
         .route("/dependencies/search", get(search_dependencies))
+        .route("/ai/recommend", post(ai_proxy::recommend))
         .layer(TraceLayer::new_for_http())
         .layer(cors) // подключаем CORS
 }

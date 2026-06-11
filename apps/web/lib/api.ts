@@ -1,5 +1,13 @@
 import axios from 'axios'
-import { ProjectConfig } from '@/types/project-config'
+import {
+  Framework,
+  Linting,
+  PackageManager,
+  ProjectConfig,
+  Routing,
+  StateManagement,
+  Styling,
+} from '@/types/project-config'
 
 export interface BackendProjectConfig {
   project_name: string
@@ -28,6 +36,24 @@ export interface DependencySearchResult {
   name: string
   version: string
   description?: string
+}
+
+export interface AiConfigPatch {
+  framework?: Framework
+  package_manager?: PackageManager
+  routing?: Routing
+  styling?: Styling
+  linting?: Linting
+  state_management?: StateManagement
+  dependencies?: string[]
+  dev_dependencies?: string[]
+}
+
+export interface AiRecommendationResponse {
+  requestId: string
+  message: string
+  configPatch: AiConfigPatch
+  warnings: string[]
 }
 
 // URL агента (можно вынести в env переменные)
@@ -158,6 +184,27 @@ export async function searchDependencies(query: string): Promise<DependencySearc
   })
   const response = await axios.get(`${AGENT_URL}/dependencies/search?${params.toString()}`, {
     timeout: 10000,
+  })
+
+  return response.data
+}
+
+export async function recommendProjectConfig(
+  message: string,
+  sessionId: string,
+  config: ProjectConfig,
+): Promise<AiRecommendationResponse> {
+  const currentConfig = mapConfigToBackend({
+    ...config,
+    projectName: config.projectName.trim() || 'my-project',
+  })
+
+  const response = await axios.post(`${AGENT_URL}/ai/recommend`, {
+    sessionId,
+    message,
+    currentConfig,
+  }, {
+    timeout: 35000,
   })
 
   return response.data

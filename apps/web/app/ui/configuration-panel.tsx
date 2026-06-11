@@ -59,6 +59,7 @@ function supportsReactState(framework: Framework) {
 
 const frameworkOptions: { value: Framework; label: string; hint: string }[] = [
   { value: "react", label: "React", hint: "SPA на Vite" },
+  { value: "nextjs", label: "Next.js", hint: "React fullstack" },
   { value: "vue", label: "Vue", hint: "SPA на Vite" },
   { value: "svelte-ts", label: "Svelte", hint: "Легкий TS шаблон" },
   { value: "solid-ts", label: "Solid", hint: "Fine-grained UI" },
@@ -151,6 +152,17 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
     description: dep.description,
   }));
   const dependencyItems: DependencyListItem[] = remoteDependencies;
+  const removeDependency = (bucket: "prod" | "dev", dependency: string) => {
+    setConfig({
+      ...config,
+      dependencies: bucket === "prod"
+        ? config.dependencies.filter((item) => item !== dependency)
+        : config.dependencies,
+      devDependencies: bucket === "dev"
+        ? config.devDependencies.filter((item) => item !== dependency)
+        : config.devDependencies,
+    })
+  }
 
   useEffect(() => {
     const query = dependencyQuery.trim();
@@ -416,6 +428,30 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                 onChange={(e) => setDependencyQuery(e.target.value)}
               />
 
+              {(config.dependencies.length > 0 || config.devDependencies.length > 0) && (
+                <div className="space-y-2 rounded-md border border-border/50 bg-muted/20 p-3">
+                  <p className="text-sm font-medium">Выбранные зависимости</p>
+                  <div className="space-y-2">
+                    {config.dependencies.map((dependency) => (
+                      <SelectedDependency
+                        key={`prod-${dependency}`}
+                        dependency={dependency}
+                        label="dep"
+                        onRemove={() => removeDependency("prod", dependency)}
+                      />
+                    ))}
+                    {config.devDependencies.map((dependency) => (
+                      <SelectedDependency
+                        key={`dev-${dependency}`}
+                        dependency={dependency}
+                        label="dev"
+                        onRemove={() => removeDependency("dev", dependency)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <ScrollArea className="h-48 w-full rounded-md border border-border/50 bg-muted/20">
                 <div className="p-2 space-y-1">
                   {dependencyItems.map((dep) => {
@@ -517,4 +553,48 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
       </CardContent>
     </Card>
   )
+}
+
+function SelectedDependency({
+  dependency,
+  label,
+  onRemove,
+}: {
+  dependency: string
+  label: "dep" | "dev"
+  onRemove: () => void
+}) {
+  const name = dependencyName(dependency)
+  const version = dependencyVersion(dependency, name)
+
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-background px-3 py-2">
+      <div className="min-w-0">
+        <p className="truncate font-mono text-sm">
+          {name}
+          {version && (
+            <span className="ml-2 font-sans text-xs text-muted-foreground">{version}</span>
+          )}
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+          {label}
+        </span>
+        <button
+          type="button"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-background text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          onClick={onRemove}
+          aria-label={`Удалить ${name}`}
+        >
+          x
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function dependencyVersion(raw: string, name: string) {
+  const prefix = `${name}@`
+  return raw.startsWith(prefix) ? raw.slice(prefix.length) : undefined
 }
