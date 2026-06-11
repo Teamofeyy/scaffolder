@@ -67,7 +67,12 @@ fn patch_package_json(workspace: &Path, config: &ProjectConfig, plan: &ResolvedP
     merge_dependencies(
         &mut root,
         "dependencies",
-        collect_dependencies(config, plan),
+        collect_dependencies(&config.dependencies, plan, DependencyKind::Production)?,
+    );
+    merge_dependencies(
+        &mut root,
+        "devDependencies",
+        collect_dependencies(&config.dev_dependencies, plan, DependencyKind::Development)?,
     );
 
     if let Some(obj) = root.as_object_mut() {
@@ -98,38 +103,64 @@ fn reorder_package_json_top_keys(mut map: Map<String, Value>) -> Map<String, Val
     out
 }
 
-fn collect_dependencies(config: &ProjectConfig, plan: &ResolvedPlan) -> HashMap<String, String> {
+#[derive(Debug, Clone, Copy)]
+enum DependencyKind {
+    Production,
+    Development,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DependencyPreset {
+    #[serde(default)]
+    dependencies: HashMap<String, String>,
+    #[serde(default)]
+    dev_dependencies: HashMap<String, String>,
+}
+
+fn collect_dependencies(
+    user_dependencies: &[String],
+    plan: &ResolvedPlan,
+    kind: DependencyKind,
+) -> Result<HashMap<String, String>> {
     let mut deps: HashMap<String, String> = HashMap::new();
 
-    for item in &config.dependencies {
+    for item in user_dependencies {
         let (name, version) = parse_dependency(item);
         deps.insert(name, version);
     }
 
+    let presets = dependency_presets()?;
     for feature in &plan.selected {
-        for &(name, version) in dependencies_for_feature(feature) {
-            deps.entry(name.to_owned())
-                .or_insert_with(|| version.to_owned());
+        let Some(preset) = presets.get(feature_preset_key(feature)) else {
+            continue;
+        };
+        let preset_deps = match kind {
+            DependencyKind::Production => &preset.dependencies,
+            DependencyKind::Development => &preset.dev_dependencies,
+        };
+        for (name, version) in preset_deps {
+            deps.entry(name.clone()).or_insert_with(|| version.clone());
         }
     }
 
-    deps
+    Ok(deps)
 }
 
-fn dependencies_for_feature(feature: &Feature) -> &'static [(&'static str, &'static str)] {
+fn dependency_presets() -> Result<HashMap<String, DependencyPreset>> {
+    serde_json::from_str(include_str!("../dependency-presets.json")).map_err(Into::into)
+}
+
+fn feature_preset_key(feature: &Feature) -> &'static str {
     match feature {
-        Feature::Tailwind => &[
-            ("tailwindcss", "^3.4.0"),
-            ("postcss", "^8.4.0"),
-            ("autoprefixer", "^10.4.0"),
-        ],
-        Feature::ReactRouter => &[("react-router-dom", "^6.30.0")],
-        Feature::VueRouter => &[("vue-router", "^4.5.0")],
-        Feature::Zustand => &[("zustand", "^5.0.0")],
-        Feature::Redux => &[("@reduxjs/toolkit", "^2.6.0"), ("react-redux", "^9.2.0")],
-        Feature::Jotai => &[("jotai", "^2.12.0")],
-        Feature::Biome => &[("@biomejs/biome", "^1.9.0")],
-        _ => &[],
+        Feature::Tailwind => "tailwind",
+        Feature::ReactRouter => "react-router",
+        Feature::VueRouter => "vue-router",
+        Feature::Zustand => "zustand",
+        Feature::Redux => "redux",
+        Feature::Jotai => "jotai",
+        Feature::Biome => "biome",
+        _ => "",
     }
 }
 
@@ -572,6 +603,7 @@ mod tests {
             state_management: StateManagement::None,
             routing: Routing::ReactRouter,
             dependencies: vec![],
+            dev_dependencies: vec![],
         };
         let plan = ResolvedPlan {
             selected: vec![Feature::React, Feature::Tailwind],
@@ -597,6 +629,7 @@ mod tests {
             state_management: StateManagement::None,
             routing: Routing::ReactRouter,
             dependencies: vec![],
+            dev_dependencies: vec![],
         };
         let plan = ResolvedPlan {
             selected: vec![Feature::React, Feature::Tailwind],
