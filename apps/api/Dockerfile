@@ -12,6 +12,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY api/Cargo.toml api/Cargo.toml
 
 # Copy sources and build the real binary.
+COPY api/dependency-presets.json api/dependency-presets.json
 COPY api/src api/src
 RUN cargo build --release --locked --manifest-path api/Cargo.toml \
     && test "$(stat -c%s target/release/scaf-api)" -gt 1000000 \
@@ -26,6 +27,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /scaf-api /usr/local/bin/scaf-api
+COPY templates templates
 
 RUN useradd --create-home --uid 10001 appuser
 
