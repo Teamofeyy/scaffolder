@@ -14,13 +14,16 @@ export function Header() {
   }, [])
 
   return (
-    <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
+    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/75 backdrop-blur-xl">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between max-w-7xl">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
+          <div className="rounded-md border border-primary/30 bg-primary/10 p-2 shadow-[0_0_24px_color-mix(in_srgb,var(--primary)_25%,transparent)]">
             <Code2 className="h-6 w-6 text-primary" />
           </div>
-          <span className="text-xl font-bold">Scaffolder</span>
+          <div>
+            <span className="block text-xl font-bold leading-5">Scaffolder</span>
+            <span className="block font-mono text-xs text-muted-foreground">project generator</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">

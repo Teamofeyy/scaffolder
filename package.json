@@ -4,7 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "deps:update-presets": "node apps/api/scripts/update-dependency-presets.mjs",
+    "load:test": "node scripts/load-test.mjs",
+    "load:test:preview": "LOAD_TEST_ENDPOINT=preview node scripts/load-test.mjs",
+    "load:test:generate": "LOAD_TEST_ENDPOINT=generate node scripts/load-test.mjs"
   },
   "keywords": [],
   "author": "",

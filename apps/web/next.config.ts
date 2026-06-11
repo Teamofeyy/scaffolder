@@ -7,6 +7,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const nextConfig = {
   allowedDevOrigins: ['127.0.0.1'],
   output: 'standalone',
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.BACKEND_API_URL ?? 'http://127.0.0.1:8000'}/:path*`,
+      },
+    ]
+  },
   images: {
     unoptimized: true,
   },

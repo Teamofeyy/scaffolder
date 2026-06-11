@@ -107,6 +107,24 @@ pub struct ProjectConfig {
     pub state_management: StateManagement,
     pub routing: Routing,
     pub dependencies: Vec<String>,
+    #[serde(default)]
+    pub dev_dependencies: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProjectTreeNode {
+    pub name: String,
+    #[serde(rename = "type")]
+    pub node_type: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub children: Vec<ProjectTreeNode>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct DependencySearchResult {
+    pub name: String,
+    pub version: String,
+    pub description: Option<String>,
 }
 
 // #[derive(Debug, Serialize, Deserialize, ToSchema)]

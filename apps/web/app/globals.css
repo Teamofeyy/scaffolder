@@ -4,30 +4,30 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.9730 0.0133 286.1503);
-  --foreground: oklch(0.3015 0.0572 282.4176);
+  --background: oklch(0.9750 0.0100 155.0000);
+  --foreground: oklch(0.2450 0.0300 155.0000);
   --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.3015 0.0572 282.4176);
+  --card-foreground: oklch(0.2450 0.0300 155.0000);
   --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.3015 0.0572 282.4176);
-  --primary: oklch(0.5417 0.1790 288.0332);
-  --primary-foreground: oklch(1.0000 0 0);
-  --secondary: oklch(0.9174 0.0435 292.6901);
-  --secondary-foreground: oklch(0.4143 0.1039 288.1742);
-  --muted: oklch(0.9580 0.0133 286.1454);
-  --muted-foreground: oklch(0.5426 0.0465 284.7435);
-  --accent: oklch(0.9221 0.0373 262.1410);
-  --accent-foreground: oklch(0.3015 0.0572 282.4176);
+  --popover-foreground: oklch(0.2450 0.0300 155.0000);
+  --primary: oklch(0.5750 0.1450 145.0000);
+  --primary-foreground: oklch(0.9850 0.0100 145.0000);
+  --secondary: oklch(0.9250 0.0300 155.0000);
+  --secondary-foreground: oklch(0.3050 0.0600 150.0000);
+  --muted: oklch(0.9500 0.0120 155.0000);
+  --muted-foreground: oklch(0.5100 0.0300 155.0000);
+  --accent: oklch(0.9100 0.0400 155.0000);
+  --accent-foreground: oklch(0.2450 0.0300 155.0000);
   --destructive: oklch(0.6861 0.2061 14.9941);
   --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.9115 0.0216 285.9625);
-  --input: oklch(0.9115 0.0216 285.9625);
-  --ring: oklch(0.5417 0.1790 288.0332);
-  --chart-1: oklch(0.5417 0.1790 288.0332);
-  --chart-2: oklch(0.7042 0.1602 288.9880);
-  --chart-3: oklch(0.5679 0.2113 276.7065);
-  --chart-4: oklch(0.6356 0.1922 281.8054);
-  --chart-5: oklch(0.4509 0.1758 279.3838);
+  --border: oklch(0.8850 0.0200 155.0000);
+  --input: oklch(0.8850 0.0200 155.0000);
+  --ring: oklch(0.5750 0.1450 145.0000);
+  --chart-1: oklch(0.5750 0.1450 145.0000);
+  --chart-2: oklch(0.6450 0.1200 185.0000);
+  --chart-3: oklch(0.5900 0.1100 75.0000);
+  --chart-4: oklch(0.5600 0.1200 230.0000);
+  --chart-5: oklch(0.6100 0.1200 25.0000);
   --radius: 0.5rem;
   --sidebar: oklch(0.9580 0.0133 286.1454);
   --sidebar-foreground: oklch(0.3015 0.0572 282.4176);
@@ -49,30 +49,30 @@
 }
 
 .dark {
-  --background: oklch(0.1743 0.0227 283.7998);
-  --foreground: oklch(0.9185 0.0257 285.8834);
-  --card: oklch(0.2284 0.0384 282.9324);
-  --card-foreground: oklch(0.9185 0.0257 285.8834);
-  --popover: oklch(0.2284 0.0384 282.9324);
-  --popover-foreground: oklch(0.9185 0.0257 285.8834);
-  --primary: oklch(0.7162 0.1597 290.3962);
-  --primary-foreground: oklch(0.1743 0.0227 283.7998);
-  --secondary: oklch(0.3139 0.0736 283.4591);
-  --secondary-foreground: oklch(0.8367 0.0849 285.9111);
-  --muted: oklch(0.2710 0.0621 281.4377);
-  --muted-foreground: oklch(0.7166 0.0462 285.1741);
-  --accent: oklch(0.3354 0.0828 280.9705);
-  --accent-foreground: oklch(0.9185 0.0257 285.8834);
+  --background: oklch(0.1500 0.0180 155.0000);
+  --foreground: oklch(0.9200 0.0200 155.0000);
+  --card: oklch(0.2050 0.0220 155.0000);
+  --card-foreground: oklch(0.9200 0.0200 155.0000);
+  --popover: oklch(0.2050 0.0220 155.0000);
+  --popover-foreground: oklch(0.9200 0.0200 155.0000);
+  --primary: oklch(0.7150 0.1600 145.0000);
+  --primary-foreground: oklch(0.1250 0.0200 155.0000);
+  --secondary: oklch(0.2750 0.0350 155.0000);
+  --secondary-foreground: oklch(0.8600 0.0450 145.0000);
+  --muted: oklch(0.2550 0.0250 155.0000);
+  --muted-foreground: oklch(0.7100 0.0300 155.0000);
+  --accent: oklch(0.3150 0.0550 155.0000);
+  --accent-foreground: oklch(0.9300 0.0200 155.0000);
   --destructive: oklch(0.6861 0.2061 14.9941);
   --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.3261 0.0597 282.5832);
-  --input: oklch(0.3261 0.0597 282.5832);
-  --ring: oklch(0.7162 0.1597 290.3962);
-  --chart-1: oklch(0.7162 0.1597 290.3962);
-  --chart-2: oklch(0.6382 0.1047 274.9117);
-  --chart-3: oklch(0.7482 0.1235 244.7492);
-  --chart-4: oklch(0.7124 0.0977 186.6761);
-  --chart-5: oklch(0.7546 0.1831 346.8124);
+  --border: oklch(0.3300 0.0350 155.0000);
+  --input: oklch(0.3300 0.0350 155.0000);
+  --ring: oklch(0.7150 0.1600 145.0000);
+  --chart-1: oklch(0.7150 0.1600 145.0000);
+  --chart-2: oklch(0.6800 0.1100 190.0000);
+  --chart-3: oklch(0.7400 0.1300 75.0000);
+  --chart-4: oklch(0.6600 0.1250 230.0000);
+  --chart-5: oklch(0.6900 0.1300 25.0000);
   --sidebar: oklch(0.2284 0.0384 282.9324);
   --sidebar-foreground: oklch(0.9185 0.0257 285.8834);
   --sidebar-primary: oklch(0.7162 0.1597 290.3962);
@@ -152,5 +152,66 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .app-shell {
+    position: relative;
+    isolation: isolate;
+    overflow-x: hidden;
+    background:
+      radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--primary) 18%, transparent) 0, transparent 28rem),
+      radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--chart-2) 14%, transparent) 0, transparent 24rem),
+      linear-gradient(180deg, color-mix(in srgb, var(--background) 88%, black 12%), var(--background));
+  }
+
+  .app-shell::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--foreground) 8%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--foreground) 8%, transparent) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: linear-gradient(to bottom, black 0%, black 58%, transparent 100%);
+  }
+
+  .app-shell::after {
+    content: "npm create vite@latest  pnpm dlx create  yarn create  bun create";
+    position: fixed;
+    top: 4.7rem;
+    left: -4rem;
+    z-index: -1;
+    width: 120vw;
+    transform: rotate(-4deg);
+    border-block: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+    background: color-mix(in srgb, var(--primary) 9%, transparent);
+    color: color-mix(in srgb, var(--primary) 48%, transparent);
+    font-family: var(--font-mono);
+    font-size: clamp(1rem, 2.6vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    padding: 0.55rem 0;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .terminal-hero {
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--border));
+    border-radius: var(--radius);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, var(--primary) 8%), color-mix(in srgb, var(--card) 96%, black 4%));
+    box-shadow:
+      0 20px 60px color-mix(in srgb, var(--primary) 12%, transparent),
+      inset 0 1px 0 color-mix(in srgb, white 12%, transparent);
+  }
+
+  .terminal-hero > div:last-child {
+    padding-block: 0.8rem;
   }
 }

@@ -4,21 +4,62 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Eye } from "lucide-react"
 import { FileTree } from "./file-tree"
-import { PreviewPanelProps, generateProjectStructure } from "@/types/project-config"
+import { PreviewPanelProps } from "@/types/project-config"
+import { previewProject, ProjectTreeNode } from "@/lib/api"
+import { useEffect, useState } from "react"
 
 export function PreviewPanel({ config }: PreviewPanelProps) {
+  const [tree, setTree] = useState<ProjectTreeNode | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    setIsLoading(true)
+    setError(null)
+
+    const timeoutId = window.setTimeout(() => {
+      previewProject(config)
+        .then((nextTree) => {
+          if (!cancelled) setTree(nextTree)
+        })
+        .catch(() => {
+          if (!cancelled) setError("Не удалось построить предпросмотр")
+        })
+        .finally(() => {
+          if (!cancelled) setIsLoading(false)
+        })
+    }, 250)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeoutId)
+    }
+  }, [config])
+
   return (
-    <Card className="shadow-lg border-border/50">
-      <CardHeader>
+    <Card className="gap-4 border-border/50 py-4 shadow-lg">
+      <CardHeader className="px-5">
         <CardTitle className="flex items-center gap-2">
           <Eye className="h-5 w-5 text-primary" />
           Предпросмотр структуры
         </CardTitle>
         <CardDescription>Файлы и папки вашего проекта</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-125 w-full rounded-md border border-border/50 bg-muted/20 p-4">
-          <FileTree data={generateProjectStructure(config)} />
+      <CardContent className="px-5">
+        <ScrollArea className="h-[420px] w-full rounded-md border border-border/50 bg-muted/20 p-3">
+          {tree ? (
+            <FileTree data={tree} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {isLoading ? "Загрузка..." : error || "Предпросмотр недоступен"}
+            </p>
+          )}
+          {tree && (isLoading || error) && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              {isLoading ? "Обновление..." : error}
+            </p>
+          )}
         </ScrollArea>
       </CardContent>
     </Card>

@@ -1,0 +1,40 @@
+{
+  "tailwind": {
+    "devDependencies": {
+      "tailwindcss": "^4.2.0",
+      "@tailwindcss/vite": "^4.2.0",
+      "@tailwindcss/postcss": "^4.2.0"
+    }
+  },
+  "react-router": {
+    "dependencies": {
+      "react-router-dom": "^6.30.3"
+    }
+  },
+  "vue-router": {
+    "dependencies": {
+      "vue-router": "^4.6.4"
+    }
+  },
+  "zustand": {
+    "dependencies": {
+      "zustand": "^5.0.14"
+    }
+  },
+  "redux": {
+    "dependencies": {
+      "@reduxjs/toolkit": "^2.12.0",
+      "react-redux": "^9.3.0"
+    }
+  },
+  "jotai": {
+    "dependencies": {
+      "jotai": "^2.20.0"
+    }
+  },
+  "biome": {
+    "devDependencies": {
+      "@biomejs/biome": "^1.9.4"
+    }
+  }
+}
