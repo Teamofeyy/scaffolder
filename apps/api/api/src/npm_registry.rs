@@ -74,9 +74,7 @@ fn cached_search_result(cache_key: &str) -> Option<Vec<DependencySearchResult>> 
         return None;
     };
 
-    let Some((stored_at, results)) = cache.get(cache_key) else {
-        return None;
-    };
+    let (stored_at, results) = cache.get(cache_key)?;
 
     if stored_at.elapsed() <= SEARCH_CACHE_TTL {
         return Some(results.clone());

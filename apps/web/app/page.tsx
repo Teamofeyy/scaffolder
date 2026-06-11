@@ -6,6 +6,7 @@ import { Header } from "./ui/header"
 import { ConfigurationPanel } from "./ui/configuration-panel"
 import { PreviewPanel } from "./ui/preview-panel"
 import { GenerateButton } from "./ui/generate-button"
+import { AiSidebar } from "./ui/ai-sidebar"
 import { ProjectConfig } from "@/types/project-config"
 
 export default function ScaffolderPage() {
@@ -62,6 +63,7 @@ export default function ScaffolderPage() {
 
         <GenerateButton config={config} />
       </main>
+      <AiSidebar config={config} setConfig={setConfig} />
     </div>
   )
 }
