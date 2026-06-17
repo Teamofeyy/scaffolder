@@ -5,10 +5,7 @@ import { Suspense } from "react";
 import { ThemeProvider } from "./ui/theme-provider";
 import { Toaster } from '@/components/ui/sonner'
 
-export const metadataBase = new URL("https://scaffolder.teamofey.tech/");
-
 export const metadata: Metadata = {
-
   title: "Frontend Scaffolder - Создайте проект за секунды",
   description: "Современный инструмент для генерации структуры frontend проектов",
   metadataBase: new URL("https://scaffolder.teamofey.tech/"),
