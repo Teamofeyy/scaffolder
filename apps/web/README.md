@@ -4,9 +4,11 @@ Frontend-интерфейс генератора шаблонов. Основн�
 
 ## Запуск
 
+Из корня репозитория:
+
 ```bash
-npm ci
-npm run dev
+pnpm bootstrap
+pnpm dev:web
 ```
 
 По умолчанию frontend проксирует `/api/*` на `http://127.0.0.1:8000`.
@@ -14,12 +16,14 @@ npm run dev
 Если backend запущен по другому адресу:
 
 ```bash
-BACKEND_API_URL=http://127.0.0.1:9000 npm run dev
+BACKEND_API_URL=http://127.0.0.1:9000 pnpm dev:web
 ```
 
 ## Проверки
 
+Из корня репозитория:
+
 ```bash
-npm run typecheck
-npm run lint
+pnpm typecheck
+pnpm lint
 ```

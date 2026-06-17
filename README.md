@@ -14,24 +14,28 @@
 
 ## Быстрый запуск
 
-Установите зависимости frontend:
+Установите зависимости проекта одной командой из корня репозитория:
 
 ```bash
-cd apps/web
-npm ci
+pnpm bootstrap
 ```
 
-Запустите backend:
+Запустить только backend:
 
 ```bash
-cargo run --manifest-path apps/api/api/Cargo.toml --locked
+pnpm dev:api
 ```
 
-В другом терминале запустите frontend:
+Запустить только frontend:
 
 ```bash
-cd apps/web
-npm run dev
+pnpm dev:web
+```
+
+Запустить backend и frontend вместе:
+
+```bash
+pnpm dev
 ```
 
 Откройте:
@@ -101,18 +105,31 @@ LOAD_TEST_REQUESTS=100 LOAD_TEST_CONCURRENCY=10 npm run load:test:generate
 - `apps/api/api/dependency-presets.json` - зависимости, которые добавляются выбранными feature-опциями.
 - `scripts/load-test.mjs` - простой нагрузочный тест без внешних зависимостей.
 
-## Проверки
+## Перед коммитом
 
-Backend:
+В репозитории настроен `pre-commit`. Он проверяет формат YAML, конец файлов,
+лишние пробелы, конфликтные маркеры, а также через Turbo запускает `cargo fmt`,
+`cargo clippy`, `cargo check`, frontend `eslint` и `tsc`.
+
+Один раз установите зависимости проекта и git hooks. Если `pre-commit` не
+установлен, сначала поставьте его через `pipx install pre-commit` или другим
+удобным способом.
+
+```bash
+pnpm bootstrap
+pre-commit install
+```
+
+Перед коммитом запустите все pre-commit проверки на всем репозитории:
+
+```bash
+pre-commit run --all-files
+```
+
+Дополнительно запустите backend-тесты, потому что они не входят в pre-commit:
 
 ```bash
 cargo test --manifest-path apps/api/api/Cargo.toml --locked
 ```
 
-Frontend:
-
-```bash
-cd apps/web
-npm run typecheck
-npm run lint
-```
+Коммитить можно, когда обе команды завершились без ошибок.

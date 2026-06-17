@@ -9,6 +9,10 @@
         "target/**"
       ]
     },
+    "lint": {},
+    "typecheck": {},
+    "test": {},
+    "format:check": {},
     "dev": {
       "cache": false,
       "persistent": true
