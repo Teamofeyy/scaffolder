@@ -2,7 +2,11 @@
   "name": "api",
   "version": "1.0.0",
   "scripts": {
-    "dev": "cargo watch -x run",
-    "build": "cargo build --release"
+    "dev": "cargo run -p scaf-api --locked",
+    "build": "cargo build --workspace --release --locked",
+    "lint": "cargo clippy --workspace --all-targets -- -D warnings",
+    "typecheck": "cargo check --workspace --locked",
+    "test": "cargo test --workspace --locked",
+    "format:check": "cargo fmt --all --check"
   }
 }

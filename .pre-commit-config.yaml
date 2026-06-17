@@ -9,26 +9,20 @@ repos:
 
   - repo: local
     hooks:
-      - id: api-rustfmt
-        name: api rustfmt
-        entry: bash -lc 'cd apps/api && cargo fmt --all --check'
+      - id: format-check
+        name: format check
+        entry: pnpm format:check
         language: system
         pass_filenames: false
 
-      - id: api-clippy
-        name: api clippy
-        entry: bash -lc 'cd apps/api && cargo clippy --workspace --all-targets -- -D warnings'
+      - id: lint
+        name: lint
+        entry: pnpm lint
         language: system
         pass_filenames: false
 
-      - id: frontend-eslint
-        name: frontend eslint
-        entry: bash -lc 'cd apps/web && npm run lint'
-        language: system
-        pass_filenames: false
-
-      - id: frontend-typecheck
-        name: frontend typecheck
-        entry: bash -lc 'cd apps/web && npm run typecheck'
+      - id: typecheck
+        name: typecheck
+        entry: pnpm typecheck
         language: system
         pass_filenames: false
