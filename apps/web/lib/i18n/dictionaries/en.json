@@ -1,0 +1,126 @@
+{
+  "metadata": {
+    "title": "Frontend Scaffolder - create a project in seconds",
+    "description": "A modern tool for generating frontend project structures"
+  },
+  "header": {
+    "subtitle": "project generator",
+    "theme": "Toggle theme",
+    "language": "Language"
+  },
+  "hero": {
+    "eyebrow": "template generation runtime",
+    "title": "Scaffolder",
+    "description": "Create the structure for your next project in seconds"
+  },
+  "terminal": {
+    "framework": "Framework",
+    "style": "Style",
+    "dependencies": "Dependencies",
+    "ready": "Archive ready in under 5 seconds"
+  },
+  "preview": {
+    "structure": "Structure preview",
+    "description": "Files and folders in your project",
+    "loading": "Loading...",
+    "updating": "Updating...",
+    "unavailable": "Preview unavailable",
+    "error": "Unable to build the preview"
+  },
+  "configuration": {
+    "title": "Project configuration",
+    "description": "Configure your new project",
+    "tabs": {
+      "basic": "General",
+      "styling": "Styling",
+      "tools": "Tools"
+    },
+    "projectName": "Project name",
+    "framework": "Framework",
+    "packageManager": "Package manager",
+    "routing": "Routing",
+    "noRouting": "No routing",
+    "stylingSystem": "Styling system",
+    "stateManagement": "State management",
+    "linter": "Linter",
+    "linterUnavailable": "The linter can only be configured for Next.js projects. Other frameworks use the template defaults.",
+    "dependencies": "Additional dependencies",
+    "dependenciesDescription": "Find an npm package and add it as a runtime or development dependency.",
+    "dependencyPlaceholder": "Search dependencies (axios, zod, bcrypt...)",
+    "selectedDependencies": "Selected dependencies",
+    "dependencySearch": "Searching npm...",
+    "dependencySearchError": "Unable to retrieve results from npm",
+    "dependencyPrompt": "Enter a package name",
+    "dependencyEmpty": "No packages found",
+    "addDependency": "Add {name}",
+    "removeDependency": "Remove {name}",
+    "options": {
+      "viteSpa": "Vite SPA",
+      "reactFullstack": "React full stack",
+      "lightweightTs": "Lightweight TypeScript template",
+      "minimalReactLike": "Minimal React-like library",
+      "localCss": "Locally scoped CSS classes",
+      "none": "Do not use",
+      "noState": "Keep the template without a state layer",
+      "minimalStore": "Minimal store",
+      "structuredState": "Structured state management",
+      "noStateForTemplate": "No state layer is added for this template",
+      "nextLint": "Standard Next.js checks",
+      "fastLint": "Fast formatter and linter",
+      "noLinter": "No linter",
+      "noLinterHint": "Do not add linting configuration"
+    }
+  },
+  "generate": {
+    "validationTitle": "Validation error",
+    "validationFallback": "Check the form fields",
+    "startedTitle": "Starting project generation...",
+    "startedDescription": "This may take a moment",
+    "successTitle": "Project created!",
+    "successDescription": "Archive {filename} was downloaded successfully",
+    "errorTitle": "Project generation failed",
+    "unknownError": "Unknown error",
+    "generating": "Generating project...",
+    "button": "Generate project"
+  },
+  "ai": {
+    "emptyMessage": "Describe the project you want to build",
+    "messageTooLong": "The description is too long",
+    "recommendationError": "Unable to get recommendations",
+    "unavailable": "AI recommendations are unavailable",
+    "appliedTitle": "Recommendations applied",
+    "appliedDescription": "Configuration options and dependencies have been updated",
+    "title": "AI assistant",
+    "subtitle": "Project configuration recommendations",
+    "emptyState": "Describe your project goal and the assistant will suggest a suitable configuration.",
+    "recommendation": "Recommendation",
+    "important": "Important",
+    "willApply": "Changes",
+    "appliedNotice": "The settings were applied. The main form now contains the updated options and dependencies.",
+    "placeholder": "For example: I need a high-traffic delivery website",
+    "applied": "Applied",
+    "apply": "Apply",
+    "send": "Send",
+    "labels": {
+      "framework": "Framework",
+      "packageManager": "Package manager",
+      "routing": "Routing",
+      "styling": "Styling",
+      "linter": "Linter",
+      "state": "State",
+      "dependencies": "Dependencies",
+      "devDependencies": "Dev dependencies"
+    }
+  },
+  "errors": {
+    "projectNameRequired": "Project name is required",
+    "projectNameInvalid": "Project name may only contain lowercase letters, numbers, hyphens, and underscores",
+    "frameworkRequired": "Framework is required",
+    "packageManagerRequired": "Package manager is required",
+    "validation": "Validation error",
+    "build": "Project generation failed",
+    "server": "Server error: {status} {statusText}",
+    "network": "Unable to connect to the server. Make sure the backend is running.",
+    "request": "Request failed"
+  }
+}

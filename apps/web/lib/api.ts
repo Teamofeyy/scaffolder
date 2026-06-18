@@ -8,6 +8,8 @@ import {
   StateManagement,
   Styling,
 } from '@/types/project-config'
+import type { Dictionary } from '@/lib/i18n/dictionaries'
+import type { Locale } from '@/lib/i18n/config'
 
 export interface BackendProjectConfig {
   project_name: string
@@ -79,9 +81,21 @@ export function mapConfigToBackend(config: ProjectConfig): BackendProjectConfig 
 /**
  * Валидация конфигурации перед отправкой
  */
-export function validateConfig(config: ProjectConfig): { valid: boolean; error?: string } {
+type ErrorDictionary = Dictionary["errors"]
+
+function formatMessage(template: string, values: Record<string, string | number>) {
+  return Object.entries(values).reduce(
+    (message, [key, value]) => message.replace(`{${key}}`, String(value)),
+    template,
+  )
+}
+
+export function validateConfig(
+  config: ProjectConfig,
+  errors: ErrorDictionary,
+): { valid: boolean; error?: string } {
   if (!config.projectName || config.projectName.trim() === '') {
-    return { valid: false, error: 'Название проекта обязательно' }
+    return { valid: false, error: errors.projectNameRequired }
   }
 
   // Проверка формата названия проекта (должно быть валидным именем пакета)
@@ -89,16 +103,16 @@ export function validateConfig(config: ProjectConfig): { valid: boolean; error?:
   if (!nameRegex.test(config.projectName)) {
     return {
       valid: false,
-      error: 'Название проекта может содержать только строчные буквы, цифры, дефисы и подчеркивания',
+      error: errors.projectNameInvalid,
     }
   }
 
   if (!config.framework) {
-    return { valid: false, error: 'Фреймворк обязателен' }
+    return { valid: false, error: errors.frameworkRequired }
   }
 
   if (!config.packageManager) {
-    return { valid: false, error: 'Менеджер пакетов обязателен' }
+    return { valid: false, error: errors.packageManagerRequired }
   }
 
   return { valid: true }
@@ -108,11 +122,14 @@ export function validateConfig(config: ProjectConfig): { valid: boolean; error?:
  * Отправка запроса на сборку проекта
  * Возвращает Blob с ZIP архивом
  */
-export async function buildProject(config: ProjectConfig): Promise<Blob> {
+export async function buildProject(
+  config: ProjectConfig,
+  errors: ErrorDictionary,
+): Promise<Blob> {
   // Валидация
-  const validation = validateConfig(config)
+  const validation = validateConfig(config, errors)
   if (!validation.valid) {
-    throw new Error(validation.error || 'Ошибка валидации')
+    throw new Error(validation.error || errors.validation)
   }
 
   // Маппинг конфигурации
@@ -136,38 +153,43 @@ export async function buildProject(config: ProjectConfig): Promise<Blob> {
             const text = await error.response.data.text()
             // Пытаемся распарсить как JSON (ошибки от сервера в формате JSON)
             const errorData = JSON.parse(text)
-            throw new Error(errorData.error || 'Ошибка при сборке проекта')
+            throw new Error(errorData.error || errors.build)
           } catch {
             // Если не JSON, значит это неожиданный формат
-            throw new Error(`Ошибка сервера: ${error.response.status} ${error.response.statusText}`)
+            throw new Error(formatMessage(errors.server, {
+              status: error.response.status,
+              statusText: error.response.statusText,
+            }))
           }
         }
 
         // Если не Blob, пытаемся прочитать как JSON
         if (typeof error.response.data === 'object' && error.response.data !== null) {
           const errorData = error.response.data as { error?: string }
-          throw new Error(errorData.error || 'Ошибка при сборке проекта')
+          throw new Error(errorData.error || errors.build)
         }
 
-        throw new Error(`Ошибка сервера: ${error.response.status} ${error.response.statusText}`)
+        throw new Error(formatMessage(errors.server, {
+          status: error.response.status,
+          statusText: error.response.statusText,
+        }))
       }
 
       // Обработка сетевых ошибок
       if (error.request) {
-        throw new Error('Не удалось подключиться к серверу. Убедитесь, что агент запущен.')
+        throw new Error(errors.network)
       }
 
-      throw new Error(error.message || 'Ошибка при отправке запроса')
+      throw new Error(error.message || errors.request)
     }
     throw error
   }
 }
 
 export async function previewProject(config: ProjectConfig): Promise<ProjectTreeNode> {
-  const validation = validateConfig(config)
   const backendConfig = mapConfigToBackend({
     ...config,
-    projectName: validation.valid ? config.projectName : 'my-project',
+    projectName: config.projectName.trim() || 'my-project',
   })
 
   const response = await axios.post(`${AGENT_URL}/preview`, backendConfig, {
@@ -193,6 +215,7 @@ export async function recommendProjectConfig(
   message: string,
   sessionId: string,
   config: ProjectConfig,
+  locale: Locale,
 ): Promise<AiRecommendationResponse> {
   const currentConfig = mapConfigToBackend({
     ...config,
@@ -202,6 +225,7 @@ export async function recommendProjectConfig(
   const response = await axios.post(`${AGENT_URL}/ai/recommend`, {
     sessionId,
     message,
+    locale,
     currentConfig,
   }, {
     timeout: 35000,

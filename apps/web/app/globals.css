@@ -211,6 +211,30 @@
       inset 0 1px 0 color-mix(in srgb, white 12%, transparent);
   }
 
+  .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+  border-radius: 0.375rem;
+
+  color: var(--primary);
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--card) 92%, var(--primary) 8%),
+      color-mix(in srgb, var(--card) 96%, black 4%)
+    );
+}
+
   .terminal-hero > div:last-child {
     padding-block: 0.8rem;
   }

@@ -8,16 +8,20 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { AiConfigPatch, AiRecommendationResponse, recommendProjectConfig } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { ProjectConfig } from "@/types/project-config"
+import type { Dictionary } from "@/lib/i18n/dictionaries"
+import type { Locale } from "@/lib/i18n/config"
 
 interface AiSidebarProps {
   config: ProjectConfig
   setConfig: (config: ProjectConfig) => void
+  locale: Locale
+  dictionary: Dictionary["ai"]
 }
 
 const SESSION_STORAGE_KEY = "scaffolder_ai_session_id"
 const MAX_MESSAGE_LENGTH = 1500
 
-export function AiSidebar({ config, setConfig }: AiSidebarProps) {
+export function AiSidebar({ config, setConfig, locale, dictionary }: AiSidebarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState("")
   const [recommendation, setRecommendation] = useState<AiRecommendationResponse | null>(null)
@@ -27,18 +31,18 @@ export function AiSidebar({ config, setConfig }: AiSidebarProps) {
 
   const patchRows = useMemo(() => {
     if (!recommendation) return []
-    return configPatchRows(recommendation.configPatch)
-  }, [recommendation])
+    return configPatchRows(recommendation.configPatch, dictionary.labels)
+  }, [recommendation, dictionary.labels])
 
   const handleSubmit = async () => {
     const trimmed = message.trim()
     if (!trimmed) {
-      setError("Опишите, какой проект нужно собрать")
+      setError(dictionary.emptyMessage)
       return
     }
 
     if (trimmed.length > MAX_MESSAGE_LENGTH) {
-      setError("Описание слишком длинное")
+      setError(dictionary.messageTooLong)
       return
     }
 
@@ -47,12 +51,12 @@ export function AiSidebar({ config, setConfig }: AiSidebarProps) {
     setAppliedRequestId(null)
 
     try {
-      const result = await recommendProjectConfig(trimmed, sessionId(), config)
+      const result = await recommendProjectConfig(trimmed, sessionId(), config, locale)
       setRecommendation(result)
     } catch (err) {
-      const description = err instanceof Error ? err.message : "Не удалось получить рекомендации"
+      const description = err instanceof Error ? err.message : dictionary.recommendationError
       setError(description)
-      toast.error("AI-рекомендации недоступны", { description })
+      toast.error(dictionary.unavailable, { description })
     } finally {
       setIsLoading(false)
     }
@@ -63,8 +67,8 @@ export function AiSidebar({ config, setConfig }: AiSidebarProps) {
 
     setConfig(applyConfigPatch(config, recommendation.configPatch))
     setAppliedRequestId(recommendation.requestId)
-    toast.success("Рекомендации применены", {
-      description: "Кнопки выбора и зависимости обновлены в конфигурации",
+    toast.success(dictionary.appliedTitle, {
+      description: dictionary.appliedDescription,
     })
   }
 
@@ -87,8 +91,8 @@ export function AiSidebar({ config, setConfig }: AiSidebarProps) {
                   <Bot className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold leading-5">AI-помощник</h2>
-                  <p className="text-xs text-muted-foreground">Подбор настроек проекта</p>
+                  <h2 className="text-sm font-semibold leading-5">{dictionary.title}</h2>
+                  <p className="text-xs text-muted-foreground">{dictionary.subtitle}</p>
                 </div>
               </div>
               <Button type="button" variant="ghost" size="icon-sm" onClick={() => setIsOpen(false)}>
@@ -102,7 +106,7 @@ export function AiSidebar({ config, setConfig }: AiSidebarProps) {
                   <div className="rounded-md border border-border/60 bg-muted/20 px-4 py-8 text-center">
                     <Wand2 className="mx-auto mb-3 h-6 w-6 text-primary" />
                     <p className="text-sm text-muted-foreground">
-                      Опишите цель проекта, и помощник предложит подходящую конфигурацию.
+                      {dictionary.emptyState}
                     </p>
                   </div>
                 )}
@@ -118,14 +122,14 @@ export function AiSidebar({ config, setConfig }: AiSidebarProps) {
                     <div className="space-y-2 rounded-md border border-border/60 bg-card px-3 py-3">
                       <div className="flex items-center gap-2 text-sm font-semibold">
                         <Wand2 className="h-4 w-4 text-primary" />
-                        Рекомендация
+                        {dictionary.recommendation}
                       </div>
                       <p className="text-sm leading-6 text-muted-foreground">{recommendation.message}</p>
                     </div>
 
                     {recommendation.warnings.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-sm font-semibold">Важно</p>
+                        <p className="text-sm font-semibold">{dictionary.important}</p>
                         <div className="space-y-2">
                           {recommendation.warnings.map((warning) => (
                             <p
@@ -141,7 +145,7 @@ export function AiSidebar({ config, setConfig }: AiSidebarProps) {
 
                     {patchRows.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-sm font-semibold">Будет применено</p>
+                        <p className="text-sm font-semibold">{dictionary.willApply}</p>
                         <div className="space-y-1 rounded-md border border-border/60 bg-card p-2">
                           {patchRows.map((row) => (
                             <div key={row.label} className="flex items-start justify-between gap-3 rounded-md px-2 py-1.5 text-sm">
@@ -155,7 +159,7 @@ export function AiSidebar({ config, setConfig }: AiSidebarProps) {
 
                     {appliedRequestId === recommendation.requestId && (
                       <p className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary">
-                        Настройки применены. В основной форме уже обновлены выбранные кнопки и зависимости.
+                        {dictionary.appliedNotice}
                       </p>
                     )}
                   </>
@@ -167,7 +171,7 @@ export function AiSidebar({ config, setConfig }: AiSidebarProps) {
               <textarea
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
-                placeholder="Например: хочу разработать высоконагруженный сайт для доставки"
+                placeholder={dictionary.placeholder}
                 maxLength={MAX_MESSAGE_LENGTH}
                 className="min-h-28 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               />
@@ -183,12 +187,14 @@ export function AiSidebar({ config, setConfig }: AiSidebarProps) {
                       disabled={appliedRequestId === recommendation.requestId}
                     >
                       <Check className={cn("h-4 w-4", appliedRequestId === recommendation.requestId && "text-primary")} />
-                      {appliedRequestId === recommendation.requestId ? "Применено" : "Применить"}
+                      {appliedRequestId === recommendation.requestId
+                        ? dictionary.applied
+                        : dictionary.apply}
                     </Button>
                   )}
                   <Button type="button" size="sm" onClick={handleSubmit} disabled={isLoading}>
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                    Отправить
+                    {dictionary.send}
                   </Button>
                 </div>
               </div>
@@ -224,17 +230,20 @@ function applyConfigPatch(config: ProjectConfig, patch: AiConfigPatch): ProjectC
   }
 }
 
-function configPatchRows(patch: AiConfigPatch) {
+function configPatchRows(
+  patch: AiConfigPatch,
+  labels: Dictionary["ai"]["labels"],
+) {
   const rows: { label: string; value: string }[] = []
 
-  if (patch.framework) rows.push({ label: "Фреймворк", value: patch.framework })
-  if (patch.package_manager) rows.push({ label: "Пакетный менеджер", value: patch.package_manager })
-  if (patch.routing) rows.push({ label: "Роутинг", value: patch.routing })
-  if (patch.styling) rows.push({ label: "Стили", value: patch.styling })
-  if (patch.linting) rows.push({ label: "Линтер", value: patch.linting })
-  if (patch.state_management) rows.push({ label: "State", value: patch.state_management })
-  if (patch.dependencies?.length) rows.push({ label: "Dependencies", value: patch.dependencies.join(", ") })
-  if (patch.dev_dependencies?.length) rows.push({ label: "Dev dependencies", value: patch.dev_dependencies.join(", ") })
+  if (patch.framework) rows.push({ label: labels.framework, value: patch.framework })
+  if (patch.package_manager) rows.push({ label: labels.packageManager, value: patch.package_manager })
+  if (patch.routing) rows.push({ label: labels.routing, value: patch.routing })
+  if (patch.styling) rows.push({ label: labels.styling, value: patch.styling })
+  if (patch.linting) rows.push({ label: labels.linter, value: patch.linting })
+  if (patch.state_management) rows.push({ label: labels.state, value: patch.state_management })
+  if (patch.dependencies?.length) rows.push({ label: labels.dependencies, value: patch.dependencies.join(", ") })
+  if (patch.dev_dependencies?.length) rows.push({ label: labels.devDependencies, value: patch.dev_dependencies.join(", ") })
 
   return rows
 }
