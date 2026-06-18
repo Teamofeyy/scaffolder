@@ -67,12 +67,22 @@ fn patch_package_json(workspace: &Path, config: &ProjectConfig, plan: &ResolvedP
     merge_dependencies(
         &mut root,
         "dependencies",
-        collect_dependencies(&config.dependencies, plan, DependencyKind::Production)?,
+        collect_dependencies(
+            &config.dependencies,
+            config,
+            plan,
+            DependencyKind::Production,
+        )?,
     );
     merge_dependencies(
         &mut root,
         "devDependencies",
-        collect_dependencies(&config.dev_dependencies, plan, DependencyKind::Development)?,
+        collect_dependencies(
+            &config.dev_dependencies,
+            config,
+            plan,
+            DependencyKind::Development,
+        )?,
     );
 
     if let Some(obj) = root.as_object_mut() {
@@ -120,6 +130,7 @@ struct DependencyPreset {
 
 fn collect_dependencies(
     user_dependencies: &[String],
+    config: &ProjectConfig,
     plan: &ResolvedPlan,
     kind: DependencyKind,
 ) -> Result<HashMap<String, String>> {
@@ -132,15 +143,17 @@ fn collect_dependencies(
 
     let presets = dependency_presets()?;
     for feature in &plan.selected {
-        let Some(preset) = presets.get(feature_preset_key(feature)) else {
-            continue;
-        };
-        let preset_deps = match kind {
-            DependencyKind::Production => &preset.dependencies,
-            DependencyKind::Development => &preset.dev_dependencies,
-        };
-        for (name, version) in preset_deps {
-            deps.entry(name.clone()).or_insert_with(|| version.clone());
+        for preset_key in feature_preset_keys(feature, config) {
+            let Some(preset) = presets.get(preset_key) else {
+                continue;
+            };
+            let preset_deps = match kind {
+                DependencyKind::Production => &preset.dependencies,
+                DependencyKind::Development => &preset.dev_dependencies,
+            };
+            for (name, version) in preset_deps {
+                deps.entry(name.clone()).or_insert_with(|| version.clone());
+            }
         }
     }
 
@@ -151,16 +164,19 @@ fn dependency_presets() -> Result<HashMap<String, DependencyPreset>> {
     serde_json::from_str(include_str!("../dependency-presets.json")).map_err(Into::into)
 }
 
-fn feature_preset_key(feature: &Feature) -> &'static str {
+fn feature_preset_keys(feature: &Feature, config: &ProjectConfig) -> Vec<&'static str> {
     match feature {
-        Feature::Tailwind => "tailwind",
-        Feature::ReactRouter => "react-router",
-        Feature::VueRouter => "vue-router",
-        Feature::Zustand => "zustand",
-        Feature::Redux => "redux",
-        Feature::Jotai => "jotai",
-        Feature::Biome => "biome",
-        _ => "",
+        Feature::Tailwind if config.framework == crate::schema::Framework::Nextjs => {
+            vec!["tailwind", "tailwind-next"]
+        }
+        Feature::Tailwind => vec!["tailwind", "tailwind-vite"],
+        Feature::ReactRouter => vec!["react-router"],
+        Feature::VueRouter => vec!["vue-router"],
+        Feature::Zustand => vec!["zustand"],
+        Feature::Redux => vec!["redux"],
+        Feature::Jotai => vec!["jotai"],
+        Feature::Biome => vec!["biome"],
+        _ => vec![],
     }
 }
 
@@ -303,12 +319,12 @@ struct PatchBundleFile {
 
 #[derive(Debug, Deserialize)]
 struct PatchEditSpec {
-    /// Supported: replace | append | insertAfter | insertBefore
+    /// Supported: replace | append | insertAfter | insertBefore | delete
     mode: String,
     /// Path relative to project root, e.g. "README.md" or "src/index.css"
     target: String,
     /// Path relative to bundle dir, e.g. "snippets/globals.css.snippet"
-    template: String,
+    template: Option<String>,
     /// Anchor substring in target content for insertBefore/insertAfter
     anchor: Option<String>,
     /// If true and target does not exist -> skip this edit
@@ -454,7 +470,24 @@ fn apply_patch_edit(
     config: &ProjectConfig,
 ) -> Result<()> {
     let target_path = workspace.join(&edit.target);
-    let template_path = bundle_dir.join(&edit.template);
+
+    if edit.mode == "delete" {
+        if target_path.is_dir() {
+            fs::remove_dir_all(&target_path)?;
+        } else if target_path.exists() {
+            fs::remove_file(&target_path)?;
+        }
+        return Ok(());
+    }
+
+    let template = edit.template.as_deref().ok_or_else(|| {
+        color_eyre::eyre::eyre!(
+            "mode={} requires `template` for target={}",
+            edit.mode,
+            edit.target
+        )
+    })?;
+    let template_path = bundle_dir.join(template);
 
     if !template_path.exists() {
         // Template missing in bundle - treat as bundle author error, but don't crash the whole generator.
@@ -638,5 +671,133 @@ mod tests {
         let cands = patch_bundle_candidates_in_apply_order(&config, &plan);
         assert_eq!(cands[0], "default");
         assert_eq!(cands.last().unwrap(), "react-ts-react-router-tailwind");
+    }
+
+    #[test]
+    fn tailwind_without_router_gets_framework_tailwind_bundle() {
+        use crate::schema::{
+            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
+        };
+        let config = ProjectConfig {
+            project_name: "x".to_owned(),
+            framework: Framework::React,
+            package_manager: PackageManager::Npm,
+            styling: Styling::Tailwind,
+            linting: Linting::Eslint,
+            state_management: StateManagement::None,
+            routing: Routing::None,
+            dependencies: vec![],
+            dev_dependencies: vec![],
+        };
+        let plan = ResolvedPlan {
+            selected: vec![Feature::React, Feature::Tailwind],
+            ordered: vec![],
+        };
+
+        let cands = patch_bundle_candidates(&config, &plan);
+        assert!(cands.contains(&"react-ts-tailwind".to_owned()));
+    }
+
+    #[test]
+    fn tailwind_dependencies_match_framework_integration() {
+        use crate::schema::{
+            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
+        };
+        let plan = ResolvedPlan {
+            selected: vec![Feature::Tailwind],
+            ordered: vec![],
+        };
+        let mut config = ProjectConfig {
+            project_name: "x".to_owned(),
+            framework: Framework::React,
+            package_manager: PackageManager::Npm,
+            styling: Styling::Tailwind,
+            linting: Linting::Eslint,
+            state_management: StateManagement::None,
+            routing: Routing::None,
+            dependencies: vec![],
+            dev_dependencies: vec![],
+        };
+
+        let vite_dependencies =
+            collect_dependencies(&[], &config, &plan, DependencyKind::Development)
+                .expect("vite dependencies");
+        assert!(vite_dependencies.contains_key("tailwindcss"));
+        assert!(vite_dependencies.contains_key("@tailwindcss/vite"));
+        assert!(!vite_dependencies.contains_key("@tailwindcss/postcss"));
+        assert!(!vite_dependencies.contains_key("postcss"));
+
+        config.framework = Framework::Nextjs;
+        let next_dependencies =
+            collect_dependencies(&[], &config, &plan, DependencyKind::Development)
+                .expect("next dependencies");
+        assert!(next_dependencies.contains_key("tailwindcss"));
+        assert!(next_dependencies.contains_key("@tailwindcss/postcss"));
+        assert!(next_dependencies.contains_key("postcss"));
+        assert!(!next_dependencies.contains_key("@tailwindcss/vite"));
+    }
+
+    #[test]
+    fn next_pages_router_gets_pages_bundle() {
+        use crate::schema::{
+            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
+        };
+        let config = ProjectConfig {
+            project_name: "x".to_owned(),
+            framework: Framework::Nextjs,
+            package_manager: PackageManager::Npm,
+            styling: Styling::CssModules,
+            linting: Linting::Eslint,
+            state_management: StateManagement::None,
+            routing: Routing::PagesRouter,
+            dependencies: vec![],
+            dev_dependencies: vec![],
+        };
+        let plan = ResolvedPlan {
+            selected: vec![Feature::Nextjs],
+            ordered: vec![],
+        };
+
+        let cands = patch_bundle_candidates(&config, &plan);
+        assert!(cands.contains(&"nextjs-pages-router".to_owned()));
+    }
+
+    #[test]
+    fn delete_patch_removes_directory_tree() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let app_dir = temp.path().join("app");
+        std::fs::create_dir_all(&app_dir).expect("create dir");
+        std::fs::write(
+            app_dir.join("page.tsx"),
+            "export default function Page() {}",
+        )
+        .expect("write page");
+
+        let config = ProjectConfig {
+            project_name: "x".to_owned(),
+            framework: crate::schema::Framework::Nextjs,
+            package_manager: crate::schema::PackageManager::Npm,
+            styling: crate::schema::Styling::CssModules,
+            linting: crate::schema::Linting::Eslint,
+            state_management: crate::schema::StateManagement::None,
+            routing: crate::schema::Routing::PagesRouter,
+            dependencies: vec![],
+            dev_dependencies: vec![],
+        };
+        let edit = PatchEditSpec {
+            mode: "delete".to_owned(),
+            target: "app".to_owned(),
+            template: None,
+            anchor: None,
+            skip_if_missing_target: false,
+            only_if_features: vec![],
+            unless_features: vec![],
+            only_if_frameworks: vec![],
+            only_if_routing: vec![],
+            only_if_styling: vec![],
+        };
+
+        apply_patch_edit(temp.path(), temp.path(), &edit, &config).expect("delete patch");
+        assert!(!app_dir.exists());
     }
 }
