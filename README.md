@@ -2,6 +2,18 @@
 
 Веб-сервис для генерации базовой структуры frontend-проекта по выбранным параметрам. Пользователь выбирает стек, дополнительные библиотеки и получает ZIP-архив с готовым шаблоном.
 
+## Project policies
+
+- [License](LICENSE)
+- [Changelog](CHANGELOG.md)
+- [Current release notes](RELEASE_NOTES.md)
+- [Contributing guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Support policy](SUPPORT.md)
+- [Supported combinations](SUPPORTED_COMBINATIONS.md)
+- [Template compatibility policy](TEMPLATE_COMPATIBILITY.md)
+- [Versioning and migration policy](VERSIONING.md)
+
 ## Возможности
 
 - Выбор frontend-шаблона: React, Vue, Svelte, Solid, Preact, Nuxt, Angular.

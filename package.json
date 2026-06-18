@@ -1,6 +1,6 @@
 {
   "name": "scaffolder",
-  "version": "1.0.0",
+  "version": "0.9.0-beta.1",
   "private": true,
   "scripts": {
     "bootstrap": "pnpm install && cargo fetch --manifest-path apps/api/Cargo.toml --locked",
@@ -23,7 +23,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "packageManager": "pnpm@10.10.0",
   "devDependencies": {
     "turbo": "^2.9.9"
