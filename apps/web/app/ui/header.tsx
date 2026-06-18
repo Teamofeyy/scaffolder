@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Code2, Github, Moon, Sun } from "lucide-react"
+import { Github, Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
@@ -33,9 +34,7 @@ export function Header({ locale, dictionary }: HeaderProps) {
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/75 backdrop-blur-xl">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between max-w-7xl">
         <div className="flex items-center gap-3">
-          <div className="rounded-md border border-primary/30 bg-primary/10 p-2 shadow-[0_0_24px_color-mix(in_srgb,var(--primary)_25%,transparent)]">
-            <Code2 className="h-6 w-6 text-primary" />
-          </div>
+          <Image src="/brand-mark.svg" alt="" width={40} height={40} priority />
           <div>
             <span className="block text-xl font-bold leading-5">Scaffolder</span>
             <span className="block font-mono text-xs text-muted-foreground">
