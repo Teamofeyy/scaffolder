@@ -143,5 +143,3 @@ pre-commit run --all-files
 ```bash
 cargo test --manifest-path apps/api/api/Cargo.toml --locked
 ```
-
-Коммитить можно, когда обе команды завершились без ошибок.
