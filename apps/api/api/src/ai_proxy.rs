@@ -16,6 +16,7 @@ const AI_PROXY_TIMEOUT: Duration = Duration::from_secs(30);
 pub struct AiRecommendRequest {
     pub session_id: String,
     pub message: String,
+    pub locale: String,
     pub current_config: ProjectConfig,
 }
 
@@ -25,6 +26,7 @@ struct AiProxyRequest {
     request_id: String,
     session_id: String,
     message: String,
+    locale: String,
     current_config: ProjectConfig,
 }
 
@@ -91,6 +93,7 @@ pub async fn recommend(Json(req): Json<AiRecommendRequest>) -> impl IntoResponse
         request_id: request_id.clone(),
         session_id: session_id.to_owned(),
         message: message.to_owned(),
+        locale: req.locale,
         current_config: req.current_config,
     };
 

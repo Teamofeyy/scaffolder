@@ -1,3 +1,5 @@
+import type { Dictionary } from "@/lib/i18n/dictionaries"
+
 export type Framework =
   | "react"
   | "nextjs"
@@ -86,14 +88,18 @@ export type ConfigValue = ProjectConfig[ConfigKey]
 export interface ConfigurationPanelProps {
   config: ProjectConfig
   setConfig: (config: ProjectConfig) => void
+  dictionary: Dictionary["configuration"]
 }
 
 export interface PreviewPanelProps {
   config: ProjectConfig
+  dictionary: Dictionary["preview"]
 }
 
 export interface GenerateButtonProps {
   config: ProjectConfig
+  dictionary: Dictionary["generate"]
+  errors: Dictionary["errors"]
 }
 
 // --------------------------------------

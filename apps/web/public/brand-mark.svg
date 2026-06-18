@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Scaffolder">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#14251d"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="13.25" fill="none" stroke="#5fbf78" stroke-opacity=".42" stroke-width="1.5"/>
+  <g fill="none" stroke="#72d58b" stroke-linecap="round" stroke-linejoin="round" stroke-width="4">
+    <path d="m24 21-11 11 11 11"/>
+    <path d="m40 21 11 11-11 11"/>
+    <path d="m36 15-8 34"/>
+  </g>
+</svg>
