@@ -1,0 +1,126 @@
+{
+  "metadata": {
+    "title": "Frontend Scaffolder - создайте проект за секунды",
+    "description": "Современный инструмент для генерации структуры frontend-проектов"
+  },
+  "header": {
+    "subtitle": "генератор проектов",
+    "theme": "Переключить тему",
+    "language": "Язык"
+  },
+  "hero": {
+    "eyebrow": "среда генерации шаблонов",
+    "title": "Scaffolder",
+    "description": "Создайте структуру следующего проекта за считанные секунды"
+  },
+  "terminal": {
+    "framework": "Фреймворк",
+    "style": "Стили",
+    "dependencies": "Зависимости",
+    "ready": "Архив готов менее чем за 5 секунд"
+  },
+  "preview": {
+    "structure": "Предпросмотр структуры",
+    "description": "Файлы и папки вашего проекта",
+    "loading": "Загрузка...",
+    "updating": "Обновление...",
+    "unavailable": "Предпросмотр недоступен",
+    "error": "Не удалось построить предпросмотр"
+  },
+  "configuration": {
+    "title": "Конфигурация проекта",
+    "description": "Настройте параметры вашего нового проекта",
+    "tabs": {
+      "basic": "Основное",
+      "styling": "Стили",
+      "tools": "Инструменты"
+    },
+    "projectName": "Название проекта",
+    "framework": "Фреймворк",
+    "packageManager": "Менеджер пакетов",
+    "routing": "Роутинг",
+    "noRouting": "Без роутинга",
+    "stylingSystem": "Система стилизации",
+    "stateManagement": "Управление состоянием",
+    "linter": "Линтер",
+    "linterUnavailable": "Линтер настраивается только для Next.js проектов. Для других фреймворков будут использованы настройки шаблона.",
+    "dependencies": "Дополнительные зависимости",
+    "dependenciesDescription": "Найдите пакет в npm и добавьте его как runtime или dev dependency.",
+    "dependencyPlaceholder": "Поиск зависимости (axios, zod, bcrypt...)",
+    "selectedDependencies": "Выбранные зависимости",
+    "dependencySearch": "Поиск в npm...",
+    "dependencySearchError": "Не удалось получить результаты из npm",
+    "dependencyPrompt": "Введите название пакета",
+    "dependencyEmpty": "Ничего не найдено",
+    "addDependency": "Добавить {name}",
+    "removeDependency": "Удалить {name}",
+    "options": {
+      "viteSpa": "SPA на Vite",
+      "reactFullstack": "React fullstack",
+      "lightweightTs": "Легкий TS шаблон",
+      "minimalReactLike": "Минимальный React-like",
+      "localCss": "Локальные CSS-классы",
+      "none": "Не использовать",
+      "noState": "Оставить шаблон без state layer",
+      "minimalStore": "Минимальный store",
+      "structuredState": "Структурированный state",
+      "noStateForTemplate": "Для этого шаблона state layer не добавляется",
+      "nextLint": "Стандартная проверка Next.js",
+      "fastLint": "Быстрый formatter/linter",
+      "noLinter": "Без линтера",
+      "noLinterHint": "Не добавлять настройку"
+    }
+  },
+  "generate": {
+    "validationTitle": "Ошибка валидации",
+    "validationFallback": "Проверьте заполнение формы",
+    "startedTitle": "Начало сборки проекта...",
+    "startedDescription": "Это может занять некоторое время",
+    "successTitle": "Проект создан!",
+    "successDescription": "Архив {filename} скачан успешно",
+    "errorTitle": "Ошибка при сборке проекта",
+    "unknownError": "Неизвестная ошибка",
+    "generating": "Генерация проекта...",
+    "button": "Сгенерировать проект"
+  },
+  "ai": {
+    "emptyMessage": "Опишите, какой проект нужно собрать",
+    "messageTooLong": "Описание слишком длинное",
+    "recommendationError": "Не удалось получить рекомендации",
+    "unavailable": "AI-рекомендации недоступны",
+    "appliedTitle": "Рекомендации применены",
+    "appliedDescription": "Кнопки выбора и зависимости обновлены в конфигурации",
+    "title": "AI-помощник",
+    "subtitle": "Подбор настроек проекта",
+    "emptyState": "Опишите цель проекта, и помощник предложит подходящую конфигурацию.",
+    "recommendation": "Рекомендация",
+    "important": "Важно",
+    "willApply": "Будет применено",
+    "appliedNotice": "Настройки применены. В основной форме уже обновлены выбранные кнопки и зависимости.",
+    "placeholder": "Например: хочу разработать высоконагруженный сайт для доставки",
+    "applied": "Применено",
+    "apply": "Применить",
+    "send": "Отправить",
+    "labels": {
+      "framework": "Фреймворк",
+      "packageManager": "Пакетный менеджер",
+      "routing": "Роутинг",
+      "styling": "Стили",
+      "linter": "Линтер",
+      "state": "Состояние",
+      "dependencies": "Зависимости",
+      "devDependencies": "Dev-зависимости"
+    }
+  },
+  "errors": {
+    "projectNameRequired": "Название проекта обязательно",
+    "projectNameInvalid": "Название проекта может содержать только строчные буквы, цифры, дефисы и подчеркивания",
+    "frameworkRequired": "Фреймворк обязателен",
+    "packageManagerRequired": "Менеджер пакетов обязателен",
+    "validation": "Ошибка валидации",
+    "build": "Ошибка при сборке проекта",
+    "server": "Ошибка сервера: {status} {statusText}",
+    "network": "Не удалось подключиться к серверу. Убедитесь, что backend запущен.",
+    "request": "Ошибка при отправке запроса"
+  }
+}

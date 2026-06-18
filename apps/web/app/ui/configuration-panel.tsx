@@ -27,7 +27,10 @@ function defaultRoutingForFramework(framework: Framework): Routing {
   return "none";
 }
 
-function routingOptionsForFramework(framework: Framework): { value: Routing; label: string }[] {
+function routingOptionsForFramework(
+  framework: Framework,
+  noRouting: string,
+): { value: Routing; label: string }[] {
   if (framework === "nextjs") {
     return [
       { value: "app-router", label: "App Router" },
@@ -39,63 +42,29 @@ function routingOptionsForFramework(framework: Framework): { value: Routing; lab
     return [
       { value: "react-router", label: "React Router" },
       { value: "react-router-data", label: "React Router Data" },
-      { value: "none", label: "Без роутинга" },
+      { value: "none", label: noRouting },
     ];
   }
 
   if (framework === "vue" || framework === "vue-ts" || framework === "nuxt-ts") {
     return [
       { value: "vue-router", label: "Vue Router" },
-      { value: "none", label: "Без роутинга" },
+      { value: "none", label: noRouting },
     ];
   }
 
-  return [{ value: "none", label: "Без роутинга" }];
+  return [{ value: "none", label: noRouting }];
 }
 
 function supportsReactState(framework: Framework) {
   return framework === "react" || framework === "react-ts" || framework === "nextjs";
 }
 
-const frameworkOptions: { value: Framework; label: string; hint: string }[] = [
-  { value: "react", label: "React", hint: "SPA на Vite" },
-  { value: "nextjs", label: "Next.js", hint: "React fullstack" },
-  { value: "vue", label: "Vue", hint: "SPA на Vite" },
-  { value: "svelte-ts", label: "Svelte", hint: "Легкий TS шаблон" },
-  { value: "solid-ts", label: "Solid", hint: "Fine-grained UI" },
-  { value: "preact-ts", label: "Preact", hint: "Минимальный React-like" },
-  { value: "nuxt-ts", label: "Nuxt", hint: "Vue fullstack" },
-  { value: "angular-ts", label: "Angular", hint: "Enterprise SPA" },
-]
-
 const packageManagers: { value: PackageManager; label: string }[] = [
   { value: "npm", label: "npm" },
   { value: "pnpm", label: "pnpm" },
   { value: "yarn", label: "Yarn" },
   { value: "bun", label: "Bun" },
-]
-
-const stylingOptions: { value: Styling; label: string; hint: string }[] = [
-  { value: "tailwind", label: "Tailwind", hint: "Utility-first CSS" },
-  { value: "css-modules", label: "CSS Modules", hint: "Локальные CSS-классы" },
-  { value: "styled-components", label: "Styled Components", hint: "CSS-in-JS" },
-]
-
-const reactStateOptions: { value: StateManagement; label: string; hint: string }[] = [
-  { value: "none", label: "Не использовать", hint: "Оставить шаблон без state layer" },
-  { value: "zustand", label: "Zustand", hint: "Минимальный store" },
-  { value: "redux", label: "Redux Toolkit", hint: "Структурированный state" },
-  { value: "jotai", label: "Jotai", hint: "Atom-based state" },
-]
-
-const nonReactStateOptions: { value: StateManagement; label: string; hint: string }[] = [
-  { value: "none", label: "Не использовать", hint: "Для этого шаблона state layer не добавляется" },
-]
-
-const lintingOptions: { value: Linting; label: string; hint: string }[] = [
-  { value: "eslint", label: "ESLint", hint: "Стандартная проверка Next.js" },
-  { value: "biome", label: "Biome", hint: "Быстрый formatter/linter" },
-  { value: "none", label: "Без линтера", hint: "Не добавлять настройку" },
 ]
 
 type DependencyListItem = {
@@ -116,7 +85,11 @@ function dependencyToken(dep: DependencyListItem) {
   return dep.version ? `${dep.name}@^${dep.version}` : dep.id
 }
 
-export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProps) {
+export function ConfigurationPanel({
+  config,
+  setConfig,
+  dictionary,
+}: ConfigurationPanelProps) {
   const [dependencyQuery, setDependencyQuery] = useState("");
   const [npmResults, setNpmResults] = useState<DependencySearchResult[]>([]);
   const [isSearchingDependencies, setIsSearchingDependencies] = useState(false);
@@ -124,7 +97,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
   const updateConfig = (key: ConfigKey, value: ConfigValue) => {
     if (key === "framework") {
       const framework = value as Framework;
-      const options = routingOptionsForFramework(framework);
+      const options = routingOptionsForFramework(framework, dictionary.noRouting);
       const currentRoutingStillValid = options.some((option) => option.value === config.routing);
       setConfig({
         ...config,
@@ -142,7 +115,36 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
     setConfig({ ...config, linting: value })
   }
 
-  const routingOptions = routingOptionsForFramework(config.framework);
+  const frameworkOptions: { value: Framework; label: string; hint: string }[] = [
+    { value: "react", label: "React", hint: dictionary.options.viteSpa },
+    { value: "nextjs", label: "Next.js", hint: dictionary.options.reactFullstack },
+    { value: "vue", label: "Vue", hint: dictionary.options.viteSpa },
+    { value: "svelte-ts", label: "Svelte", hint: dictionary.options.lightweightTs },
+    { value: "solid-ts", label: "Solid", hint: "Fine-grained UI" },
+    { value: "preact-ts", label: "Preact", hint: dictionary.options.minimalReactLike },
+    { value: "nuxt-ts", label: "Nuxt", hint: "Vue full stack" },
+    { value: "angular-ts", label: "Angular", hint: "Enterprise SPA" },
+  ]
+  const stylingOptions: { value: Styling; label: string; hint: string }[] = [
+    { value: "tailwind", label: "Tailwind", hint: "Utility-first CSS" },
+    { value: "css-modules", label: "CSS Modules", hint: dictionary.options.localCss },
+    { value: "styled-components", label: "Styled Components", hint: "CSS-in-JS" },
+  ]
+  const reactStateOptions: { value: StateManagement; label: string; hint: string }[] = [
+    { value: "none", label: dictionary.options.none, hint: dictionary.options.noState },
+    { value: "zustand", label: "Zustand", hint: dictionary.options.minimalStore },
+    { value: "redux", label: "Redux Toolkit", hint: dictionary.options.structuredState },
+    { value: "jotai", label: "Jotai", hint: "Atom-based state" },
+  ]
+  const nonReactStateOptions: { value: StateManagement; label: string; hint: string }[] = [
+    { value: "none", label: dictionary.options.none, hint: dictionary.options.noStateForTemplate },
+  ]
+  const lintingOptions: { value: Linting; label: string; hint: string }[] = [
+    { value: "eslint", label: "ESLint", hint: dictionary.options.nextLint },
+    { value: "biome", label: "Biome", hint: dictionary.options.fastLint },
+    { value: "none", label: dictionary.options.noLinter, hint: dictionary.options.noLinterHint },
+  ]
+  const routingOptions = routingOptionsForFramework(config.framework, dictionary.noRouting);
   const stateOptions = supportsReactState(config.framework) ? reactStateOptions : nonReactStateOptions;
   const remoteDependencies = npmResults.map((dep) => ({
     id: `${dep.name}@${dep.version}`,
@@ -185,7 +187,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
         .catch(() => {
           if (!cancelled) {
             setNpmResults([]);
-            setDependencySearchError("Не удалось получить результаты из npm");
+            setDependencySearchError(dictionary.dependencySearchError);
           }
         })
         .finally(() => {
@@ -197,28 +199,28 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [dependencyQuery]);
+  }, [dependencyQuery, dictionary.dependencySearchError]);
 
   return (
     <Card className="gap-4 border-border/50 py-4 shadow-lg">
       <CardHeader className="px-5">
         <CardTitle className="flex items-center gap-2">
           <Settings2 className="h-5 w-5 text-primary" />
-          Конфигурация проекта
+          {dictionary.title}
         </CardTitle>
-        <CardDescription>Настройте параметры вашего нового проекта</CardDescription>
+        <CardDescription>{dictionary.description}</CardDescription>
       </CardHeader>
       <CardContent className="px-5">
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="basic">Основное</TabsTrigger>
-            <TabsTrigger value="styling">Стили</TabsTrigger>
-            <TabsTrigger value="tools">Инструменты</TabsTrigger>
+            <TabsTrigger value="basic">{dictionary.tabs.basic}</TabsTrigger>
+            <TabsTrigger value="styling">{dictionary.tabs.styling}</TabsTrigger>
+            <TabsTrigger value="tools">{dictionary.tabs.tools}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label htmlFor="projectName">Название проекта</Label>
+              <Label htmlFor="projectName">{dictionary.projectName}</Label>
               <Input
                 id="projectName"
                 placeholder="my-awesome-app"
@@ -228,8 +230,8 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
             </div>
 
             <div className="space-y-2">
-              <Label>Фреймворк</Label>
-              <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 2xl:grid-cols-4" role="radiogroup" aria-label="Фреймворк">
+              <Label>{dictionary.framework}</Label>
+              <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 2xl:grid-cols-4" role="radiogroup" aria-label={dictionary.framework}>
                 {frameworkOptions.map((option) => {
                   const selected = config.framework === option.value
                   return (
@@ -255,8 +257,8 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
             </div>
 
             <div className="space-y-2">
-              <Label>Менеджер пакетов</Label>
-              <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label="Менеджер пакетов">
+              <Label>{dictionary.packageManager}</Label>
+              <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label={dictionary.packageManager}>
                 {packageManagers.map((manager) => {
                   const selected = config.packageManager === manager.value
                   return (
@@ -281,8 +283,8 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
             </div>
 
             <div className="space-y-2">
-              <Label>Роутинг</Label>
-              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Роутинг">
+              <Label>{dictionary.routing}</Label>
+              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={dictionary.routing}>
                 {routingOptions.map((option) => {
                   const selected = config.routing === option.value
                   return (
@@ -312,9 +314,9 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
             <div className="space-y-2">
               <Label htmlFor="styling" className="flex items-center gap-2">
                 <Palette className="h-4 w-4" />
-                Система стилизации
+                {dictionary.stylingSystem}
               </Label>
-              <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label="Система стилизации">
+              <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label={dictionary.stylingSystem}>
                 {stylingOptions.map((option) => {
                   const selected = config.styling === option.value
                   return (
@@ -342,7 +344,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
             <div className="space-y-2">
               <Label htmlFor="stateManagement" className="flex items-center gap-2">
                 <Package className="h-4 w-4" />
-                State Management
+                {dictionary.stateManagement}
               </Label>
               <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label="State Management">
                 {stateOptions.map((option) => {
@@ -374,10 +376,10 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
             {/* Linting options */}
             <div className="space-y-2">
               <Label htmlFor="linting" className="flex items-center gap-2">
-                Линтер
+                {dictionary.linter}
               </Label>
               {config.framework === "nextjs" ? (
-                <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label="Линтер">
+                <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label={dictionary.linter}>
                   {lintingOptions.map((option) => {
                     const selected = config.linting === option.value
                     return (
@@ -402,7 +404,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Линтер настраивается только для Next.js проектов. Для других фреймворков будут использованы настройки шаблона.
+                  {dictionary.linterUnavailable}
                 </p>
               )}
             </div>
@@ -413,16 +415,16 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
               <div className="space-y-0.5">
                   <Label className="flex items-center gap-2">
                     <Search className="h-4 w-4" />
-                    Дополнительные зависимости
+                    {dictionary.dependencies}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Найдите пакет в npm и добавьте его как runtime или dev dependency.
+                    {dictionary.dependenciesDescription}
                   </p>
                 </div>
               </div>
 
               <Input
-                placeholder="Поиск зависимости (axios, zod, bcrypt...)"
+                placeholder={dictionary.dependencyPlaceholder}
                 className="mt-1"
                 value={dependencyQuery}
                 onChange={(e) => setDependencyQuery(e.target.value)}
@@ -430,13 +432,14 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
 
               {(config.dependencies.length > 0 || config.devDependencies.length > 0) && (
                 <div className="space-y-2 rounded-md border border-border/50 bg-muted/20 p-3">
-                  <p className="text-sm font-medium">Выбранные зависимости</p>
+                  <p className="text-sm font-medium">{dictionary.selectedDependencies}</p>
                   <div className="space-y-2">
                     {config.dependencies.map((dependency) => (
                       <SelectedDependency
                         key={`prod-${dependency}`}
                         dependency={dependency}
                         label="dep"
+                        removeLabel={dictionary.removeDependency}
                         onRemove={() => removeDependency("prod", dependency)}
                       />
                     ))}
@@ -445,6 +448,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                         key={`dev-${dependency}`}
                         dependency={dependency}
                         label="dev"
+                        removeLabel={dictionary.removeDependency}
                         onRemove={() => removeDependency("dev", dependency)}
                       />
                     ))}
@@ -497,7 +501,11 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                             <p className="text-xs text-muted-foreground">{dep.description}</p>
                           )}
                         </div>
-                        <div className="flex shrink-0 items-center gap-1" role="group" aria-label={`Добавить ${dep.name}`}>
+                        <div
+                          className="flex shrink-0 items-center gap-1"
+                          role="group"
+                          aria-label={dictionary.addDependency.replace("{name}", dep.name)}
+                        >
                           <button
                             type="button"
                             className={cn(
@@ -530,7 +538,7 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                   })}
                   {isSearchingDependencies && (
                     <p className="px-3 py-4 text-center text-sm text-muted-foreground">
-                      Поиск в npm...
+                      {dictionary.dependencySearch}
                     </p>
                   )}
                   {!isSearchingDependencies && dependencySearchError && (
@@ -541,8 +549,8 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
                   {!isSearchingDependencies && !dependencySearchError && dependencyItems.length === 0 && (
                     <p className="px-3 py-6 text-center text-sm text-muted-foreground">
                       {dependencyQuery.trim().length < 2
-                        ? "Введите название пакета"
-                        : "Ничего не найдено"}
+                        ? dictionary.dependencyPrompt
+                        : dictionary.dependencyEmpty}
                     </p>
                   )}
                 </div>
@@ -558,10 +566,12 @@ export function ConfigurationPanel({ config, setConfig }: ConfigurationPanelProp
 function SelectedDependency({
   dependency,
   label,
+  removeLabel,
   onRemove,
 }: {
   dependency: string
   label: "dep" | "dev"
+  removeLabel: string
   onRemove: () => void
 }) {
   const name = dependencyName(dependency)
@@ -585,7 +595,7 @@ function SelectedDependency({
           type="button"
           className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-background text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           onClick={onRemove}
-          aria-label={`Удалить ${name}`}
+          aria-label={removeLabel.replace("{name}", name)}
         >
           x
         </button>

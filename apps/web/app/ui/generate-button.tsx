@@ -7,15 +7,15 @@ import { toast } from "sonner"
 import { GenerateButtonProps } from "@/types/project-config"
 import { buildProject, downloadFile, validateConfig } from "@/lib/api"
 
-export function GenerateButton({ config }: GenerateButtonProps) {
+export function GenerateButton({ config, dictionary, errors }: GenerateButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const handleGenerate = async () => {
     // Валидация
-    const validation = validateConfig(config)
+    const validation = validateConfig(config, errors)
     if (!validation.valid) {
-      toast.error("Ошибка валидации", {
-        description: validation.error || "Проверьте заполнение формы",
+      toast.error(dictionary.validationTitle, {
+        description: validation.error || dictionary.validationFallback,
       })
       return
     }
@@ -23,24 +23,24 @@ export function GenerateButton({ config }: GenerateButtonProps) {
     setIsGenerating(true)
 
     try {
-      toast.info("Начало сборки проекта...", {
-        description: "Это может занять некоторое время",
+      toast.info(dictionary.startedTitle, {
+        description: dictionary.startedDescription,
       })
 
       // Отправка запроса на сборку
-      const zipBlob = await buildProject(config)
+      const zipBlob = await buildProject(config, errors)
 
       // Скачивание файла
       const filename = `${config.projectName}.zip`
       downloadFile(zipBlob, filename)
 
-      toast.success("Проект создан!", {
-        description: `Архив ${filename} скачан успешно`,
+      toast.success(dictionary.successTitle, {
+        description: dictionary.successDescription.replace("{filename}", filename),
       })
     } catch (error) {
-      console.error("Ошибка при сборке проекта:", error)
-      toast.error("Ошибка при сборке проекта", {
-        description: error instanceof Error ? error.message : "Неизвестная ошибка",
+      console.error(dictionary.errorTitle, error)
+      toast.error(dictionary.errorTitle, {
+        description: error instanceof Error ? error.message : dictionary.unknownError,
       })
     } finally {
       setIsGenerating(false)
@@ -58,12 +58,12 @@ export function GenerateButton({ config }: GenerateButtonProps) {
         {isGenerating ? (
           <>
             <Sparkles className="h-5 w-5 animate-spin" />
-            Генерация проекта...
+            {dictionary.generating}
           </>
         ) : (
           <>
             <Download className="h-5 w-5" />
-            Сгенерировать проект
+            {dictionary.button}
           </>
         )}
       </Button>
