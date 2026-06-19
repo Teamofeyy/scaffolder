@@ -11,6 +11,13 @@ env:
   NODE_VERSION: "22"
   RUST_VERSION: "1.88.0"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-cd-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -59,9 +66,136 @@ jobs:
       - name: Build frontend
         run: pnpm run build:web
 
-  docker:
+      - name: Build generator binary
+        run: cargo build --manifest-path apps/api/api/Cargo.toml --release --locked
+
+      - name: Upload generator binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: scaf-api-linux
+          path: apps/api/target/release/scaf-api
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  generated-projects:
+    name: generated / ${{ matrix.name }}
     runs-on: ubuntu-latest
     needs: quality
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - name: react-none-css-modules
+            framework: react
+            routing: none
+            styling: css-modules
+            linting: eslint
+          - name: react-none-tailwind
+            framework: react
+            routing: none
+            styling: tailwind
+            linting: eslint
+          - name: react-router-css-modules
+            framework: react
+            routing: react-router
+            styling: css-modules
+            linting: eslint
+          - name: react-router-tailwind
+            framework: react
+            routing: react-router
+            styling: tailwind
+            linting: eslint
+          - name: react-router-data-css-modules
+            framework: react
+            routing: react-router-data
+            styling: css-modules
+            linting: eslint
+          - name: react-router-data-tailwind
+            framework: react
+            routing: react-router-data
+            styling: tailwind
+            linting: eslint
+          - name: vue-none-css-modules
+            framework: vue
+            routing: none
+            styling: css-modules
+            linting: none
+          - name: vue-none-tailwind
+            framework: vue
+            routing: none
+            styling: tailwind
+            linting: none
+          - name: vue-router-css-modules
+            framework: vue
+            routing: vue-router
+            styling: css-modules
+            linting: none
+          - name: vue-router-tailwind
+            framework: vue
+            routing: vue-router
+            styling: tailwind
+            linting: none
+          - name: next-app-css-modules
+            framework: nextjs
+            routing: app-router
+            styling: css-modules
+            linting: eslint
+          - name: next-app-tailwind
+            framework: nextjs
+            routing: app-router
+            styling: tailwind
+            linting: eslint
+          - name: next-pages-css-modules
+            framework: nextjs
+            routing: pages-router
+            styling: css-modules
+            linting: eslint
+          - name: next-pages-tailwind
+            framework: nextjs
+            routing: pages-router
+            styling: tailwind
+            linting: eslint
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
+
+      - name: Download generator binary
+        uses: actions/download-artifact@v8
+        with:
+          name: scaf-api-linux
+          path: .artifacts
+
+      - name: Verify generated project
+        env:
+          SCAFFOLDER_API_BINARY: ${{ github.workspace }}/.artifacts/scaf-api
+          SCAFFOLDER_TEMPLATES_DIR: ${{ github.workspace }}/apps/api/templates
+        run: |
+          chmod +x "$SCAFFOLDER_API_BINARY" scripts/verify-generated-project.sh
+          scripts/verify-generated-project.sh \
+            "${{ matrix.name }}" \
+            "${{ matrix.framework }}" \
+            "${{ matrix.routing }}" \
+            "${{ matrix.styling }}" \
+            "${{ matrix.linting }}"
+
+  docker:
+    runs-on: ubuntu-latest
+    needs:
+      - quality
+      - generated-projects
     if: github.event_name != 'pull_request' && vars.DOCKERHUB_USERNAME != ''
 
     permissions:

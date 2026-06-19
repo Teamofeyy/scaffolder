@@ -114,7 +114,7 @@ fn project_tree_from_path(path: &Path) -> Result<ProjectTreeNode> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::schema::{Framework, Linting, PackageManager, Routing, StateManagement, Styling};
+    use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
 
     fn config(
         framework: Framework,
@@ -125,7 +125,6 @@ mod tests {
         ProjectConfig {
             project_name: "generated-app".to_owned(),
             framework,
-            package_manager: PackageManager::Npm,
             styling,
             linting,
             state_management: StateManagement::None,
@@ -341,7 +340,6 @@ mod tests {
                             let config = ProjectConfig {
                                 project_name: "matrix-app".to_owned(),
                                 framework: framework.clone(),
-                                package_manager: PackageManager::Npm,
                                 styling: styling.clone(),
                                 linting: linting.clone(),
                                 state_management: state_management.clone(),
@@ -349,12 +347,25 @@ mod tests {
                                 dependencies: vec![],
                                 dev_dependencies: vec![],
                             };
-                            materialize_project(&config).unwrap_or_else(|error| {
+                            let (_workspace, root) =
+                                materialize_project(&config).unwrap_or_else(|error| {
                                 panic!(
                                     "failed to materialize {framework:?} {routing:?} {styling:?} \
                                      {linting:?} {state_management:?}: {error}"
                                 )
                             });
+                            if matches!(
+                                framework,
+                                Framework::React | Framework::Nextjs | Framework::Vue
+                            ) {
+                                let package_json =
+                                    std::fs::read_to_string(root.join("package.json"))
+                                        .expect("read generated package.json");
+                                assert!(
+                                    package_json.contains("\"typecheck\""),
+                                    "missing typecheck script for {framework:?}"
+                                );
+                            }
                         }
                     }
                 }

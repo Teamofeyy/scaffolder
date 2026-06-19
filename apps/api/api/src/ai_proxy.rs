@@ -1,6 +1,4 @@
-use crate::schema::{
-    Framework, Linting, PackageManager, ProjectConfig, Routing, StateManagement, Styling,
-};
+use crate::schema::{Framework, Linting, ProjectConfig, Routing, StateManagement, Styling};
 use axum::{Json, http::StatusCode, response::IntoResponse};
 use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderValue};
 use serde::{Deserialize, Serialize};
@@ -44,7 +42,6 @@ pub struct AiRecommendResponse {
 #[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub struct ConfigPatch {
     pub framework: Framework,
-    pub package_manager: PackageManager,
     pub routing: Routing,
     pub styling: Styling,
     pub state_management: StateManagement,

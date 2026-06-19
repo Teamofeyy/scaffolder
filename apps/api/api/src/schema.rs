@@ -86,22 +86,11 @@ pub enum StateManagement {
     Jotai,
 }
 
-#[derive(TS, Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
-#[ts(export)]
-#[serde(rename_all = "snake_case")]
-pub enum PackageManager {
-    Npm,
-    Pnpm,
-    Yarn,
-    Bun,
-}
-
-#[derive(TS, Serialize, Deserialize, ToSchema)]
+#[derive(TS, Serialize, Deserialize, ToSchema, Debug)]
 #[ts(export)]
 pub struct ProjectConfig {
     pub project_name: String,
     pub framework: Framework,
-    pub package_manager: PackageManager,
     pub styling: Styling,
     pub linting: Linting,
     pub state_management: StateManagement,
@@ -167,12 +156,6 @@ pub enum Feature {
 
     Eslint,
     Biome,
-
-    Npm,
-    Pnpm,
-    Yarn,
-    Bun,
-    Deno,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, Eq, PartialEq, Hash, ToSchema)]
@@ -183,7 +166,6 @@ pub enum Category {
     Styling,
     State,
     Linting,
-    PackageManager,
 }
 
 pub fn feature_registry() -> HashMap<Feature, FeatureMeta> {
@@ -443,47 +425,6 @@ pub fn feature_registry() -> HashMap<Feature, FeatureMeta> {
                 category: Linting,
                 requires: &[],
                 conflicts: &[Eslint],
-            },
-        ),
-        // Package managers
-        (
-            Npm,
-            FeatureMeta {
-                label: "npm",
-                description: "Node package manager",
-                category: PackageManager,
-                requires: &[],
-                conflicts: &[Pnpm, Yarn, Bun],
-            },
-        ),
-        (
-            Pnpm,
-            FeatureMeta {
-                label: "pnpm",
-                description: "Fast Node package manager",
-                category: PackageManager,
-                requires: &[],
-                conflicts: &[Npm, Yarn, Bun],
-            },
-        ),
-        (
-            Yarn,
-            FeatureMeta {
-                label: "Yarn",
-                description: "Alternative Node package manager",
-                category: PackageManager,
-                requires: &[],
-                conflicts: &[Npm, Pnpm, Bun],
-            },
-        ),
-        (
-            Bun,
-            FeatureMeta {
-                label: "Bun",
-                description: "JavaScript runtime with package manager",
-                category: PackageManager,
-                requires: &[],
-                conflicts: &[Npm, Pnpm, Yarn],
             },
         ),
     ])

@@ -20,7 +20,6 @@ export function ScaffolderPage({ locale, dictionary }: ScaffolderPageProps) {
   const [config, setConfig] = useState<ProjectConfig>({
     projectName: "",
     framework: "react",
-    packageManager: "npm",
     typescript: true,
     styling: "tailwind",
     linting: "eslint",

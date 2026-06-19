@@ -20,7 +20,9 @@ pub fn materialize(config: &ProjectConfig, workspace: &Path) -> Result<()> {
 }
 
 pub fn resolve_template(config: &ProjectConfig) -> PathBuf {
-    let base = Path::new(env!("CARGO_MANIFEST_DIR")).join("../templates");
+    let base = std::env::var_os("SCAFFOLDER_TEMPLATES_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| Path::new(env!("CARGO_MANIFEST_DIR")).join("../templates"));
     base.join(config.framework.as_str())
 }
 

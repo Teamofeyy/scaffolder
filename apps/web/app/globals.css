@@ -180,7 +180,7 @@
   }
 
   .app-shell::after {
-    content: "npm create vite@latest  pnpm dlx create  yarn create  bun create";
+    content: "npm install  npm run lint  npm run typecheck  npm run build";
     position: fixed;
     top: 4.7rem;
     left: -4rem;

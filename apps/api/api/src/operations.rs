@@ -85,6 +85,7 @@ fn patch_package_json(workspace: &Path, config: &ProjectConfig, plan: &ResolvedP
         )?,
     );
     configure_linting(&mut root, workspace, &config.linting)?;
+    configure_quality_scripts(&mut root, &config.framework);
 
     if let Some(obj) = root.as_object_mut() {
         let taken = std::mem::take(obj);
@@ -223,6 +224,25 @@ fn configure_linting(
     }
 
     Ok(())
+}
+
+fn configure_quality_scripts(root: &mut Value, framework: &crate::schema::Framework) {
+    let typecheck = match framework {
+        crate::schema::Framework::React | crate::schema::Framework::ReactTs => "tsc -b",
+        crate::schema::Framework::Vue | crate::schema::Framework::VueTs => "vue-tsc -b",
+        crate::schema::Framework::Nextjs => "tsc --noEmit",
+        _ => return,
+    };
+
+    let root = root
+        .as_object_mut()
+        .expect("package root must be an object");
+    let scripts = root
+        .entry("scripts")
+        .or_insert_with(|| Value::Object(Map::new()))
+        .as_object_mut()
+        .expect("scripts must be an object");
+    scripts.insert("typecheck".to_owned(), Value::String(typecheck.to_owned()));
 }
 
 fn remove_eslint_package_entries(root: &mut Value) {
@@ -732,13 +752,10 @@ mod tests {
 
     #[test]
     fn reorder_candidates_prefers_most_specific() {
-        use crate::schema::{
-            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
-        };
+        use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::React,
-            package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -758,13 +775,10 @@ mod tests {
 
     #[test]
     fn bundle_apply_order_is_layered_default_first() {
-        use crate::schema::{
-            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
-        };
+        use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::React,
-            package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -783,13 +797,10 @@ mod tests {
 
     #[test]
     fn tailwind_without_router_gets_framework_tailwind_bundle() {
-        use crate::schema::{
-            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
-        };
+        use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::React,
-            package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -808,9 +819,7 @@ mod tests {
 
     #[test]
     fn tailwind_dependencies_match_framework_integration() {
-        use crate::schema::{
-            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
-        };
+        use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
         let plan = ResolvedPlan {
             selected: vec![Feature::Tailwind],
             ordered: vec![],
@@ -818,7 +827,6 @@ mod tests {
         let mut config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::React,
-            package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -847,13 +855,10 @@ mod tests {
 
     #[test]
     fn next_pages_router_gets_pages_bundle() {
-        use crate::schema::{
-            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
-        };
+        use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::Nextjs,
-            package_manager: PackageManager::Npm,
             styling: Styling::CssModules,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -884,7 +889,6 @@ mod tests {
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: crate::schema::Framework::Nextjs,
-            package_manager: crate::schema::PackageManager::Npm,
             styling: crate::schema::Styling::CssModules,
             linting: crate::schema::Linting::Eslint,
             state_management: crate::schema::StateManagement::None,

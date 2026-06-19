@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Check, Settings2, Package, Palette, Search } from "lucide-react"
-import { ConfigurationPanelProps, ConfigKey, ConfigValue, Linting, Framework, Routing, PackageManager, Styling, StateManagement } from "@/types/project-config"
+import { ConfigurationPanelProps, ConfigKey, ConfigValue, Linting, Framework, Routing, Styling, StateManagement } from "@/types/project-config"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { DependencySearchResult, searchDependencies } from "@/lib/api"
@@ -88,13 +88,6 @@ function stylingValuesForConfig(framework: Framework, routing: Routing): Styling
   }
   return ["tailwind"];
 }
-
-const packageManagers: { value: PackageManager; label: string }[] = [
-  { value: "npm", label: "npm" },
-  { value: "pnpm", label: "pnpm" },
-  { value: "yarn", label: "Yarn" },
-  { value: "bun", label: "Bun" },
-]
 
 type DependencyListItem = {
   id: string
@@ -298,32 +291,6 @@ export function ConfigurationPanel({
                     >
                       <span className="block text-sm font-semibold leading-5">{option.label}</span>
                       <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">{option.hint}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{dictionary.packageManager}</Label>
-              <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label={dictionary.packageManager}>
-                {packageManagers.map((manager) => {
-                  const selected = config.packageManager === manager.value
-                  return (
-                    <button
-                      key={manager.value}
-                      type="button"
-                      role="radio"
-                      aria-checked={selected}
-                      className={cn(
-                        "h-10 rounded-md border px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        selected
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
-                      )}
-                      onClick={() => updateConfig("packageManager", manager.value)}
-                    >
-                      {manager.label}
                     </button>
                   )
                 })}

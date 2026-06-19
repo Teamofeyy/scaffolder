@@ -220,7 +220,6 @@ function applyConfigPatch(config: ProjectConfig, patch: AiConfigPatch): ProjectC
   return {
     ...config,
     framework: patch.framework ?? config.framework,
-    packageManager: patch.package_manager ?? config.packageManager,
     routing: patch.routing ?? config.routing,
     styling: patch.styling ?? config.styling,
     linting: patch.linting ?? config.linting,
@@ -237,7 +236,6 @@ function configPatchRows(
   const rows: { label: string; value: string }[] = []
 
   if (patch.framework) rows.push({ label: labels.framework, value: patch.framework })
-  if (patch.package_manager) rows.push({ label: labels.packageManager, value: patch.package_manager })
   if (patch.routing) rows.push({ label: labels.routing, value: patch.routing })
   if (patch.styling) rows.push({ label: labels.styling, value: patch.styling })
   if (patch.linting) rows.push({ label: labels.linter, value: patch.linting })
