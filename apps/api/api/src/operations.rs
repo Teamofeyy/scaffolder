@@ -84,6 +84,7 @@ fn patch_package_json(workspace: &Path, config: &ProjectConfig, plan: &ResolvedP
             DependencyKind::Development,
         )?,
     );
+    configure_linting(&mut root, workspace, &config.linting)?;
 
     if let Some(obj) = root.as_object_mut() {
         let taken = std::mem::take(obj);
@@ -166,10 +167,16 @@ fn dependency_presets() -> Result<HashMap<String, DependencyPreset>> {
 
 fn feature_preset_keys(feature: &Feature, config: &ProjectConfig) -> Vec<&'static str> {
     match feature {
-        Feature::Tailwind if config.framework == crate::schema::Framework::Nextjs => {
+        Feature::Tailwind
+            if matches!(
+                config.framework,
+                crate::schema::Framework::Nextjs | crate::schema::Framework::AngularTs
+            ) =>
+        {
             vec!["tailwind", "tailwind-next"]
         }
         Feature::Tailwind => vec!["tailwind", "tailwind-vite"],
+        Feature::StyledComponents => vec!["styled-components"],
         Feature::ReactRouter => vec!["react-router"],
         Feature::VueRouter => vec!["vue-router"],
         Feature::Zustand => vec!["zustand"],
@@ -178,6 +185,107 @@ fn feature_preset_keys(feature: &Feature, config: &ProjectConfig) -> Vec<&'stati
         Feature::Biome => vec!["biome"],
         _ => vec![],
     }
+}
+
+fn configure_linting(
+    root: &mut Value,
+    workspace: &Path,
+    linting: &crate::schema::Linting,
+) -> Result<()> {
+    match linting {
+        crate::schema::Linting::Eslint => {}
+        crate::schema::Linting::Biome => {
+            remove_eslint_package_entries(root);
+            replace_lint_scripts_with_biome(root);
+            remove_eslint_config_files(workspace)?;
+            fs::write(
+                workspace.join("biome.json"),
+                concat!(
+                    "{\n",
+                    "  \"$schema\": \"https://biomejs.dev/schemas/2.5.0/schema.json\",\n",
+                    "  \"files\": { \"includes\": [\"**\", \"!!dist\", \"!!.next\", \"!!.nuxt\"] },\n",
+                    "  \"formatter\": { \"enabled\": true, \"indentStyle\": \"space\" },\n",
+                    "  \"linter\": { \"enabled\": true, \"rules\": { \"recommended\": true } },\n",
+                    "  \"assist\": { \"actions\": { \"source\": { \"organizeImports\": \"on\" } } }\n",
+                    "}\n"
+                ),
+            )?;
+        }
+        crate::schema::Linting::None => {
+            remove_eslint_package_entries(root);
+            remove_lint_scripts(root);
+            remove_eslint_config_files(workspace)?;
+            let biome_config = workspace.join("biome.json");
+            if biome_config.exists() {
+                fs::remove_file(biome_config)?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn remove_eslint_package_entries(root: &mut Value) {
+    for section in ["dependencies", "devDependencies"] {
+        let Some(dependencies) = root.get_mut(section).and_then(Value::as_object_mut) else {
+            continue;
+        };
+        dependencies.retain(|name, _| {
+            name != "eslint"
+                && !name.starts_with("eslint-")
+                && !name.starts_with("@eslint/")
+                && !name.starts_with("@typescript-eslint/")
+                && name != "typescript-eslint"
+        });
+    }
+}
+
+fn remove_lint_scripts(root: &mut Value) {
+    let Some(scripts) = root.get_mut("scripts").and_then(Value::as_object_mut) else {
+        return;
+    };
+    scripts.retain(|name, command| {
+        !name.starts_with("lint")
+            && !command
+                .as_str()
+                .is_some_and(|value| value.contains("eslint"))
+    });
+}
+
+fn replace_lint_scripts_with_biome(root: &mut Value) {
+    remove_lint_scripts(root);
+    let root = root
+        .as_object_mut()
+        .expect("package root must be an object");
+    let scripts = root
+        .entry("scripts")
+        .or_insert_with(|| Value::Object(Map::new()))
+        .as_object_mut()
+        .expect("scripts must be an object");
+    scripts.insert("lint".to_owned(), Value::String("biome check .".to_owned()));
+    scripts.insert(
+        "lint:fix".to_owned(),
+        Value::String("biome check --write .".to_owned()),
+    );
+}
+
+fn remove_eslint_config_files(workspace: &Path) -> Result<()> {
+    for file_name in [
+        "eslint.config.js",
+        "eslint.config.mjs",
+        "eslint.config.cjs",
+        ".eslintrc",
+        ".eslintrc.js",
+        ".eslintrc.cjs",
+        ".eslintrc.json",
+        ".eslintignore",
+    ] {
+        let path = workspace.join(file_name);
+        if path.exists() {
+            fs::remove_file(path)?;
+        }
+    }
+    Ok(())
 }
 
 fn parse_dependency(raw: &str) -> (String, String) {
@@ -377,13 +485,13 @@ fn apply_patch_bundles(
     Ok(())
 }
 
-fn patch_bundle_candidates(config: &ProjectConfig, plan: &ResolvedPlan) -> Vec<String> {
+fn patch_bundle_candidates(config: &ProjectConfig, _plan: &ResolvedPlan) -> Vec<String> {
     let framework_key = framework_template_key(&config.framework);
     let routing_key = routing_template_key(&config.routing);
-    let styling_key = if plan.selected.contains(&Feature::Tailwind) {
-        "tailwind"
-    } else {
-        "no-styling"
+    let styling_key = match config.styling {
+        crate::schema::Styling::Tailwind => "tailwind",
+        crate::schema::Styling::CssModules => "css-modules",
+        crate::schema::Styling::StyledComponents => "styled-components",
     };
 
     vec![

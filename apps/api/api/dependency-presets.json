@@ -43,7 +43,12 @@
   },
   "biome": {
     "devDependencies": {
-      "@biomejs/biome": "^1.9.4"
+      "@biomejs/biome": "^2.5.0"
+    }
+  },
+  "styled-components": {
+    "dependencies": {
+      "styled-components": "^6.4.2"
     }
   }
 }

@@ -34,6 +34,32 @@ make every cross-product combination supported.
 `Base CSS` means the styling included by the upstream template. It does not
 guarantee a framework-specific CSS Modules example.
 
+## Implemented UI matrix
+
+The web interface exposes only the combinations listed below. The API rejects
+other routing, styling, linting, and state-management combinations.
+
+| Framework | Routing | Styling |
+| --- | --- | --- |
+| React + TypeScript | None, React Router, React Router Data APIs | Tailwind CSS, CSS Modules, styled-components |
+| Next.js | App Router | Tailwind CSS, CSS Modules |
+| Next.js | Pages Router | Tailwind CSS, CSS Modules, styled-components |
+| Vue + TypeScript | None, Vue Router | Tailwind CSS, CSS Modules |
+| Svelte + TypeScript | None | Tailwind CSS |
+| Solid + TypeScript | None | Tailwind CSS, CSS Modules |
+| Preact + TypeScript | None | Tailwind CSS, CSS Modules |
+| Nuxt + TypeScript | Nuxt file-system routing | Tailwind CSS, CSS Modules |
+| Angular + TypeScript | Angular Router from the base template | Tailwind CSS |
+
+React and Next.js expose ESLint, Biome, and no-linter modes. Other visible
+frameworks currently expose no additional linter because their base templates
+do not share one linting contract.
+
+These combinations are generator-integrated and covered by materialization
+tests. Combinations not already listed in the stable framework profiles remain
+**Experimental** until release verification completes dependency installation,
+static checks, and production builds for representative generated projects.
+
 ## Experimental framework templates
 
 The following templates are available but are not part of the stable release
@@ -50,8 +76,9 @@ matrix:
 - Solid
 - Svelte
 
-Experimental templates are copied from their base template and may not receive
-feature-specific routing, styling, linting, or state-management patches.
+Experimental templates receive only the integrations listed in the implemented
+UI matrix. No compatibility guarantee applies to options that are not exposed
+or documented for that framework.
 
 ## Package managers
 
@@ -67,17 +94,20 @@ commands, lockfile behavior, and CI verification.
 
 ## State management
 
-Zustand, Redux Toolkit, and Jotai dependency presets are experimental.
-Scaffolder may add packages without generating a framework-specific store,
-provider, or usage example.
+Zustand, Redux Toolkit, and Jotai are available for React and Next.js.
+Scaffolder intentionally installs the selected packages without generating a
+store, provider, or usage example because application state architecture is
+project-specific. These dependency-only presets remain experimental until
+generated-project build verification covers them.
 
 ## Linting
 
-- The base template's linting configuration is supported.
-- Biome selection is experimental until it replaces conflicting ESLint files
-  and scripts in every applicable template.
-- Selecting no linter is experimental where the base template already contains
-  linting configuration.
+- ESLint preserves the applicable React or Next.js base configuration.
+- Biome removes conflicting ESLint packages, files, and scripts, then creates
+  `biome.json` and Biome lint scripts.
+- Selecting no linter removes inherited ESLint packages, files, and scripts.
+- Linting modes remain experimental until generated-project lint and build
+  checks run in the release pipeline.
 
 ## Additional dependencies
 

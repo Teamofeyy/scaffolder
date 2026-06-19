@@ -46,11 +46,15 @@ function routingOptionsForFramework(
     ];
   }
 
-  if (framework === "vue" || framework === "vue-ts" || framework === "nuxt-ts") {
+  if (framework === "vue" || framework === "vue-ts") {
     return [
       { value: "vue-router", label: "Vue Router" },
       { value: "none", label: noRouting },
     ];
+  }
+
+  if (framework === "nuxt-ts") {
+    return [{ value: "vue-router", label: "Nuxt Router" }];
   }
 
   return [{ value: "none", label: noRouting }];
@@ -58,6 +62,31 @@ function routingOptionsForFramework(
 
 function supportsReactState(framework: Framework) {
   return framework === "react" || framework === "react-ts" || framework === "nextjs";
+}
+
+function supportsLinting(framework: Framework) {
+  return framework === "react" || framework === "react-ts" || framework === "nextjs";
+}
+
+function stylingValuesForConfig(framework: Framework, routing: Routing): Styling[] {
+  if (framework === "react" || framework === "react-ts") {
+    return ["tailwind", "css-modules", "styled-components"];
+  }
+  if (framework === "nextjs") {
+    return routing === "pages-router"
+      ? ["tailwind", "css-modules", "styled-components"]
+      : ["tailwind", "css-modules"];
+  }
+  if (
+    framework === "vue"
+    || framework === "vue-ts"
+    || framework === "nuxt-ts"
+    || framework === "preact-ts"
+    || framework === "solid-ts"
+  ) {
+    return ["tailwind", "css-modules"];
+  }
+  return ["tailwind"];
 }
 
 const packageManagers: { value: PackageManager; label: string }[] = [
@@ -99,11 +128,26 @@ export function ConfigurationPanel({
       const framework = value as Framework;
       const options = routingOptionsForFramework(framework, dictionary.noRouting);
       const currentRoutingStillValid = options.some((option) => option.value === config.routing);
+      const routing = currentRoutingStillValid ? config.routing : defaultRoutingForFramework(framework);
+      const stylingValues = stylingValuesForConfig(framework, routing);
       setConfig({
         ...config,
         framework,
-        routing: currentRoutingStillValid ? config.routing : defaultRoutingForFramework(framework),
+        routing,
+        styling: stylingValues.includes(config.styling) ? config.styling : stylingValues[0],
+        linting: supportsLinting(framework) ? config.linting : "none",
         stateManagement: supportsReactState(framework) ? config.stateManagement : "none",
+      });
+      return;
+    }
+
+    if (key === "routing") {
+      const routing = value as Routing;
+      const stylingValues = stylingValuesForConfig(config.framework, routing);
+      setConfig({
+        ...config,
+        routing,
+        styling: stylingValues.includes(config.styling) ? config.styling : stylingValues[0],
       });
       return;
     }
@@ -125,11 +169,15 @@ export function ConfigurationPanel({
     { value: "nuxt-ts", label: "Nuxt", hint: "Vue full stack" },
     { value: "angular-ts", label: "Angular", hint: "Enterprise SPA" },
   ]
-  const stylingOptions: { value: Styling; label: string; hint: string }[] = [
+  const allStylingOptions: { value: Styling; label: string; hint: string }[] = [
     { value: "tailwind", label: "Tailwind", hint: "Utility-first CSS" },
     { value: "css-modules", label: "CSS Modules", hint: dictionary.options.localCss },
     { value: "styled-components", label: "Styled Components", hint: "CSS-in-JS" },
   ]
+  const supportedStylingValues = stylingValuesForConfig(config.framework, config.routing);
+  const stylingOptions = allStylingOptions.filter((option) =>
+    supportedStylingValues.includes(option.value)
+  );
   const reactStateOptions: { value: StateManagement; label: string; hint: string }[] = [
     { value: "none", label: dictionary.options.none, hint: dictionary.options.noState },
     { value: "zustand", label: "Zustand", hint: dictionary.options.minimalStore },
@@ -378,7 +426,7 @@ export function ConfigurationPanel({
               <Label htmlFor="linting" className="flex items-center gap-2">
                 {dictionary.linter}
               </Label>
-              {config.framework === "nextjs" ? (
+              {supportsLinting(config.framework) ? (
                 <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label={dictionary.linter}>
                   {lintingOptions.map((option) => {
                     const selected = config.linting === option.value

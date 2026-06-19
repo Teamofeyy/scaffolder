@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::Path};
 use ts_rs::TS;
 use utoipa::ToSchema;
 
-#[derive(TS, Serialize, Deserialize, ToSchema, Debug, PartialEq)]
+#[derive(TS, Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
 #[ts(export)]
 #[serde(rename_all = "kebab-case")]
 pub enum Framework {
@@ -46,7 +46,7 @@ impl Framework {
     }
 }
 
-#[derive(TS, Serialize, Deserialize, ToSchema, Debug, PartialEq)]
+#[derive(TS, Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
 #[ts(export)]
 #[serde(rename_all = "kebab-case")]
 pub enum Routing {
@@ -58,7 +58,7 @@ pub enum Routing {
     None,
 }
 
-#[derive(TS, Serialize, Deserialize, ToSchema, Debug, PartialEq)]
+#[derive(TS, Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
 #[ts(export)]
 #[serde(rename_all = "kebab-case")]
 pub enum Styling {
@@ -67,7 +67,7 @@ pub enum Styling {
     StyledComponents,
 }
 
-#[derive(TS, Serialize, Deserialize, ToSchema)]
+#[derive(TS, Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
 #[ts(export)]
 #[serde(rename_all = "snake_case")]
 pub enum Linting {
@@ -76,7 +76,7 @@ pub enum Linting {
     None,
 }
 
-#[derive(TS, Serialize, Deserialize, ToSchema)]
+#[derive(TS, Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
 #[ts(export)]
 #[serde(rename_all = "snake_case")]
 pub enum StateManagement {
@@ -86,7 +86,7 @@ pub enum StateManagement {
     Jotai,
 }
 
-#[derive(TS, Serialize, Deserialize, ToSchema)]
+#[derive(TS, Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
 #[ts(export)]
 #[serde(rename_all = "snake_case")]
 pub enum PackageManager {

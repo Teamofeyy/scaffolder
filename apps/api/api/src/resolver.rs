@@ -16,6 +16,7 @@ pub enum ResolverError {
     UnknownFeatureMetadata(Feature),
     Conflict { left: Feature, right: Feature },
     CyclicDependency(Feature),
+    InvalidCombination(String),
 }
 
 impl std::fmt::Display for ResolverError {
@@ -30,6 +31,7 @@ impl std::fmt::Display for ResolverError {
             Self::CyclicDependency(feature) => {
                 write!(f, "cyclic dependency detected at {feature:?}")
             }
+            Self::InvalidCombination(message) => f.write_str(message),
         }
     }
 }
@@ -37,12 +39,84 @@ impl std::fmt::Display for ResolverError {
 impl std::error::Error for ResolverError {}
 
 pub fn resolve_from_config(config: &ProjectConfig) -> Result<ResolvedPlan, ResolverError> {
+    validate_combination(config)?;
     let mut selected = initial_features(config);
     selected = close_requires(&selected)?;
     validate_conflicts(&selected)?;
     let ordered = topo_sort(&selected)?;
 
     Ok(ResolvedPlan { selected, ordered })
+}
+
+fn validate_combination(config: &ProjectConfig) -> Result<(), ResolverError> {
+    use Framework::*;
+    use Routing::*;
+    use Styling::*;
+
+    let styling_supported = match config.styling {
+        Tailwind => matches!(
+            config.framework,
+            React
+                | ReactTs
+                | Nextjs
+                | Vue
+                | VueTs
+                | SvelteTs
+                | SolidTs
+                | PreactTs
+                | NuxtTs
+                | AngularTs
+        ),
+        CssModules => matches!(
+            config.framework,
+            React | ReactTs | Nextjs | Vue | VueTs | SolidTs | PreactTs | NuxtTs
+        ),
+        StyledComponents => {
+            matches!(config.framework, React | ReactTs)
+                || (config.framework == Nextjs && config.routing == PagesRouter)
+        }
+    };
+    if !styling_supported {
+        return Err(ResolverError::InvalidCombination(format!(
+            "styling {:?} is not supported for framework {:?}",
+            config.styling, config.framework
+        )));
+    }
+
+    let routing_supported = match config.framework {
+        Nextjs => matches!(config.routing, AppRouter | PagesRouter),
+        React | ReactTs => matches!(
+            config.routing,
+            ReactRouter | ReactRouterData | Routing::None
+        ),
+        Vue | VueTs => matches!(config.routing, VueRouter | Routing::None),
+        NuxtTs => matches!(config.routing, VueRouter | Routing::None),
+        _ => config.routing == Routing::None,
+    };
+    if !routing_supported {
+        return Err(ResolverError::InvalidCombination(format!(
+            "routing {:?} is not supported for framework {:?}",
+            config.routing, config.framework
+        )));
+    }
+
+    if config.linting != Linting::None && !matches!(config.framework, React | ReactTs | Nextjs) {
+        return Err(ResolverError::InvalidCombination(format!(
+            "linting {:?} is not supported for framework {:?}",
+            config.linting, config.framework
+        )));
+    }
+
+    if config.state_management != StateManagement::None
+        && !matches!(config.framework, React | ReactTs | Nextjs)
+    {
+        return Err(ResolverError::InvalidCombination(format!(
+            "state management {:?} is not supported for framework {:?}",
+            config.state_management, config.framework
+        )));
+    }
+
+    Ok(())
 }
 
 fn initial_features(config: &ProjectConfig) -> Vec<Feature> {
@@ -215,14 +289,28 @@ mod tests {
     use crate::schema::{Linting, PackageManager, Routing, StateManagement, Styling};
 
     fn config(framework: Framework) -> ProjectConfig {
+        let routing = match &framework {
+            Framework::Nextjs => Routing::AppRouter,
+            Framework::React | Framework::ReactTs => Routing::None,
+            Framework::Vue | Framework::VueTs | Framework::NuxtTs => Routing::None,
+            _ => Routing::None,
+        };
+        let linting = if matches!(
+            &framework,
+            Framework::React | Framework::ReactTs | Framework::Nextjs
+        ) {
+            Linting::Eslint
+        } else {
+            Linting::None
+        };
         ProjectConfig {
             project_name: "demo".to_owned(),
             framework,
             package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
-            linting: Linting::Eslint,
+            linting,
             state_management: StateManagement::None,
-            routing: Routing::None,
+            routing,
             dependencies: vec![],
             dev_dependencies: vec![],
         }
@@ -230,12 +318,10 @@ mod tests {
 
     #[test]
     fn adds_required_features() {
-        let mut cfg = config(Framework::Nextjs);
-        cfg.routing = Routing::ReactRouter;
-        let plan = resolve_from_config(&cfg).expect("resolver should succeed");
+        let plan =
+            resolve_from_config(&config(Framework::Nextjs)).expect("resolver should succeed");
         assert!(plan.selected.contains(&Feature::Nextjs));
         assert!(plan.selected.contains(&Feature::React));
-        assert!(plan.selected.contains(&Feature::ReactRouter));
     }
 
     #[test]
@@ -257,22 +343,20 @@ mod tests {
 
     #[test]
     fn fails_on_conflicts() {
-        let cfg = ProjectConfig {
-            project_name: "demo".to_owned(),
-            framework: Framework::Vue,
-            package_manager: PackageManager::Npm,
-            styling: Styling::Tailwind,
-            linting: Linting::Eslint,
-            state_management: StateManagement::Redux,
-            routing: Routing::None,
-            dependencies: vec![],
-            dev_dependencies: vec![],
-        };
-
-        let err = resolve_from_config(&cfg).expect_err("resolver should fail");
+        let err =
+            validate_conflicts(&[Feature::Vue, Feature::React]).expect_err("resolver should fail");
         assert!(
             matches!(err, ResolverError::Conflict { .. }),
             "expected conflict, got {err:?}"
         );
+    }
+
+    #[test]
+    fn rejects_unsupported_styling_combination() {
+        let mut cfg = config(Framework::SvelteTs);
+        cfg.styling = Styling::StyledComponents;
+
+        let err = resolve_from_config(&cfg).expect_err("resolver should fail");
+        assert!(matches!(err, ResolverError::InvalidCombination(_)));
     }
 }

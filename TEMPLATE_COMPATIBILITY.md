@@ -48,6 +48,17 @@ must:
 Missing optional targets may be skipped only when the bundle explicitly marks
 them as optional.
 
+## UI exposure rule
+
+The web interface must expose an option only when the selected framework has a
+matching implementation. The API must validate the same compatibility rules so
+unsupported combinations cannot bypass the interface.
+
+Dependency-only features are allowed when the support matrix explicitly
+defines package installation as the complete behavior. All other visible
+features require framework-specific generated files, configuration, or source
+examples.
+
 ## Runtime policy
 
 The release documentation must state the Node.js and Rust versions used by CI.

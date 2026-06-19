@@ -7,6 +7,31 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+
+- Tailwind CSS v4 integration for Angular, Nuxt, Preact, Solid, and Svelte,
+  in addition to the existing React, Vue, and Next.js integrations.
+- Framework-specific CSS Modules examples for React, Vue, Next.js, Nuxt,
+  Preact, and Solid.
+- styled-components dependencies and generated examples for React and Next.js
+  Pages Router.
+- Nuxt file-system routing pages backed by Nuxt's built-in Vue Router
+  integration.
+- Generator tests that materialize every configuration currently exposed by
+  the web interface.
+
+### Changed
+
+- The web interface now hides styling, routing, linting, and state-management
+  choices that are not implemented for the selected framework.
+- The API now rejects unsupported option combinations instead of silently
+  generating an unchanged base template.
+- Biome now replaces inherited ESLint packages, configuration files, and lint
+  scripts.
+- Selecting no linter now removes inherited ESLint packages, configuration
+  files, and lint scripts.
+- Biome was updated to 2.5.0.
+
 ## [0.9.0-beta.1] - 2026-06-18
 
 This is the first public beta release of Scaffolder. It establishes the
