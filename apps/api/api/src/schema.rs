@@ -3,6 +3,10 @@ use std::{collections::HashMap, path::Path};
 use ts_rs::TS;
 use utoipa::ToSchema;
 
+pub const MAX_PROJECT_NAME_LENGTH: usize = 64;
+pub const MAX_DEPENDENCIES_PER_LIST: usize = 50;
+pub const MAX_DEPENDENCY_LENGTH: usize = 214;
+
 #[derive(TS, Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
 #[ts(export)]
 #[serde(rename_all = "kebab-case")]
@@ -98,6 +102,76 @@ pub struct ProjectConfig {
     pub dependencies: Vec<String>,
     #[serde(default)]
     pub dev_dependencies: Vec<String>,
+}
+
+impl ProjectConfig {
+    pub fn validate(&self) -> Result<(), ConfigValidationError> {
+        let project_name = self.project_name.trim();
+        if project_name.is_empty() {
+            return Err(ConfigValidationError::new(
+                "project_name_required",
+                "Project name is required",
+            ));
+        }
+        if project_name.len() > MAX_PROJECT_NAME_LENGTH {
+            return Err(ConfigValidationError::new(
+                "project_name_too_long",
+                "Project name must be at most 64 characters",
+            ));
+        }
+        if !project_name.bytes().all(|byte| {
+            byte.is_ascii_lowercase() || byte.is_ascii_digit() || matches!(byte, b'-' | b'_')
+        }) {
+            return Err(ConfigValidationError::new(
+                "project_name_invalid",
+                "Project name may only contain lowercase ASCII letters, numbers, hyphens, and underscores",
+            ));
+        }
+
+        validate_dependencies("dependencies", &self.dependencies)?;
+        validate_dependencies("dev_dependencies", &self.dev_dependencies)?;
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConfigValidationError {
+    pub code: &'static str,
+    pub message: &'static str,
+}
+
+impl ConfigValidationError {
+    fn new(code: &'static str, message: &'static str) -> Self {
+        Self { code, message }
+    }
+}
+
+fn validate_dependencies(
+    field: &'static str,
+    dependencies: &[String],
+) -> Result<(), ConfigValidationError> {
+    if dependencies.len() > MAX_DEPENDENCIES_PER_LIST {
+        return Err(ConfigValidationError::new(
+            "too_many_dependencies",
+            "Dependency lists may contain at most 50 entries",
+        ));
+    }
+
+    if dependencies.iter().any(|dependency| {
+        dependency.is_empty()
+            || dependency.len() > MAX_DEPENDENCY_LENGTH
+            || dependency.chars().any(char::is_whitespace)
+            || dependency.chars().any(char::is_control)
+    }) {
+        let message = if field == "dependencies" {
+            "Each dependency must be a non-empty package token without whitespace and at most 214 characters"
+        } else {
+            "Each development dependency must be a non-empty package token without whitespace and at most 214 characters"
+        };
+        return Err(ConfigValidationError::new("dependency_invalid", message));
+    }
+
+    Ok(())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -468,4 +542,52 @@ pub fn build_types() {
 
     ProjectConfig::export_to(out_path).unwrap();
     Framework::export_to(out_path).unwrap();
+}
+
+#[cfg(test)]
+mod validation_tests {
+    use super::*;
+
+    fn valid_config() -> ProjectConfig {
+        ProjectConfig {
+            project_name: "demo".to_owned(),
+            framework: Framework::React,
+            styling: Styling::Tailwind,
+            linting: Linting::Eslint,
+            state_management: StateManagement::None,
+            routing: Routing::ReactRouter,
+            dependencies: Vec::new(),
+            dev_dependencies: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn rejects_long_project_name() {
+        let mut config = valid_config();
+        config.project_name = "a".repeat(MAX_PROJECT_NAME_LENGTH + 1);
+        assert_eq!(
+            config.validate().expect_err("validation").code,
+            "project_name_too_long"
+        );
+    }
+
+    #[test]
+    fn rejects_large_dependency_lists() {
+        let mut config = valid_config();
+        config.dependencies = vec!["zod".to_owned(); MAX_DEPENDENCIES_PER_LIST + 1];
+        assert_eq!(
+            config.validate().expect_err("validation").code,
+            "too_many_dependencies"
+        );
+    }
+
+    #[test]
+    fn rejects_dependency_tokens_with_whitespace() {
+        let mut config = valid_config();
+        config.dependencies = vec!["not a package".to_owned()];
+        assert_eq!(
+            config.validate().expect_err("validation").code,
+            "dependency_invalid"
+        );
+    }
 }

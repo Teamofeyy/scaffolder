@@ -44,3 +44,21 @@ Security reports may cover:
 
 Vulnerabilities in third-party packages should also be reported to the
 upstream project when appropriate.
+
+## Backend safeguards
+
+Production defaults enforce:
+
+- A 64 KiB request-body limit.
+- A maximum of two concurrent generations and four concurrent previews.
+- Per-minute global rate limits for generation and preview.
+- Bounded project names and dependency lists.
+- A bounded npm search cache and upstream response size.
+- Temporary-file ZIP streaming instead of whole-archive memory buffering.
+- Request IDs in the `x-request-id` response header.
+- Swagger UI disabled unless explicitly enabled.
+- No cross-origin access unless explicit origins are configured.
+
+These controls reduce abuse risk but do not replace reverse-proxy connection
+limits, network-level rate limiting, monitoring, and resource limits on the
+backend container.

@@ -5,22 +5,24 @@ use crate::{
 };
 use color_eyre::Result;
 use std::path::{Path, PathBuf};
-use tempfile::TempDir;
+use tempfile::{NamedTempFile, TempDir};
 
 pub struct GeneratedArchive {
     pub file_name: String,
-    pub bytes: Vec<u8>,
+    pub archive: NamedTempFile,
+    pub workspace: TempDir,
 }
 
-pub async fn generate_project(config: ProjectConfig) -> Result<GeneratedArchive> {
+pub fn generate_project(config: ProjectConfig) -> Result<GeneratedArchive> {
     let project_dir_name = sanitize_project_dir_name(&config.project_name);
     let (workspace, _project_root) = materialize_project(&config)?;
-
-    let archive = archive::zip(workspace.path())?;
+    let mut archive_file = NamedTempFile::new()?;
+    archive::zip(workspace.path(), archive_file.as_file_mut())?;
 
     Ok(GeneratedArchive {
         file_name: format!("{project_dir_name}.zip"),
-        bytes: archive,
+        archive: archive_file,
+        workspace,
     })
 }
 

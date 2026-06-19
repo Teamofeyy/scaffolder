@@ -51,6 +51,10 @@ cargo test --manifest-path apps/api/api/Cargo.toml --locked
 pnpm run build:web
 ```
 
+The frontend typecheck command removes only `.next/types`, regenerates route
+types with `next typegen`, and then runs TypeScript. Do not depend on route
+types left behind by a previous development or production build.
+
 Changes to generation behavior should also verify representative generated
 projects:
 

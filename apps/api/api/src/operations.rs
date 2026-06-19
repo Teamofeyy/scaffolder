@@ -230,7 +230,9 @@ fn configure_quality_scripts(root: &mut Value, framework: &crate::schema::Framew
     let typecheck = match framework {
         crate::schema::Framework::React | crate::schema::Framework::ReactTs => "tsc -b",
         crate::schema::Framework::Vue | crate::schema::Framework::VueTs => "vue-tsc -b",
-        crate::schema::Framework::Nextjs => "tsc --noEmit",
+        crate::schema::Framework::Nextjs => {
+            "node -e \"require('fs').rmSync('.next/types',{recursive:true,force:true})\" && next typegen && tsc --noEmit"
+        }
         _ => return,
     };
 

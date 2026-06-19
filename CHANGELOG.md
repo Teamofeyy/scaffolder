@@ -21,6 +21,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
   the web interface.
 - CI verification for every supported React, Vue, and Next.js profile using
   the full generate, install, lint, typecheck, and build sequence.
+- Request IDs on backend responses and structured API error payloads.
+- Configurable generation and preview concurrency and rate limits.
 
 ### Changed
 
@@ -33,12 +35,29 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Selecting no linter now removes inherited ESLint packages, configuration
   files, and lint scripts.
 - Biome was updated to 2.5.0.
+- Generated ZIP archives are written to temporary files and streamed to
+  clients instead of being fully buffered in memory.
+- Next.js typechecking now removes stale generated route types and runs
+  `next typegen` before TypeScript.
+- npm registry search now uses a bounded cache, request timeout, query limits,
+  and response-size limit.
 
 ### Removed
 
 - Package-manager selection from the web interface, API configuration, AI
   recommendations, and feature registry. Generated projects now expose only
   standard `package.json` metadata without a manager-specific contract.
+
+### Security
+
+- Limited request bodies, project-name length, dependency-list length, and
+  dependency-token length.
+- Added backpressure for generation and preview to reduce CPU, memory, and
+  temporary-disk denial-of-service risk.
+- Replaced wildcard CORS with an explicit origin allowlist.
+- Disabled Swagger UI by default; it now requires an explicit opt-in.
+- Limited the maximum uncompressed generated-project archive size and rejected
+  symlinks in generated archives.
 
 ## [0.9.0-beta.1] - 2026-06-18
 

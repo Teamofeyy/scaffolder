@@ -107,6 +107,26 @@ LOAD_TEST_REQUESTS=100 LOAD_TEST_CONCURRENCY=10 npm run load:test:generate
 
 Результат выводится в JSON: количество запросов, успешные/ошибочные ответы, RPS и latency `min/p50/p95/max`.
 
+## Ограничения backend
+
+Backend использует безопасные значения по умолчанию. Их можно переопределить
+переменными окружения:
+
+| Переменная | По умолчанию | Назначение |
+| --- | ---: | --- |
+| `MAX_REQUEST_BODY_BYTES` | `65536` | Максимальный размер HTTP request body |
+| `GENERATE_MAX_CONCURRENCY` | `2` | Одновременные операции генерации |
+| `GENERATE_RATE_LIMIT_PER_MINUTE` | `30` | Генерации в минуту |
+| `PREVIEW_MAX_CONCURRENCY` | `4` | Одновременные предпросмотры |
+| `PREVIEW_RATE_LIMIT_PER_MINUTE` | `120` | Предпросмотры в минуту |
+| `NPM_SEARCH_CACHE_MAX_ENTRIES` | `256` | Максимальное число записей npm cache |
+| `NPM_SEARCH_CACHE_MAX_BYTES` | `4194304` | Максимальный объём npm cache в памяти |
+| `CORS_ALLOWED_ORIGINS` | пусто | Разрешённые origins через запятую |
+| `SWAGGER_ENABLED` | `false` | Публичный Swagger UI |
+
+Каждый ответ backend содержит заголовок `x-request-id`. При обращении в issue
+укажите этот идентификатор вместе с логами.
+
 ## Архитектура
 
 - `apps/web` - Next.js frontend.

@@ -20,6 +20,7 @@ Include:
 - Node.js and npm versions used to reproduce the generated-project failure.
 - Steps to reproduce.
 - Expected and actual behavior.
+- The `x-request-id` response header or `request_id` error field.
 - Relevant logs and generated files.
 
 Remove secrets, private registry credentials, and proprietary source code
