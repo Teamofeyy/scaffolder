@@ -16,23 +16,24 @@ make every cross-product combination supported.
 
 | Framework | Routing | Styling | Status |
 | --- | --- | --- | --- |
-| React + TypeScript | None | Base CSS | Supported |
+| React + TypeScript | None | CSS Modules | Supported |
 | React + TypeScript | None | Tailwind CSS | Supported |
-| React + TypeScript | React Router | Base CSS | Supported |
+| React + TypeScript | React Router | CSS Modules | Supported |
 | React + TypeScript | React Router | Tailwind CSS | Supported |
-| React + TypeScript | React Router Data APIs | Base CSS | Supported |
+| React + TypeScript | React Router Data APIs | CSS Modules | Supported |
 | React + TypeScript | React Router Data APIs | Tailwind CSS | Supported |
-| Vue + TypeScript | None | Base CSS | Supported |
+| Vue + TypeScript | None | CSS Modules | Supported |
 | Vue + TypeScript | None | Tailwind CSS | Supported |
-| Vue + TypeScript | Vue Router | Base CSS | Supported |
+| Vue + TypeScript | Vue Router | CSS Modules | Supported |
 | Vue + TypeScript | Vue Router | Tailwind CSS | Supported |
-| Next.js | App Router | Base CSS | Supported |
+| Next.js | App Router | CSS Modules | Supported |
 | Next.js | App Router | Tailwind CSS | Supported |
-| Next.js | Pages Router | Base CSS | Supported |
+| Next.js | Pages Router | CSS Modules | Supported |
 | Next.js | Pages Router | Tailwind CSS | Supported |
 
-`Base CSS` means the styling included by the upstream template. It does not
-guarantee a framework-specific CSS Modules example.
+Every stable profile is verified in CI by generating a fresh archive,
+installing dependencies, running lint where configured, running a separate
+typecheck, and building the generated project.
 
 ## Implemented UI matrix
 
@@ -80,17 +81,12 @@ Experimental templates receive only the integrations listed in the implemented
 UI matrix. No compatibility guarantee applies to options that are not exposed
 or documented for that framework.
 
-## Package managers
+## Dependency installation
 
-| Package manager | Status | Notes |
-| --- | --- | --- |
-| npm | Supported | Generated projects use standard `package.json` metadata. |
-| pnpm | Experimental | Selection is accepted, but a pnpm lockfile is not guaranteed. |
-| Yarn | Experimental | Selection is accepted, but a Yarn lockfile is not guaranteed. |
-| Bun | Experimental | Selection is accepted, but a Bun lockfile is not guaranteed. |
-
-Stable support for a package manager requires manager-specific metadata,
-commands, lockfile behavior, and CI verification.
+Scaffolder generates standard `package.json` metadata and does not expose a
+package-manager option or promise manager-specific lockfiles. Release CI uses
+npm as the canonical installation environment for generated-project
+verification.
 
 ## State management
 
@@ -121,7 +117,7 @@ An experimental combination may be promoted to supported only after the
 release pipeline verifies:
 
 1. Project generation.
-2. Dependency installation with the selected package manager.
+2. Dependency installation in the canonical CI environment.
 3. Linting or static checks where configured.
 4. Typechecking where applicable.
 5. Production build.

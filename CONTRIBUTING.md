@@ -58,6 +58,17 @@ projects:
 generate -> install dependencies -> lint/typecheck -> build
 ```
 
+The CI matrix performs this verification for every supported React, Vue, and
+Next.js profile. To reproduce one profile locally after building the API:
+
+```bash
+cargo build --manifest-path apps/api/api/Cargo.toml --release --locked
+SCAFFOLDER_API_BINARY=apps/api/target/release/scaf-api \
+SCAFFOLDER_TEMPLATES_DIR=apps/api/templates \
+scripts/verify-generated-project.sh \
+  react-router-tailwind react react-router tailwind eslint
+```
+
 ## Template submodule workflow
 
 Templates live in the separate `Teamofeyy/templates` repository.

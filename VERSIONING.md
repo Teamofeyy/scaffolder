@@ -55,7 +55,7 @@ Examples requiring a major release:
 
 - Removing or renaming a supported framework or option.
 - Changing an API field or enum value without backward compatibility.
-- Dropping a supported package manager or runtime version.
+- Dropping a supported runtime version.
 - Requiring users to change production environment variables.
 - Making a previously valid stable configuration invalid.
 

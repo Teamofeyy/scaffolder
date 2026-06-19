@@ -17,7 +17,7 @@ Include:
 
 - Scaffolder version or commit SHA.
 - Framework and all selected options.
-- Package manager and runtime versions.
+- Node.js and npm versions used to reproduce the generated-project failure.
 - Steps to reproduce.
 - Expected and actual behavior.
 - Relevant logs and generated files.

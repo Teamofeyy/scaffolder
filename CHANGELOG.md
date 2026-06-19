@@ -19,6 +19,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
   integration.
 - Generator tests that materialize every configuration currently exposed by
   the web interface.
+- CI verification for every supported React, Vue, and Next.js profile using
+  the full generate, install, lint, typecheck, and build sequence.
 
 ### Changed
 
@@ -31,6 +33,12 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Selecting no linter now removes inherited ESLint packages, configuration
   files, and lint scripts.
 - Biome was updated to 2.5.0.
+
+### Removed
+
+- Package-manager selection from the web interface, API configuration, AI
+  recommendations, and feature registry. Generated projects now expose only
+  standard `package.json` metadata without a manager-specific contract.
 
 ## [0.9.0-beta.1] - 2026-06-18
 
