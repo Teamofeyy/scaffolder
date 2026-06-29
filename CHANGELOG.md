@@ -39,6 +39,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
   only image scan, SBOM, push, and deployment jobs.
 - CI now restores Turbo, Cargo, pre-commit, Playwright browser, and Buildx
   caches to reduce repeated workflow time.
+- CI no longer enables pip caching for `actions/setup-python` because this
+  repository does not ship Python dependency manifests.
 - Removed the stale frontend npm lockfile so container vulnerability scans use
   the supported pnpm lockfile only.
 
