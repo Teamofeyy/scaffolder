@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Github, Moon, Sun } from "lucide-react"
@@ -8,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import type { Dictionary } from "@/lib/i18n/dictionaries"
-import { locales, type Locale } from "@/lib/i18n/config"
+import { isLocale, locales, type Locale } from "@/lib/i18n/config"
 
 interface HeaderProps {
   locale: Locale
@@ -25,9 +24,17 @@ export function Header({ locale, dictionary }: HeaderProps) {
   }, [])
 
   const localizedPath = (nextLocale: Locale) => {
-    const segments = pathname.split("/")
-    segments[1] = nextLocale
-    return segments.join("/") || `/${nextLocale}`
+    const segments = pathname.split("/").filter(Boolean)
+
+    if (segments.length === 0) return `/${nextLocale}`
+
+    if (isLocale(segments[0])) {
+      segments[0] = nextLocale
+    } else {
+      segments.unshift(nextLocale)
+    }
+
+    return `/${segments.join("/")}`
   }
 
   return (
@@ -56,9 +63,9 @@ export function Header({ locale, dictionary }: HeaderProps) {
                 className="h-7 min-w-9 px-2 font-mono text-xs uppercase"
                 asChild
               >
-                <Link href={localizedPath(item)} hrefLang={item}>
+                <a href={localizedPath(item)} hrefLang={item}>
                   {item}
-                </Link>
+                </a>
               </Button>
             ))}
           </div>

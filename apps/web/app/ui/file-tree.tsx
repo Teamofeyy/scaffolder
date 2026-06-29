@@ -1,7 +1,7 @@
 "use client"
 
 import { ChevronRight, File, Folder, FolderOpen } from "lucide-react"
-import { useState } from "react"
+import { KeyboardEvent, useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface FileTreeNode {
@@ -19,15 +19,43 @@ export function FileTree({ data, level = 0 }: FileTreeProps) {
   const [isOpen, setIsOpen] = useState(level < 2)
 
   const isFolder = data.type === "folder"
+  const toggleFolder = () => {
+    if (isFolder) setIsOpen((current) => !current)
+  }
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (!isFolder) return
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      toggleFolder()
+    }
+
+    if (event.key === "ArrowRight") {
+      event.preventDefault()
+      setIsOpen(true)
+    }
+
+    if (event.key === "ArrowLeft") {
+      event.preventDefault()
+      setIsOpen(false)
+    }
+  }
 
   return (
-    <div className="select-none">
-      <div
+    <div className="select-none" role={level === 0 ? "tree" : "group"}>
+      <button
+        type="button"
+        role="treeitem"
+        aria-level={level + 1}
+        aria-expanded={isFolder ? isOpen : undefined}
+        aria-selected={false}
         style={{ paddingLeft: `${level * 12}px` }}
         className={cn(
-          "flex items-center gap-2 py-1 px-2 rounded-md hover:bg-accent/50 cursor-pointer transition-colors",
+          "flex w-full items-center gap-2 rounded-md px-2 py-1 text-left transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         )}
-        onClick={() => isFolder && setIsOpen(!isOpen)}
+        onClick={toggleFolder}
+        onKeyDown={handleKeyDown}
       >
         {isFolder && (
           <ChevronRight className={cn("h-4 w-4 text-muted-foreground transition-transform", isOpen && "rotate-90")} />
@@ -47,7 +75,7 @@ export function FileTree({ data, level = 0 }: FileTreeProps) {
         <span className={cn("text-sm font-mono", isFolder ? "font-semibold text-foreground" : "text-muted-foreground")}>
           {data.name}
         </span>
-      </div>
+      </button>
 
       {isFolder && isOpen && data.children && (
         <div>

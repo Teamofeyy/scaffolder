@@ -17,7 +17,7 @@
 ## Возможности
 
 - Выбор frontend-шаблона: React, Vue, Svelte, Solid, Preact, Nuxt, Angular.
-- Выбор менеджера пакетов: npm, pnpm, Yarn, Bun.
+- Выбор менеджера пакетов в стабильном UI: npm или pnpm.
 - Выбор роутинга, стилизации и state management.
 - Поиск дополнительных библиотек в npm registry.
 - Добавление пакетов отдельно в `dependencies` или `devDependencies`.
@@ -108,6 +108,44 @@ LOAD_TEST_REQUESTS=100 LOAD_TEST_CONCURRENCY=10 npm run load:test:generate
 ```
 
 Результат выводится в JSON: количество запросов, успешные/ошибочные ответы, RPS и latency `min/p50/p95/max`.
+
+Пороговые значения для release gate:
+
+```bash
+LOAD_TEST_MAX_P95_MS=15000 LOAD_TEST_MAX_ERROR_RATE=0 npm run load:test:generate
+```
+
+## Frontend test gate
+
+Component tests:
+
+```bash
+pnpm --filter nextjs-scaffolder test
+```
+
+E2E, accessibility audit, ZIP download, locale switch, and mobile regression screenshots:
+
+```bash
+pnpm --filter nextjs-scaffolder test:e2e
+```
+
+Update the mobile screenshot baseline only after reviewing the visual change:
+
+```bash
+pnpm --filter nextjs-scaffolder test:e2e:update
+```
+
+## Production health and observability
+
+Backend endpoints:
+
+- `/live` - process liveness.
+- `/ready` - readiness for Compose health checks.
+- `/health` - backward-compatible health check.
+- `/capabilities` - currently reports whether AI recommendations are configured.
+- `/metrics` - Prometheus-compatible generation and error counters.
+
+AI recommendations are optional. Set `AI_PROXY_URL` and `AI_PROXY_SECRET` in the production environment to expose the AI assistant in the frontend; otherwise the UI hides it.
 
 ## Архитектура
 

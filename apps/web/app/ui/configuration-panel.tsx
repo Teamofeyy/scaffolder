@@ -63,8 +63,6 @@ function supportsReactState(framework: Framework) {
 const packageManagers: { value: PackageManager; label: string }[] = [
   { value: "npm", label: "npm" },
   { value: "pnpm", label: "pnpm" },
-  { value: "yarn", label: "Yarn" },
-  { value: "bun", label: "Bun" },
 ]
 
 type DependencyListItem = {
@@ -258,7 +256,7 @@ export function ConfigurationPanel({
 
             <div className="space-y-2">
               <Label>{dictionary.packageManager}</Label>
-              <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label={dictionary.packageManager}>
+              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={dictionary.packageManager}>
                 {packageManagers.map((manager) => {
                   const selected = config.packageManager === manager.value
                   return (
