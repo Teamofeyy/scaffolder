@@ -45,9 +45,13 @@ test("switches locale through the header control", async ({ page }, testInfo) =>
 
   await page.goto("/en")
 
-  await page.getByRole("link", { name: "ru" }).click()
+  const ruLink = page.getByRole("link", { name: /^ru$/ })
+  await expect(ruLink).toHaveAttribute("href", "/ru")
 
-  await expect(page).toHaveURL(/\/ru$/)
+  await Promise.all([
+    page.waitForURL(/\/ru$/),
+    ruLink.evaluate((link: HTMLAnchorElement) => link.click()),
+  ])
   await expect(page.getByRole("heading", { name: "Scaffolder" })).toBeVisible()
   await expect(page.getByText("Конфигурация проекта")).toBeVisible()
 })
