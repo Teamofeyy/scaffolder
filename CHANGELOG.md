@@ -7,6 +7,35 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+
+- Frontend unit/component testing with Vitest and Testing Library.
+- Playwright E2E coverage for locale switching, preview rendering, ZIP download,
+  accessibility checks, and mobile regression screenshots.
+- Keyboard navigation for the preview file tree.
+- AI capabilities discovery through `/capabilities`; the frontend now hides the
+  AI assistant when the backend reports that AI recommendations are unavailable.
+- Backend liveness (`/live`), readiness (`/ready`), and Prometheus-compatible
+  `/metrics` endpoints for generation count, error count, and generation
+  latency totals.
+- Graceful backend shutdown on `SIGTERM`/Ctrl+C.
+- Docker image vulnerability scanning and CycloneDX SBOM generation in CI.
+- Load-test thresholds for p95 latency and error rate.
+- Caddy access-log persistence and rotation.
+
+### Changed
+
+- Limited the visible package-manager choices to npm and pnpm for the 1.0
+  release gate.
+- Improved light-theme primary color contrast to satisfy WCAG AA checks.
+- Locale switching now uses regular anchors so language changes perform a full
+  navigation and reliably update middleware-managed locale state.
+- Production Compose now includes resource limits, bounded container logs,
+  readiness checks, and optional AI proxy environment variables.
+- Deployment now waits for healthy services and rolls back to the previous
+  environment file when the update fails.
+- Frontend Docker builds now use the workspace `pnpm-lock.yaml`.
+
 ## [0.9.0-beta.1] - 2026-06-18
 
 This is the first public beta release of Scaffolder. It establishes the

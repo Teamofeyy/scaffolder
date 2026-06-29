@@ -4,6 +4,8 @@ const baseUrl = process.env.LOAD_TEST_BASE_URL ?? DEFAULT_BASE_URL
 const concurrency = Number(process.env.LOAD_TEST_CONCURRENCY ?? 8)
 const requests = Number(process.env.LOAD_TEST_REQUESTS ?? 40)
 const endpoint = process.env.LOAD_TEST_ENDPOINT ?? 'generate'
+const maxP95Ms = Number(process.env.LOAD_TEST_MAX_P95_MS ?? 15_000)
+const maxErrorRate = Number(process.env.LOAD_TEST_MAX_ERROR_RATE ?? 0)
 
 const config = {
   project_name: 'load-test-app',
@@ -74,6 +76,10 @@ await Promise.all(
 const totalMs = performance.now() - startedAt
 const durations = results.filter((result) => result.ok).map((result) => result.durationMs)
 const failed = results.filter((result) => !result.ok)
+const errorRate = failed.length / requests
+const p95 = percentile(durations, 95)
+const min = durations.length > 0 ? Math.min(...durations) : 0
+const max = durations.length > 0 ? Math.max(...durations) : 0
 const statusCounts = results.reduce((acc, result) => {
   const key = String(result.status)
   acc[key] = (acc[key] ?? 0) + 1
@@ -85,20 +91,25 @@ console.log(JSON.stringify({
   endpoint,
   requests,
   concurrency,
+  thresholds: {
+    maxP95Ms,
+    maxErrorRate,
+  },
   totalMs: Math.round(totalMs),
   requestsPerSecond: Number((requests / (totalMs / 1000)).toFixed(2)),
   statusCounts,
   success: requests - failed.length,
   failed: failed.length,
+  errorRate: Number(errorRate.toFixed(4)),
   latencyMs: {
-    min: Math.round(Math.min(...durations)),
+    min: Math.round(min),
     p50: Math.round(percentile(durations, 50)),
-    p95: Math.round(percentile(durations, 95)),
-    max: Math.round(Math.max(...durations)),
+    p95: Math.round(p95),
+    max: Math.round(max),
   },
   failedSamples: failed.slice(0, 3),
 }, null, 2))
 
-if (failed.length > 0) {
+if (errorRate > maxErrorRate || p95 > maxP95Ms) {
   process.exitCode = 1
 }

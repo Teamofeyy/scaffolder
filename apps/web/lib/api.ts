@@ -58,6 +58,10 @@ export interface AiRecommendationResponse {
   warnings: string[]
 }
 
+export interface CapabilitiesResponse {
+  aiRecommendations: boolean
+}
+
 // URL агента (можно вынести в env переменные)
 const AGENT_URL = '/api'
 
@@ -206,6 +210,14 @@ export async function searchDependencies(query: string): Promise<DependencySearc
   })
   const response = await axios.get(`${AGENT_URL}/dependencies/search?${params.toString()}`, {
     timeout: 10000,
+  })
+
+  return response.data
+}
+
+export async function getCapabilities(): Promise<CapabilitiesResponse> {
+  const response = await axios.get(`${AGENT_URL}/capabilities`, {
+    timeout: 5000,
   })
 
   return response.data

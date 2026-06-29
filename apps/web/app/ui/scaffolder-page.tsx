@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Boxes, Terminal } from "lucide-react"
 import { Header } from "./header"
 import { ConfigurationPanel } from "./configuration-panel"
 import { PreviewPanel } from "./preview-panel"
 import { GenerateButton } from "./generate-button"
 import { AiSidebar } from "./ai-sidebar"
+import { getCapabilities } from "@/lib/api"
 import type { Dictionary } from "@/lib/i18n/dictionaries"
 import type { Locale } from "@/lib/i18n/config"
 import type { ProjectConfig } from "@/types/project-config"
@@ -17,6 +18,7 @@ interface ScaffolderPageProps {
 }
 
 export function ScaffolderPage({ locale, dictionary }: ScaffolderPageProps) {
+  const [aiAvailable, setAiAvailable] = useState(false)
   const [config, setConfig] = useState<ProjectConfig>({
     projectName: "",
     framework: "react",
@@ -29,6 +31,22 @@ export function ScaffolderPage({ locale, dictionary }: ScaffolderPageProps) {
     dependencies: [],
     devDependencies: [],
   })
+
+  useEffect(() => {
+    let cancelled = false
+
+    getCapabilities()
+      .then((capabilities) => {
+        if (!cancelled) setAiAvailable(capabilities.aiRecommendations)
+      })
+      .catch(() => {
+        if (!cancelled) setAiAvailable(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div className="app-shell min-h-screen">
@@ -78,12 +96,14 @@ export function ScaffolderPage({ locale, dictionary }: ScaffolderPageProps) {
           errors={dictionary.errors}
         />
       </main>
-      <AiSidebar
-        config={config}
-        setConfig={setConfig}
-        locale={locale}
-        dictionary={dictionary.ai}
-      />
+      {aiAvailable && (
+        <AiSidebar
+          config={config}
+          setConfig={setConfig}
+          locale={locale}
+          dictionary={dictionary.ai}
+        />
+      )}
     </div>
   )
 }

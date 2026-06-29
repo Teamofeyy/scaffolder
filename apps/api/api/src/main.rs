@@ -13,6 +13,8 @@ use axum::{
 };
 use color_eyre::Result;
 use serde::Deserialize;
+use serde::Serialize;
+use std::time::Instant;
 use tower_http::{
     cors::{Any, CorsLayer},
     trace::TraceLayer,
@@ -26,6 +28,7 @@ use utoipa_swagger_ui::SwaggerUi;
 pub mod ai_proxy;
 pub mod archive;
 pub mod generation_service;
+pub mod metrics;
 pub mod npm_registry;
 pub mod operations;
 pub mod resolver;
@@ -35,7 +38,15 @@ pub mod workspace;
 
 #[derive(OpenApi)]
 #[openapi(
-    paths(health_check, generate, features),
+    paths(
+        health_check,
+        liveness_check,
+        readiness_check,
+        capabilities,
+        metrics_endpoint,
+        generate,
+        features
+    ),
     components(schemas(ProjectConfig, FeatureResponse))
 )]
 struct ApiDoc;
@@ -53,20 +64,25 @@ async fn main() -> Result<()> {
         .await
         .expect("failed to bind backend listener");
     info!("Server started at: {}", listener.local_addr()?);
-    if let Err(err) = axum::serve(listener, app).await {
+    if let Err(err) = axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+    {
         error!(error = ?err, "Backend server failed");
         return Err(err.into());
     }
 
-    error!("Backend server exited unexpectedly without shutdown signal");
-    Err(color_eyre::eyre::eyre!(
-        "backend server exited unexpectedly without shutdown signal"
-    ))
+    info!("Backend server stopped gracefully");
+    Ok(())
 }
 
 fn app() -> Router {
     let (router, api_doc) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .routes(utoipa_axum::routes!(health_check))
+        .routes(utoipa_axum::routes!(liveness_check))
+        .routes(utoipa_axum::routes!(readiness_check))
+        .routes(utoipa_axum::routes!(capabilities))
+        .routes(utoipa_axum::routes!(metrics_endpoint))
         .routes(utoipa_axum::routes!(generate))
         .routes(utoipa_axum::routes!(features))
         .split_for_parts();
@@ -93,6 +109,38 @@ async fn health_check() -> impl IntoResponse {
     (StatusCode::OK, res)
 }
 
+#[utoipa::path(get, path = "/live", responses())]
+async fn liveness_check() -> impl IntoResponse {
+    (StatusCode::OK, "Live")
+}
+
+#[utoipa::path(get, path = "/ready", responses())]
+async fn readiness_check() -> impl IntoResponse {
+    (StatusCode::OK, "Ready")
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CapabilitiesResponse {
+    ai_recommendations: bool,
+}
+
+#[utoipa::path(get, path = "/capabilities", responses())]
+async fn capabilities() -> impl IntoResponse {
+    Json(CapabilitiesResponse {
+        ai_recommendations: ai_proxy_configured(),
+    })
+}
+
+#[utoipa::path(get, path = "/metrics", responses())]
+async fn metrics_endpoint() -> impl IntoResponse {
+    (
+        StatusCode::OK,
+        [(header::CONTENT_TYPE, "text/plain; version=0.0.4")],
+        metrics::render(),
+    )
+}
+
 #[utoipa::path(
     post,
     path = "/generate",
@@ -105,8 +153,10 @@ async fn health_check() -> impl IntoResponse {
 )]
 async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
     debug!("Got a generate request");
+    let started_at = Instant::now();
     match generate_project(req).await {
         Ok(archive) => {
+            metrics::record_generate(started_at.elapsed(), true);
             info!(file_name = %archive.file_name, "Project archive generated");
             Response::builder()
                 .header(header::CONTENT_TYPE, "application/zip")
@@ -118,6 +168,7 @@ async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
                 .unwrap()
         }
         Err(err) => {
+            metrics::record_generate(started_at.elapsed(), false);
             error!(error = ?err, "Failed to generate project archive");
             Response::builder()
                 .status(500)
@@ -132,6 +183,7 @@ async fn preview(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
     match preview_project_tree(req) {
         Ok(tree) => Json(tree).into_response(),
         Err(err) => {
+            metrics::record_http_error();
             error!(error = ?err, "Failed to preview project structure");
             (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
         }
@@ -153,6 +205,7 @@ async fn search_dependencies(Query(query): Query<DependencySearchQuery>) -> impl
     match search_npm_dependencies(q, query.limit.unwrap_or(10)).await {
         Ok(results) => Json(results).into_response(),
         Err(err) => {
+            metrics::record_http_error();
             error!(error = ?err, query = %q, "Failed to search npm dependencies");
             (StatusCode::BAD_GATEWAY, "Failed to search npm registry").into_response()
         }
@@ -173,4 +226,39 @@ async fn search_dependencies(Query(query): Query<DependencySearchQuery>) -> impl
 async fn features() -> impl IntoResponse {
     debug!("Got an features request");
     Json(feature_registry_for_api())
+}
+
+fn ai_proxy_configured() -> bool {
+    std::env::var("AI_PROXY_URL")
+        .map(|value| !value.trim().is_empty())
+        .unwrap_or(false)
+        && std::env::var("AI_PROXY_SECRET")
+            .map(|value| !value.trim().is_empty())
+            .unwrap_or(false)
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install SIGTERM handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        () = ctrl_c => {},
+        () = terminate => {},
+    }
+
+    info!("Shutdown signal received");
 }

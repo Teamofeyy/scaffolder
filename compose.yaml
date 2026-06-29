@@ -6,25 +6,37 @@ services:
     image: ${BACKEND_IMAGE:-scaffolder/scaffolder-backend}:${IMAGE_TAG:-local}
     container_name: scaffolder-backend
     restart: unless-stopped
+    environment:
+      AI_PROXY_URL: ${AI_PROXY_URL:-}
+      AI_PROXY_SECRET: ${AI_PROXY_SECRET:-}
+    cpus: "1.50"
+    mem_limit: 1g
     expose:
       - "8000"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8000/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8000/ready"]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   frontend:
     build:
-      context: ./apps/web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/Dockerfile
     image: ${FRONTEND_IMAGE:-scaffolder/scaffolder-frontend}:${IMAGE_TAG:-local}
     container_name: scaffolder-frontend
     restart: unless-stopped
     environment:
       NODE_ENV: production
       BACKEND_API_URL: http://backend:8000
+    cpus: "1.00"
+    mem_limit: 768m
     depends_on:
       backend:
         condition: service_healthy
@@ -40,11 +52,18 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   caddy:
     image: caddy:2.10-alpine
     container_name: scaffolder-caddy
     restart: unless-stopped
+    cpus: "0.50"
+    mem_limit: 256m
     depends_on:
       frontend:
         condition: service_healthy
@@ -56,9 +75,16 @@ services:
       - "${HTTPS_PORT:-8443}:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_logs:/var/log/caddy
       - caddy_data:/data
       - caddy_config:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
 
 volumes:
+  caddy_logs:
   caddy_data:
   caddy_config:

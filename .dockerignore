@@ -1,0 +1,13 @@
+.git
+.github
+.turbo
+node_modules
+**/node_modules
+**/.next
+**/.turbo
+**/target
+**/tsconfig.tsbuildinfo
+apps/web/test-results
+apps/web/playwright-report
+apps/web/e2e/**/*.png
+*.log

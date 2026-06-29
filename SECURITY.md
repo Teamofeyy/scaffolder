@@ -44,3 +44,16 @@ Security reports may cover:
 
 Vulnerabilities in third-party packages should also be reported to the
 upstream project when appropriate.
+
+## Production safeguards
+
+The production deployment uses separate liveness and readiness checks, bounded
+container logs, container CPU/memory limits, Caddy access-log rotation, Docker
+image vulnerability scanning, and SBOM generation in CI.
+
+AI recommendations are disabled unless both `AI_PROXY_URL` and
+`AI_PROXY_SECRET` are configured. The frontend uses `/capabilities` to hide the
+AI assistant when the backend reports that AI is unavailable.
+
+Operational metrics are exposed at `/metrics` and include generation totals,
+generation failures, total generation latency, and HTTP error counts.

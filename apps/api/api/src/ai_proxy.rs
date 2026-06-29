@@ -1,3 +1,4 @@
+use crate::metrics;
 use crate::schema::{
     Framework, Linting, PackageManager, ProjectConfig, Routing, StateManagement, Styling,
 };
@@ -157,6 +158,10 @@ async fn call_ai_proxy(
 }
 
 fn error_response(status: StatusCode, message: &'static str) -> axum::response::Response {
+    if status.is_client_error() || status.is_server_error() {
+        metrics::record_http_error();
+    }
+
     (status, Json(json!({ "error": message }))).into_response()
 }
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import { Bot, Check, Loader2, MessageSquare, Sparkles, Wand2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -28,6 +28,9 @@ export function AiSidebar({ config, setConfig, locale, dictionary }: AiSidebarPr
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [appliedRequestId, setAppliedRequestId] = useState<string | null>(null)
+  const dialogRef = useRef<HTMLElement>(null)
+  const openerRef = useRef<HTMLButtonElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   const patchRows = useMemo(() => {
     if (!recommendation) return []
@@ -72,10 +75,63 @@ export function AiSidebar({ config, setConfig, locale, dictionary }: AiSidebarPr
     })
   }
 
+  const closeDialog = () => {
+    setIsOpen(false)
+    window.setTimeout(() => openerRef.current?.focus(), 0)
+  }
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    closeButtonRef.current?.focus()
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isOpen])
+
+  const handleDialogKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault()
+      closeDialog()
+      return
+    }
+
+    if (event.key !== "Tab") return
+
+    const focusableElements = dialogRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )
+    const focusable = Array.from(focusableElements ?? []).filter(
+      (element) => !element.hasAttribute("disabled") && element.offsetParent !== null,
+    )
+
+    if (focusable.length === 0) return
+
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+      return
+    }
+
+    if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
+  }
+
   return (
     <>
       <Button
         type="button"
+        ref={openerRef}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
         className="fixed bottom-5 right-5 z-[70] h-12 rounded-md px-4 shadow-2xl"
         onClick={() => setIsOpen(true)}
       >
@@ -84,18 +140,32 @@ export function AiSidebar({ config, setConfig, locale, dictionary }: AiSidebarPr
       </Button>
 
       {isOpen && (
-          <aside className="fixed bottom-0 right-0 top-0 z-[80] flex w-full max-w-[440px] flex-col border-l border-border bg-background shadow-2xl">
+          <aside
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ai-sidebar-title"
+            className="fixed bottom-0 right-0 top-0 z-[80] flex w-full max-w-[440px] flex-col border-l border-border bg-background shadow-2xl"
+            onKeyDown={handleDialogKeyDown}
+          >
             <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4">
               <div className="flex items-center gap-3">
                 <div className="rounded-md border border-primary/30 bg-primary/10 p-2">
                   <Bot className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold leading-5">{dictionary.title}</h2>
+                  <h2 id="ai-sidebar-title" className="text-sm font-semibold leading-5">{dictionary.title}</h2>
                   <p className="text-xs text-muted-foreground">{dictionary.subtitle}</p>
                 </div>
               </div>
-              <Button type="button" variant="ghost" size="icon-sm" onClick={() => setIsOpen(false)}>
+              <Button
+                ref={closeButtonRef}
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={dictionary.close}
+                onClick={closeDialog}
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
