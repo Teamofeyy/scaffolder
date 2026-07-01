@@ -58,12 +58,10 @@ feature-specific routing, styling, linting, or state-management patches.
 | Package manager | Status | Notes |
 | --- | --- | --- |
 | npm | Supported | Generated projects use standard `package.json` metadata. |
-| pnpm | Experimental | Selection is accepted, but a pnpm lockfile is not guaranteed. |
-| Yarn | Experimental | Selection is accepted, but a Yarn lockfile is not guaranteed. |
-| Bun | Experimental | Selection is accepted, but a Bun lockfile is not guaranteed. |
+| pnpm | Supported | Generated projects use standard `package.json` metadata and pnpm-compatible scripts. |
 
-Stable support for a package manager requires manager-specific metadata,
-commands, lockfile behavior, and CI verification.
+Yarn and Bun are not part of the public `1.0.0` API contract and are rejected
+when submitted as `package_manager` values.
 
 ## State management
 

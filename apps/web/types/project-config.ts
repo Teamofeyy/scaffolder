@@ -27,7 +27,7 @@ export type Routing =
 export type Styling = "tailwind" | "css-modules" | "styled-components"
 export type Linting = "eslint" | "biome" | "none"
 export type StateManagement = "none" | "zustand" | "redux" | "jotai"
-export type PackageManager = "npm" | "pnpm" | "yarn" | "bun"
+export type PackageManager = "npm" | "pnpm"
 
 export interface ProjectConfig {
   projectName: string

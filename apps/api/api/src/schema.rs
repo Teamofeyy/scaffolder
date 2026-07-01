@@ -92,8 +92,6 @@ pub enum StateManagement {
 pub enum PackageManager {
     Npm,
     Pnpm,
-    Yarn,
-    Bun,
 }
 
 #[derive(TS, Serialize, Deserialize, ToSchema)]
@@ -170,9 +168,6 @@ pub enum Feature {
 
     Npm,
     Pnpm,
-    Yarn,
-    Bun,
-    Deno,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, Eq, PartialEq, Hash, ToSchema)]
@@ -453,7 +448,7 @@ pub fn feature_registry() -> HashMap<Feature, FeatureMeta> {
                 description: "Node package manager",
                 category: PackageManager,
                 requires: &[],
-                conflicts: &[Pnpm, Yarn, Bun],
+                conflicts: &[Pnpm],
             },
         ),
         (
@@ -463,27 +458,7 @@ pub fn feature_registry() -> HashMap<Feature, FeatureMeta> {
                 description: "Fast Node package manager",
                 category: PackageManager,
                 requires: &[],
-                conflicts: &[Npm, Yarn, Bun],
-            },
-        ),
-        (
-            Yarn,
-            FeatureMeta {
-                label: "Yarn",
-                description: "Alternative Node package manager",
-                category: PackageManager,
-                requires: &[],
-                conflicts: &[Npm, Pnpm, Bun],
-            },
-        ),
-        (
-            Bun,
-            FeatureMeta {
-                label: "Bun",
-                description: "JavaScript runtime with package manager",
-                category: PackageManager,
-                requires: &[],
-                conflicts: &[Npm, Pnpm, Yarn],
+                conflicts: &[Npm],
             },
         ),
     ])
@@ -527,4 +502,42 @@ pub fn build_types() {
 
     ProjectConfig::export_to(out_path).unwrap();
     Framework::export_to(out_path).unwrap();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn rejects_removed_package_managers() {
+        let config = json!({
+            "project_name": "demo",
+            "framework": "react",
+            "package_manager": "yarn",
+            "styling": "tailwind",
+            "linting": "eslint",
+            "state_management": "none",
+            "routing": "react-router",
+            "dependencies": [],
+            "dev_dependencies": []
+        });
+
+        let result = serde_json::from_value::<ProjectConfig>(config);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn package_manager_features_are_limited_to_npm_and_pnpm() {
+        let mut package_managers = feature_registry_for_api()
+            .into_iter()
+            .filter(|feature| feature.category == Category::PackageManager)
+            .map(|feature| feature.name)
+            .collect::<Vec<_>>();
+
+        package_managers.sort_by_key(|feature| format!("{feature:?}"));
+
+        assert_eq!(package_managers, vec![Feature::Npm, Feature::Pnpm]);
+    }
 }

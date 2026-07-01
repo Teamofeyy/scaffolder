@@ -103,8 +103,6 @@ fn package_manager_to_feature(manager: &PackageManager) -> Feature {
     match manager {
         PackageManager::Npm => Feature::Npm,
         PackageManager::Pnpm => Feature::Pnpm,
-        PackageManager::Yarn => Feature::Yarn,
-        PackageManager::Bun => Feature::Bun,
     }
 }
 

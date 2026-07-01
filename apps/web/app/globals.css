@@ -180,7 +180,7 @@
   }
 
   .app-shell::after {
-    content: "npm create vite@latest  pnpm dlx create  yarn create  bun create";
+    content: "npm create vite@latest  pnpm create vite";
     position: fixed;
     top: 4.7rem;
     left: -4rem;

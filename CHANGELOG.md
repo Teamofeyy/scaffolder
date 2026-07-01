@@ -43,8 +43,13 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
   repository does not ship Python dependency manifests.
 - Template lockfiles now override vulnerable `picomatch` versions so Trivy
   scans pass against the generated-project template inventory.
+- Docker image scans now skip inert template manifests in the backend runtime
+  image while scanning `apps/api/templates` separately as generated-project
+  dependency inventory.
 - Removed the stale frontend npm lockfile so container vulnerability scans use
   the supported pnpm lockfile only.
+- Removed Yarn, Bun, and the unused Deno package-manager feature values from
+  the public API schema and generated TypeScript bindings before `1.0.0`.
 
 ## [0.9.0-beta.1] - 2026-06-18
 

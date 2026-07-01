@@ -175,6 +175,17 @@ jobs:
             type=gha,scope=frontend,mode=max
             type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache,mode=max
 
+      - name: Scan generated-project templates
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: apps/api/templates
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: library
+          severity: CRITICAL,HIGH
+
       - name: Scan backend image vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -184,6 +195,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: os,library
           severity: CRITICAL,HIGH
+          skip-dirs: /app/templates
 
       - name: Scan frontend image vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
@@ -201,6 +213,7 @@ jobs:
           image-ref: ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}
           format: cyclonedx
           output: backend-sbom.cdx.json
+          skip-dirs: /app/templates
 
       - name: Generate frontend SBOM
         uses: aquasecurity/trivy-action@v0.36.0
