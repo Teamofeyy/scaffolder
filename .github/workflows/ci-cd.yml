@@ -275,6 +275,13 @@ jobs:
               cp .env .env.previous
             fi
 
+            DOMAIN="${DOMAIN#http://}"
+            DOMAIN="${DOMAIN#https://}"
+            DOMAIN="${DOMAIN%%/*}"
+            if [ -z "$DOMAIN" ]; then
+              DOMAIN=localhost
+            fi
+
             cat > .env <<EOF
             DOMAIN=$DOMAIN
             ACME_EMAIL=$ACME_EMAIL

@@ -34,6 +34,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
   readiness checks, and optional AI proxy environment variables.
 - Deployment now waits for healthy services and rolls back to the previous
   environment file when the update fails.
+- Deployment now normalizes the `DOMAIN` secret to a host before writing the
+  production `.env`, preventing accidental path-based Caddy redirects.
 - Frontend Docker builds now use the workspace `pnpm-lock.yaml`.
 - Pull requests now run the quality gate once, while pushes to `master` run
   only image build, SBOM, push, and deployment jobs.
