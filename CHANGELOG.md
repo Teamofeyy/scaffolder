@@ -18,6 +18,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Backend liveness (`/live`), readiness (`/ready`), and Prometheus-compatible
   `/metrics` endpoints for generation count, error count, and generation
   latency totals.
+- Structured backend logs for startup context, HTTP request status/latency,
+  generation, preview, and dependency-search diagnostics.
 - Graceful backend shutdown on `SIGTERM`/Ctrl+C.
 - CycloneDX SBOM generation for production images in CI.
 - Load-test thresholds for p95 latency and error rate.

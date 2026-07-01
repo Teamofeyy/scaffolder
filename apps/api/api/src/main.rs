@@ -7,7 +7,7 @@ use axum::{
     Json, Router,
     body::Body,
     extract::Query,
-    http::{Response, StatusCode, header},
+    http::{Request, Response, StatusCode, header},
     response::IntoResponse,
     routing::{get, post},
 };
@@ -17,9 +17,10 @@ use serde::Serialize;
 use std::time::Instant;
 use tower_http::{
     cors::{Any, CorsLayer},
-    trace::TraceLayer,
+    trace::{DefaultOnFailure, TraceLayer},
 };
-use tracing::{debug, error, info};
+use tracing::Level;
+use tracing::{debug, error, info, info_span};
 use tracing_subscriber::EnvFilter;
 use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
@@ -63,7 +64,15 @@ async fn main() -> Result<()> {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8000")
         .await
         .expect("failed to bind backend listener");
-    info!("Server started at: {}", listener.local_addr()?);
+    let local_addr = listener.local_addr()?;
+    info!(
+        address = %local_addr,
+        swagger_path = "/swagger-ui",
+        metrics_path = "/metrics",
+        ai_recommendations = ai_proxy_configured(),
+        template_dir = %template_engine::template_root().display(),
+        "Backend server starting"
+    );
     if let Err(err) = axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await
@@ -98,7 +107,29 @@ fn app() -> Router {
         .route("/preview", post(preview))
         .route("/dependencies/search", get(search_dependencies))
         .route("/ai/recommend", post(ai_proxy::recommend))
-        .layer(TraceLayer::new_for_http())
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(|request: &Request<Body>| {
+                    info_span!(
+                        "http_request",
+                        method = %request.method(),
+                        path = %request.uri().path(),
+                        request_id = %request_id()
+                    )
+                })
+                .on_response(
+                    |response: &Response<Body>,
+                     latency: std::time::Duration,
+                     _span: &tracing::Span| {
+                        info!(
+                            status = response.status().as_u16(),
+                            latency_ms = latency.as_millis(),
+                            "HTTP request completed"
+                        );
+                    },
+                )
+                .on_failure(DefaultOnFailure::new().level(Level::ERROR)),
+        )
         .layer(cors) // подключаем CORS
 }
 
@@ -152,12 +183,31 @@ async fn metrics_endpoint() -> impl IntoResponse {
     )
 )]
 async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
-    debug!("Got a generate request");
+    let request_id = request_id();
+    info!(
+        request_id = %request_id,
+        project_name = %req.project_name,
+        framework = ?req.framework,
+        package_manager = ?req.package_manager,
+        routing = ?req.routing,
+        styling = ?req.styling,
+        linting = ?req.linting,
+        state_management = ?req.state_management,
+        dependencies = req.dependencies.len(),
+        dev_dependencies = req.dev_dependencies.len(),
+        "Project generation requested"
+    );
     let started_at = Instant::now();
     match generate_project(req).await {
         Ok(archive) => {
             metrics::record_generate(started_at.elapsed(), true);
-            info!(file_name = %archive.file_name, "Project archive generated");
+            info!(
+                request_id = %request_id,
+                file_name = %archive.file_name,
+                archive_bytes = archive.bytes.len(),
+                latency_ms = started_at.elapsed().as_millis(),
+                "Project archive generated"
+            );
             Response::builder()
                 .header(header::CONTENT_TYPE, "application/zip")
                 .header(
@@ -169,7 +219,12 @@ async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
         }
         Err(err) => {
             metrics::record_generate(started_at.elapsed(), false);
-            error!(error = ?err, "Failed to generate project archive");
+            error!(
+                request_id = %request_id,
+                error = ?err,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Failed to generate project archive"
+            );
             Response::builder()
                 .status(500)
                 .body(Body::from("Internal Server Error"))
@@ -179,12 +234,34 @@ async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
 }
 
 async fn preview(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
-    debug!("Got a preview request");
+    let request_id = request_id();
+    info!(
+        request_id = %request_id,
+        project_name = %req.project_name,
+        framework = ?req.framework,
+        package_manager = ?req.package_manager,
+        routing = ?req.routing,
+        styling = ?req.styling,
+        "Project preview requested"
+    );
+    let started_at = Instant::now();
     match preview_project_tree(req) {
-        Ok(tree) => Json(tree).into_response(),
+        Ok(tree) => {
+            info!(
+                request_id = %request_id,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Project preview generated"
+            );
+            Json(tree).into_response()
+        }
         Err(err) => {
             metrics::record_http_error();
-            error!(error = ?err, "Failed to preview project structure");
+            error!(
+                request_id = %request_id,
+                error = ?err,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Failed to preview project structure"
+            );
             (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
         }
     }
@@ -202,11 +279,33 @@ async fn search_dependencies(Query(query): Query<DependencySearchQuery>) -> impl
         return Json(Vec::<crate::schema::DependencySearchResult>::new()).into_response();
     }
 
+    let request_id = request_id();
+    info!(
+        request_id = %request_id,
+        query = %q,
+        limit = query.limit.unwrap_or(10),
+        "Dependency search requested"
+    );
+    let started_at = Instant::now();
     match search_npm_dependencies(q, query.limit.unwrap_or(10)).await {
-        Ok(results) => Json(results).into_response(),
+        Ok(results) => {
+            info!(
+                request_id = %request_id,
+                results = results.len(),
+                latency_ms = started_at.elapsed().as_millis(),
+                "Dependency search completed"
+            );
+            Json(results).into_response()
+        }
         Err(err) => {
             metrics::record_http_error();
-            error!(error = ?err, query = %q, "Failed to search npm dependencies");
+            error!(
+                request_id = %request_id,
+                error = ?err,
+                query = %q,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Failed to search npm dependencies"
+            );
             (StatusCode::BAD_GATEWAY, "Failed to search npm registry").into_response()
         }
     }
@@ -235,6 +334,14 @@ fn ai_proxy_configured() -> bool {
         && std::env::var("AI_PROXY_SECRET")
             .map(|value| !value.trim().is_empty())
             .unwrap_or(false)
+}
+
+fn request_id() -> String {
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    static NEXT_REQUEST_ID: AtomicU64 = AtomicU64::new(1);
+    let id = NEXT_REQUEST_ID.fetch_add(1, Ordering::Relaxed);
+    format!("req-{id}")
 }
 
 async fn shutdown_signal() {

@@ -4,6 +4,10 @@ use std::path::{Path, PathBuf};
 
 use crate::schema::ProjectConfig;
 
+pub fn template_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../templates")
+}
+
 pub fn materialize(config: &ProjectConfig, workspace: &Path) -> Result<()> {
     let template_path = resolve_template(config);
 
@@ -20,8 +24,7 @@ pub fn materialize(config: &ProjectConfig, workspace: &Path) -> Result<()> {
 }
 
 pub fn resolve_template(config: &ProjectConfig) -> PathBuf {
-    let base = Path::new(env!("CARGO_MANIFEST_DIR")).join("../templates");
-    base.join(config.framework.as_str())
+    template_root().join(config.framework.as_str())
 }
 
 pub fn detect_materialized_root(workspace: &Path) -> Result<PathBuf> {

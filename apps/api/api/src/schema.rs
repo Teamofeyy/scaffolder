@@ -67,7 +67,7 @@ pub enum Styling {
     StyledComponents,
 }
 
-#[derive(TS, Serialize, Deserialize, ToSchema)]
+#[derive(TS, Serialize, Deserialize, ToSchema, Debug)]
 #[ts(export)]
 #[serde(rename_all = "snake_case")]
 pub enum Linting {
@@ -76,7 +76,7 @@ pub enum Linting {
     None,
 }
 
-#[derive(TS, Serialize, Deserialize, ToSchema)]
+#[derive(TS, Serialize, Deserialize, ToSchema, Debug)]
 #[ts(export)]
 #[serde(rename_all = "snake_case")]
 pub enum StateManagement {
@@ -86,7 +86,7 @@ pub enum StateManagement {
     Jotai,
 }
 
-#[derive(TS, Serialize, Deserialize, ToSchema)]
+#[derive(TS, Serialize, Deserialize, ToSchema, Debug)]
 #[ts(export)]
 #[serde(rename_all = "snake_case")]
 pub enum PackageManager {
