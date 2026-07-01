@@ -42,8 +42,9 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Deployment now normalizes the `DOMAIN` secret to a host before writing the
   production `.env`, preventing accidental path-based Caddy redirects.
 - Frontend Docker builds now use the workspace `pnpm-lock.yaml`.
-- Frontend Docker runtime images now include the installed workspace
-  dependencies required by the Next.js standalone server.
+- Frontend Docker runtime images now start Next.js from the preserved
+  workspace layout instead of the standalone output to avoid broken pnpm
+  symlinks in production containers.
 - Pull requests now run the quality gate once, while pushes to `master` run
   only image build, SBOM, push, and deployment jobs.
 - CI now restores Turbo, Cargo, pre-commit, Playwright browser, and Buildx
