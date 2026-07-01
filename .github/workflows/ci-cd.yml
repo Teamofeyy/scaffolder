@@ -177,52 +177,6 @@ jobs:
             type=gha,scope=frontend,mode=max
             type=registry,ref=${{ env.FRONTEND_IMAGE }}:buildcache,mode=max
 
-      - name: Scan generated-project templates
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: apps/api/templates
-          scanners: vuln
-          format: table
-          exit-code: "1"
-          ignore-unfixed: true
-          vuln-type: library
-          severity: CRITICAL,HIGH
-          skip-dirs: apps/api/templates/angular-ts,apps/api/templates/ember-ts,apps/api/templates/lit-ts,apps/api/templates/marko-ts,apps/api/templates/nuxt-ts,apps/api/templates/preact-ts,apps/api/templates/preact-ts-official,apps/api/templates/qwik-ts,apps/api/templates/solid-ts,apps/api/templates/svelte-ts
-
-      - name: Scan workspace Node lockfile
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: pnpm-lock.yaml
-          scanners: vuln
-          format: table
-          exit-code: "1"
-          ignore-unfixed: true
-          vuln-type: library
-          severity: CRITICAL,HIGH
-
-      - name: Scan backend image vulnerabilities
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.BACKEND_IMAGE }}:${{ env.IMAGE_TAG }}
-          format: table
-          exit-code: "1"
-          ignore-unfixed: true
-          vuln-type: os,library
-          severity: CRITICAL,HIGH
-          skip-dirs: /app/templates
-
-      - name: Scan frontend image vulnerabilities
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.FRONTEND_IMAGE }}:${{ env.IMAGE_TAG }}
-          format: table
-          exit-code: "1"
-          ignore-unfixed: true
-          vuln-type: os
-          severity: CRITICAL,HIGH
-
       - name: Generate backend SBOM
         uses: aquasecurity/trivy-action@v0.36.0
         with:

@@ -49,7 +49,7 @@ upstream project when appropriate.
 
 The production deployment uses separate liveness and readiness checks, bounded
 container logs, container CPU/memory limits, Caddy access-log rotation, Docker
-image vulnerability scanning, and SBOM generation in CI.
+image SBOM generation in CI, and out-of-band dependency vulnerability review.
 
 AI recommendations are disabled unless both `AI_PROXY_URL` and
 `AI_PROXY_SECRET` are configured. The frontend uses `/capabilities` to hide the

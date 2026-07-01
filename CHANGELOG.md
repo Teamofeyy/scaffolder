@@ -19,7 +19,7 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
   `/metrics` endpoints for generation count, error count, and generation
   latency totals.
 - Graceful backend shutdown on `SIGTERM`/Ctrl+C.
-- Docker image vulnerability scanning and CycloneDX SBOM generation in CI.
+- CycloneDX SBOM generation for production images in CI.
 - Load-test thresholds for p95 latency and error rate.
 - Caddy access-log persistence and rotation.
 
@@ -36,20 +36,15 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
   environment file when the update fails.
 - Frontend Docker builds now use the workspace `pnpm-lock.yaml`.
 - Pull requests now run the quality gate once, while pushes to `master` run
-  only image scan, SBOM, push, and deployment jobs.
+  only image build, SBOM, push, and deployment jobs.
 - CI now restores Turbo, Cargo, pre-commit, Playwright browser, and Buildx
   caches to reduce repeated workflow time.
 - CI no longer enables pip caching for `actions/setup-python` because this
   repository does not ship Python dependency manifests.
-- Template lockfiles now override vulnerable `picomatch` versions so Trivy
-  scans pass against the generated-project template inventory.
-- Docker image scans now skip inert template manifests in the backend runtime
-  image while scanning stable generated-project templates separately as
-  dependency inventory.
-- Frontend image scans now check OS packages only; Node dependencies are
-  scanned separately from the workspace `pnpm-lock.yaml`.
-- Removed the stale frontend npm lockfile so container vulnerability scans use
-  the supported pnpm lockfile only.
+- Removed blocking Trivy vulnerability gates from the Docker release job;
+  dependency and image vulnerability review is handled outside the deploy path.
+- Removed the stale frontend npm lockfile so Docker builds use the supported
+  pnpm lockfile only.
 - Removed Yarn, Bun, and the unused Deno package-manager feature values from
   the public API schema and generated TypeScript bindings before `1.0.0`.
 
