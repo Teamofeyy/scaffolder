@@ -33,6 +33,8 @@ ENV NODE_ENV=production \
     PORT=3000
 
 COPY --from=builder /app/apps/web/public ./public
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY --from=builder /app/apps/web/.next/standalone ./
 COPY --from=builder /app/apps/web/.next/static ./.next/static
 
