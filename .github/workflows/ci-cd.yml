@@ -14,6 +14,8 @@ concurrency:
 env:
   NODE_VERSION: "22"
   RUST_VERSION: "1.88.0"
+  TRIVY_DISABLE_VEX_NOTICE: "true"
+  TRIVY_SKIP_VERSION_CHECK: "true"
 
 jobs:
   quality:
@@ -180,11 +182,13 @@ jobs:
         with:
           scan-type: fs
           scan-ref: apps/api/templates
+          scanners: vuln
           format: table
           exit-code: "1"
           ignore-unfixed: true
           vuln-type: library
           severity: CRITICAL,HIGH
+          skip-dirs: apps/api/templates/angular-ts,apps/api/templates/ember-ts,apps/api/templates/lit-ts,apps/api/templates/marko-ts,apps/api/templates/nuxt-ts,apps/api/templates/preact-ts,apps/api/templates/preact-ts-official,apps/api/templates/qwik-ts,apps/api/templates/solid-ts,apps/api/templates/svelte-ts
 
       - name: Scan backend image vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0

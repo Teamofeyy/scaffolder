@@ -44,7 +44,7 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Template lockfiles now override vulnerable `picomatch` versions so Trivy
   scans pass against the generated-project template inventory.
 - Docker image scans now skip inert template manifests in the backend runtime
-  image while scanning `apps/api/templates` separately as generated-project
+  image while scanning stable generated-project templates separately as
   dependency inventory.
 - Removed the stale frontend npm lockfile so container vulnerability scans use
   the supported pnpm lockfile only.
