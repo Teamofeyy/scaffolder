@@ -190,6 +190,18 @@ jobs:
           severity: CRITICAL,HIGH
           skip-dirs: apps/api/templates/angular-ts,apps/api/templates/ember-ts,apps/api/templates/lit-ts,apps/api/templates/marko-ts,apps/api/templates/nuxt-ts,apps/api/templates/preact-ts,apps/api/templates/preact-ts-official,apps/api/templates/qwik-ts,apps/api/templates/solid-ts,apps/api/templates/svelte-ts
 
+      - name: Scan workspace Node lockfile
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: pnpm-lock.yaml
+          scanners: vuln
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: library
+          severity: CRITICAL,HIGH
+
       - name: Scan backend image vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -208,7 +220,7 @@ jobs:
           format: table
           exit-code: "1"
           ignore-unfixed: true
-          vuln-type: os,library
+          vuln-type: os
           severity: CRITICAL,HIGH
 
       - name: Generate backend SBOM

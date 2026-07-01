@@ -46,6 +46,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Docker image scans now skip inert template manifests in the backend runtime
   image while scanning stable generated-project templates separately as
   dependency inventory.
+- Frontend image scans now check OS packages only; Node dependencies are
+  scanned separately from the workspace `pnpm-lock.yaml`.
 - Removed the stale frontend npm lockfile so container vulnerability scans use
   the supported pnpm lockfile only.
 - Removed Yarn, Bun, and the unused Deno package-manager feature values from
