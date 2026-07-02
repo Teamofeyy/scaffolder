@@ -7,6 +7,10 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [1.0.0] - 2026-07-02
+
 ### Added
 
 - Frontend unit/component testing with Vitest and Testing Library.
@@ -25,11 +29,13 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Graceful backend shutdown on `SIGTERM`/Ctrl+C.
 - CycloneDX SBOM generation for production images in CI.
 - Load-test thresholds for p95 latency and error rate.
+- Stable generated-project matrix verification for supported React, Vue, and
+  Next.js profiles.
 - Caddy access-log persistence and rotation.
 
 ### Changed
 
-- Removed package-manager selection from the frontend and backend API contract.
+- Removed installer selection from the frontend and backend API contract.
 - Improved light-theme primary color contrast to satisfy WCAG AA checks.
 - Locale switching now uses regular anchors so language changes perform a full
   navigation and reliably update middleware-managed locale state.
@@ -46,6 +52,10 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Frontend Docker runtime images now start Next.js from the preserved
   workspace layout instead of the standalone output to avoid broken pnpm
   symlinks in production containers.
+- Frontend runtime dependencies now use Next.js `15.5.20`, Axios `1.18.1`,
+  `form-data` `4.0.6`, and fixed `picomatch` versions in the lockfile.
+- The experimental Angular template lockfile now resolves Angular `21.2.17`
+  for the production dependency graph.
 - Backend template lookup now uses an explicit runtime template root in
   production containers instead of build-time Cargo paths.
 - Pull requests now run the quality gate once, while pushes to `master` run
@@ -91,9 +101,9 @@ experimental combinations outside the stable compatibility guarantee.
 
 - Not every option exposed by the API has a complete implementation for every
   framework.
-- Package-manager selection does not yet guarantee manager-specific lockfiles.
 - Generated-project build verification does not yet cover the entire
   configuration matrix.
 
-[Unreleased]: https://github.com/Teamofeyy/scaffolder/compare/v0.9.0-beta.1...HEAD
+[Unreleased]: https://github.com/Teamofeyy/scaffolder/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Teamofeyy/scaffolder/compare/v0.9.0-beta.1...v1.0.0
 [0.9.0-beta.1]: https://github.com/Teamofeyy/scaffolder/releases/tag/v0.9.0-beta.1

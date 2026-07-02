@@ -1,6 +1,6 @@
 {
   "name": "scaffolder",
-  "version": "0.9.0-beta.1",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "bootstrap": "pnpm install && cargo fetch --manifest-path apps/api/Cargo.toml --locked",
@@ -19,7 +19,8 @@
     "deps:update-presets": "node apps/api/scripts/update-dependency-presets.mjs",
     "load:test": "node scripts/load-test.mjs",
     "load:test:preview": "LOAD_TEST_ENDPOINT=preview node scripts/load-test.mjs",
-    "load:test:generate": "LOAD_TEST_ENDPOINT=generate node scripts/load-test.mjs"
+    "load:test:generate": "LOAD_TEST_ENDPOINT=generate node scripts/load-test.mjs",
+    "verify:stable-matrix": "node scripts/verify-stable-matrix.mjs"
   },
   "keywords": [],
   "author": "",

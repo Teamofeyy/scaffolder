@@ -1,6 +1,6 @@
 {
   "name": "api",
-  "version": "0.9.0-beta.1",
+  "version": "1.0.0",
   "scripts": {
     "dev": "cargo run -p scaf-api --locked",
     "build": "cargo build --workspace --release --locked",

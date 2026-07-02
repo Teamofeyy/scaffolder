@@ -79,7 +79,7 @@ An experimental combination may be promoted to supported only after the
 release pipeline verifies:
 
 1. Project generation.
-2. Dependency installation with the selected package manager.
+2. Dependency installation with the release verification command.
 3. Linting or static checks where configured.
 4. Typechecking where applicable.
 5. Production build.

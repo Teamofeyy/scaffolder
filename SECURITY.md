@@ -2,11 +2,8 @@
 
 ## Supported versions
 
-Until `1.0.0` is released, security fixes are provided only for the latest
-commit on the `master` branch.
-
-After `1.0.0`, the latest stable major version will receive security fixes.
-Older major versions may receive fixes only when explicitly announced.
+The latest stable major version receives security fixes. Older major versions
+may receive fixes only when explicitly announced.
 
 ## Reporting a vulnerability
 

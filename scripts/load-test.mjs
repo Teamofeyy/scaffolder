@@ -10,7 +10,6 @@ const maxErrorRate = Number(process.env.LOAD_TEST_MAX_ERROR_RATE ?? 0)
 const config = {
   project_name: 'load-test-app',
   framework: 'react',
-  package_manager: 'npm',
   styling: 'tailwind',
   linting: 'eslint',
   state_management: 'none',
