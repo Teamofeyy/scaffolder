@@ -13,6 +13,7 @@ COPY api/Cargo.toml api/Cargo.toml
 
 # Copy sources and build the real binary.
 COPY api/dependency-presets.json api/dependency-presets.json
+COPY api/verification-matrix.json api/verification-matrix.json
 COPY api/src api/src
 RUN cargo build --release --locked --manifest-path api/Cargo.toml \
     && test "$(stat -c%s target/release/scaf-api)" -gt 1000000 \
