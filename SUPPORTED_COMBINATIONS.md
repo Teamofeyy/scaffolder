@@ -53,16 +53,6 @@ matrix:
 Experimental templates are copied from their base template and may not receive
 feature-specific routing, styling, linting, or state-management patches.
 
-## Package managers
-
-| Package manager | Status | Notes |
-| --- | --- | --- |
-| npm | Supported | Generated projects use standard `package.json` metadata. |
-| pnpm | Supported | Generated projects use standard `package.json` metadata and pnpm-compatible scripts. |
-
-Yarn and Bun are not part of the public `1.0.0` API contract and are rejected
-when submitted as `package_manager` values.
-
 ## State management
 
 Zustand, Redux Toolkit, and Jotai dependency presets are experimental.

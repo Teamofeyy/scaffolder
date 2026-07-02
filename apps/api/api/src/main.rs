@@ -188,7 +188,6 @@ async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
         request_id = %request_id,
         project_name = %req.project_name,
         framework = ?req.framework,
-        package_manager = ?req.package_manager,
         routing = ?req.routing,
         styling = ?req.styling,
         linting = ?req.linting,
@@ -239,7 +238,6 @@ async fn preview(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
         request_id = %request_id,
         project_name = %req.project_name,
         framework = ?req.framework,
-        package_manager = ?req.package_manager,
         routing = ?req.routing,
         styling = ?req.styling,
         "Project preview requested"

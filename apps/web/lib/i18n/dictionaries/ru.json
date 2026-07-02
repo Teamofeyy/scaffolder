@@ -37,7 +37,6 @@
     },
     "projectName": "Название проекта",
     "framework": "Фреймворк",
-    "packageManager": "Менеджер пакетов",
     "routing": "Роутинг",
     "noRouting": "Без роутинга",
     "stylingSystem": "Система стилизации",
@@ -104,7 +103,6 @@
     "send": "Отправить",
     "labels": {
       "framework": "Фреймворк",
-      "packageManager": "Пакетный менеджер",
       "routing": "Роутинг",
       "styling": "Стили",
       "linter": "Линтер",
@@ -117,7 +115,6 @@
     "projectNameRequired": "Название проекта обязательно",
     "projectNameInvalid": "Название проекта может содержать только строчные буквы, цифры, дефисы и подчеркивания",
     "frameworkRequired": "Фреймворк обязателен",
-    "packageManagerRequired": "Менеджер пакетов обязателен",
     "validation": "Ошибка валидации",
     "build": "Ошибка при сборке проекта",
     "server": "Ошибка сервера: {status} {statusText}",

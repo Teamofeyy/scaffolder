@@ -2,7 +2,6 @@ import axios from 'axios'
 import {
   Framework,
   Linting,
-  PackageManager,
   ProjectConfig,
   Routing,
   StateManagement,
@@ -14,7 +13,6 @@ import type { Locale } from '@/lib/i18n/config'
 export interface BackendProjectConfig {
   project_name: string
   framework: string
-  package_manager: string
   styling: string
   linting?: 'eslint' | 'biome' | 'none'
   state_management: string
@@ -42,7 +40,6 @@ export interface DependencySearchResult {
 
 export interface AiConfigPatch {
   framework?: Framework
-  package_manager?: PackageManager
   routing?: Routing
   styling?: Styling
   linting?: Linting
@@ -72,7 +69,6 @@ export function mapConfigToBackend(config: ProjectConfig): BackendProjectConfig 
   return {
     project_name: config.projectName,
     framework: config.framework,
-    package_manager: config.packageManager,
     styling: config.styling,
     linting: config.linting,
     state_management: config.stateManagement,
@@ -113,10 +109,6 @@ export function validateConfig(
 
   if (!config.framework) {
     return { valid: false, error: errors.frameworkRequired }
-  }
-
-  if (!config.packageManager) {
-    return { valid: false, error: errors.packageManagerRequired }
   }
 
   return { valid: true }

@@ -27,8 +27,7 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 
-- Limited the visible package-manager choices to npm and pnpm for the 1.0
-  release gate.
+- Removed package-manager selection from the frontend and backend API contract.
 - Improved light-theme primary color contrast to satisfy WCAG AA checks.
 - Locale switching now uses regular anchors so language changes perform a full
   navigation and reliably update middleware-managed locale state.
@@ -55,8 +54,6 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
   dependency and image vulnerability review is handled outside the deploy path.
 - Removed the stale frontend npm lockfile so Docker builds use the supported
   pnpm lockfile only.
-- Removed Yarn, Bun, and the unused Deno package-manager feature values from
-  the public API schema and generated TypeScript bindings before `1.0.0`.
 
 ## [0.9.0-beta.1] - 2026-06-18
 

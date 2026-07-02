@@ -624,13 +624,10 @@ mod tests {
 
     #[test]
     fn reorder_candidates_prefers_most_specific() {
-        use crate::schema::{
-            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
-        };
+        use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::React,
-            package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -650,13 +647,10 @@ mod tests {
 
     #[test]
     fn bundle_apply_order_is_layered_default_first() {
-        use crate::schema::{
-            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
-        };
+        use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::React,
-            package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -675,13 +669,10 @@ mod tests {
 
     #[test]
     fn tailwind_without_router_gets_framework_tailwind_bundle() {
-        use crate::schema::{
-            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
-        };
+        use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::React,
-            package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -700,9 +691,7 @@ mod tests {
 
     #[test]
     fn tailwind_dependencies_match_framework_integration() {
-        use crate::schema::{
-            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
-        };
+        use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
         let plan = ResolvedPlan {
             selected: vec![Feature::Tailwind],
             ordered: vec![],
@@ -710,7 +699,6 @@ mod tests {
         let mut config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::React,
-            package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -739,13 +727,10 @@ mod tests {
 
     #[test]
     fn next_pages_router_gets_pages_bundle() {
-        use crate::schema::{
-            Framework, Linting, PackageManager, Routing, StateManagement, Styling,
-        };
+        use crate::schema::{Framework, Linting, Routing, StateManagement, Styling};
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: Framework::Nextjs,
-            package_manager: PackageManager::Npm,
             styling: Styling::CssModules,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -776,7 +761,6 @@ mod tests {
         let config = ProjectConfig {
             project_name: "x".to_owned(),
             framework: crate::schema::Framework::Nextjs,
-            package_manager: crate::schema::PackageManager::Npm,
             styling: crate::schema::Styling::CssModules,
             linting: crate::schema::Linting::Eslint,
             state_management: crate::schema::StateManagement::None,

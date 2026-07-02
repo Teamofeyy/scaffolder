@@ -37,7 +37,6 @@
     },
     "projectName": "Project name",
     "framework": "Framework",
-    "packageManager": "Package manager",
     "routing": "Routing",
     "noRouting": "No routing",
     "stylingSystem": "Styling system",
@@ -104,7 +103,6 @@
     "send": "Send",
     "labels": {
       "framework": "Framework",
-      "packageManager": "Package manager",
       "routing": "Routing",
       "styling": "Styling",
       "linter": "Linter",
@@ -117,7 +115,6 @@
     "projectNameRequired": "Project name is required",
     "projectNameInvalid": "Project name may only contain lowercase letters, numbers, hyphens, and underscores",
     "frameworkRequired": "Framework is required",
-    "packageManagerRequired": "Package manager is required",
     "validation": "Validation error",
     "build": "Project generation failed",
     "server": "Server error: {status} {statusText}",

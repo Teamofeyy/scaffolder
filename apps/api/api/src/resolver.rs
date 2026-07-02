@@ -1,8 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::schema::{
-    Feature, Framework, Linting, PackageManager, ProjectConfig, Routing, StateManagement, Styling,
-    feature_registry,
+    Feature, Framework, Linting, ProjectConfig, Routing, StateManagement, Styling, feature_registry,
 };
 
 #[derive(Debug, Clone)]
@@ -46,10 +45,7 @@ pub fn resolve_from_config(config: &ProjectConfig) -> Result<ResolvedPlan, Resol
 }
 
 fn initial_features(config: &ProjectConfig) -> Vec<Feature> {
-    let mut features = vec![
-        framework_to_feature(&config.framework),
-        package_manager_to_feature(&config.package_manager),
-    ];
+    let mut features = vec![framework_to_feature(&config.framework)];
 
     match config.styling {
         Styling::Tailwind => features.push(Feature::Tailwind),
@@ -96,13 +92,6 @@ fn framework_to_feature(framework: &Framework) -> Feature {
         Framework::SvelteTs => Feature::SvelteTs,
         Framework::VueTs => Feature::VueTs,
         Framework::Vue => Feature::Vue,
-    }
-}
-
-fn package_manager_to_feature(manager: &PackageManager) -> Feature {
-    match manager {
-        PackageManager::Npm => Feature::Npm,
-        PackageManager::Pnpm => Feature::Pnpm,
     }
 }
 
@@ -210,13 +199,12 @@ fn dedup(features: Vec<Feature>) -> Vec<Feature> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::schema::{Linting, PackageManager, Routing, StateManagement, Styling};
+    use crate::schema::{Linting, Routing, StateManagement, Styling};
 
     fn config(framework: Framework) -> ProjectConfig {
         ProjectConfig {
             project_name: "demo".to_owned(),
             framework,
-            package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
             linting: Linting::Eslint,
             state_management: StateManagement::None,
@@ -258,7 +246,6 @@ mod tests {
         let cfg = ProjectConfig {
             project_name: "demo".to_owned(),
             framework: Framework::Vue,
-            package_manager: PackageManager::Npm,
             styling: Styling::Tailwind,
             linting: Linting::Eslint,
             state_management: StateManagement::Redux,

@@ -25,7 +25,6 @@ vi.mock("@/lib/api", async (importOriginal) => {
 const config: ProjectConfig = {
   projectName: "demo",
   framework: "react",
-  packageManager: "npm",
   typescript: true,
   styling: "tailwind",
   linting: "eslint",
