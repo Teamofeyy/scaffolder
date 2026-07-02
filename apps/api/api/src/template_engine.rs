@@ -7,7 +7,17 @@ use crate::schema::ProjectConfig;
 const REQUIRED_TEMPLATE_DIRS: &[&str] = &["react-ts", "vue-ts", "nextjs", "patches"];
 
 pub fn template_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../templates")
+    if let Ok(path) = std::env::var("SCAFFOLDER_TEMPLATE_ROOT") {
+        let trimmed = path.trim();
+        if !trimmed.is_empty() {
+            return PathBuf::from(trimmed);
+        }
+    }
+
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("CARGO_MANIFEST_DIR must include the api crate directory")
+        .join("templates")
 }
 
 pub fn validate_template_inventory() -> Result<()> {

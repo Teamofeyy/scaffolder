@@ -46,6 +46,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Frontend Docker runtime images now start Next.js from the preserved
   workspace layout instead of the standalone output to avoid broken pnpm
   symlinks in production containers.
+- Backend template lookup now uses an explicit runtime template root in
+  production containers instead of build-time Cargo paths.
 - Pull requests now run the quality gate once, while pushes to `master` run
   only image build, SBOM, push, and deployment jobs.
 - CI now restores Turbo, Cargo, pre-commit, Playwright browser, and Buildx

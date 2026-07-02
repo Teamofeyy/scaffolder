@@ -21,6 +21,7 @@ RUN cargo build --release --locked --manifest-path api/Cargo.toml \
 FROM debian:bookworm-slim
 
 WORKDIR /app
+ENV SCAFFOLDER_TEMPLATE_ROOT=/app/templates
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates wget \

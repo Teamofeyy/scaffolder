@@ -1,6 +1,7 @@
 use crate::{
     resolver::ResolvedPlan,
     schema::{Feature, ProjectConfig},
+    template_engine::template_root,
 };
 use color_eyre::Result;
 use serde::Deserialize;
@@ -262,8 +263,7 @@ fn apply_feature_template_copies(
     plan: &ResolvedPlan,
 ) -> Result<()> {
     for copy in feature_template_copies(plan) {
-        let source = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../templates")
+        let source = template_root()
             .join("patches")
             .join(copy.source_relative_path);
         if !source.exists() {
@@ -352,7 +352,7 @@ fn apply_patch_bundles(
     config: &ProjectConfig,
     plan: &ResolvedPlan,
 ) -> Result<()> {
-    let bundle_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../templates/patches/bundles");
+    let bundle_root = template_root().join("patches").join("bundles");
     let candidates = patch_bundle_candidates_in_apply_order(config, plan);
 
     let mut applied_any = false;
