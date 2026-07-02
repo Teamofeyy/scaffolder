@@ -294,6 +294,7 @@ function applyConfigPatch(config: ProjectConfig, patch: AiConfigPatch): ProjectC
     styling: patch.styling ?? config.styling,
     linting: patch.linting ?? config.linting,
     stateManagement: patch.state_management ?? config.stateManagement,
+    testing: patch.testing ?? config.testing,
     dependencies: patch.dependencies ?? config.dependencies,
     devDependencies: patch.dev_dependencies ?? config.devDependencies,
   }

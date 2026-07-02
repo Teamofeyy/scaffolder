@@ -10,20 +10,76 @@ test.beforeEach(async ({ page }) => {
     })
   })
 
-  await page.route("**/api/preview", async (route) => {
+  await page.route("**/api/features", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify([
+        { name: "react", label: "React", description: "React framework", category: "framework", requires: [], conflicts: [], support_status: "supported" },
+        { name: "nextjs", label: "Next.js", description: "React meta framework", category: "framework", requires: ["react"], conflicts: [], support_status: "supported" },
+        { name: "vue", label: "Vue", description: "Vue framework", category: "framework", requires: [], conflicts: [], support_status: "supported" },
+        { name: "svelte-ts", label: "Svelte", description: "Svelte framework template", category: "framework", requires: [], conflicts: [], support_status: "experimental" },
+        { name: "solid-ts", label: "Solid", description: "Solid framework template", category: "framework", requires: [], conflicts: [], support_status: "experimental" },
+        { name: "preact-ts", label: "Preact", description: "Preact framework template", category: "framework", requires: [], conflicts: [], support_status: "experimental" },
+        { name: "preact-ts-official", label: "Preact official", description: "Official Preact template", category: "framework", requires: [], conflicts: [], support_status: "unavailable" },
+        { name: "nuxt-ts", label: "Nuxt", description: "Nuxt framework template", category: "framework", requires: [], conflicts: [], support_status: "experimental" },
+        { name: "angular-ts", label: "Angular", description: "Angular framework template", category: "framework", requires: [], conflicts: [], support_status: "experimental" },
+        { name: "qwik-ts", label: "Qwik", description: "Qwik framework template", category: "framework", requires: [], conflicts: [], support_status: "experimental" },
+        { name: "lit-ts", label: "Lit", description: "Lit framework template", category: "framework", requires: [], conflicts: [], support_status: "experimental" },
+        { name: "ember-ts", label: "Ember", description: "Ember framework template", category: "framework", requires: [], conflicts: [], support_status: "experimental" },
+        { name: "marko-ts", label: "Marko", description: "Marko framework template", category: "framework", requires: [], conflicts: [], support_status: "experimental" },
+      ]),
+    })
+  })
+
+  await page.route("**/api/presets", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          id: "react-router-tailwind",
+          label: "React Router App",
+          description: "React SPA with React Router and Tailwind CSS.",
+          status: "supported",
+          config: {
+            framework: "react",
+            styling: "tailwind",
+            linting: "eslint",
+            state_management: "none",
+            routing: "react-router",
+            dependencies: [],
+            dev_dependencies: [],
+            testing: "none",
+          },
+        },
+      ]),
+    })
+  })
+
+  await page.route("**/api/preview/details", async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
-        name: "demo-app",
-        type: "folder",
-        children: [
-          {
-            name: "src",
-            type: "folder",
-            children: [{ name: "main.tsx", type: "file" }],
-          },
-          { name: "package.json", type: "file" },
+        tree: {
+          name: "demo-app",
+          type: "folder",
+          children: [
+            {
+              name: "src",
+              type: "folder",
+              children: [{ name: "main.tsx", type: "file" }],
+            },
+            { name: "package.json", type: "file" },
+          ],
+        },
+        files: [
+          { path: "package.json", language: "json", content: "{\"name\":\"demo-app\"}", truncated: false },
+          { path: "README.md", language: "markdown", content: "# demo-app", truncated: false },
         ],
+        dependencies: ["react", "react-dom"],
+        dev_dependencies: ["vite", "typescript"],
+        commands: ["npm install", "npm run dev", "npm run build"],
+        support_status: "supported",
+        verification: { matrix: "1.1.0", generate: true, install: true, build: true },
       }),
     })
   })

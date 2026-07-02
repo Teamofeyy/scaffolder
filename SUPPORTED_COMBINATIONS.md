@@ -34,6 +34,25 @@ make every cross-product combination supported.
 `Base CSS` means the styling included by the upstream template. It does not
 guarantee a framework-specific CSS Modules example.
 
+## Stable presets
+
+`GET /presets` exposes the stable presets used by the frontend and matrix
+verification:
+
+| Preset | Framework | Routing | Styling | Linting | State | Testing |
+| --- | --- | --- | --- | --- | --- | --- |
+| React SPA | React | None | CSS Modules | ESLint | none | none |
+| React Router App | React | React Router | Tailwind CSS | ESLint | none | none |
+| React Router Data App | React | React Router Data APIs | Tailwind CSS | ESLint | none | none |
+| Vue App | Vue | None | Tailwind CSS | ESLint | none | none |
+| Vue Router App | Vue | Vue Router | Tailwind CSS | ESLint | none | none |
+| Next.js App Router | Next.js | App Router | Tailwind CSS | ESLint | none | none |
+| Next.js Pages Router | Next.js | Pages Router | Tailwind CSS | ESLint | none | none |
+| Minimal | React | None | CSS Modules | none | none | none |
+
+Supported presets must remain backend-owned and must be included in
+`pnpm run verify:stable-matrix`.
+
 ## Experimental framework templates
 
 The following templates are available but are not part of the stable release
@@ -59,6 +78,13 @@ Zustand, Redux Toolkit, and Jotai dependency presets are experimental.
 Scaffolder may add packages without generating a framework-specific store,
 provider, or usage example.
 
+## Testing
+
+`testing` is an additive configuration field and defaults to `none` for
+backward-compatible API requests. Vitest and Playwright remain experimental
+until generated test files, dependencies, `npm test`, and build verification
+are covered by the stable matrix.
+
 ## Linting
 
 - The base template's linting configuration is supported.
@@ -80,6 +106,7 @@ release pipeline verifies:
 
 1. Project generation.
 2. Dependency installation with the release verification command.
-3. Linting or static checks where configured.
-4. Typechecking where applicable.
-5. Production build.
+3. README generation and detailed preview coverage.
+4. Linting or static checks where configured.
+5. Typechecking where applicable.
+6. Production build.

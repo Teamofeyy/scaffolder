@@ -32,6 +32,7 @@ const config: ProjectConfig = {
   routing: "react-router",
   dependencies: [],
   devDependencies: [],
+  testing: "none",
 }
 
 describe("AiSidebar", () => {

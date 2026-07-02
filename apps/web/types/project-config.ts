@@ -27,6 +27,7 @@ export type Routing =
 export type Styling = "tailwind" | "css-modules" | "styled-components"
 export type Linting = "eslint" | "biome" | "none"
 export type StateManagement = "none" | "zustand" | "redux" | "jotai"
+export type Testing = "none" | "vitest" | "playwright"
 
 export interface ProjectConfig {
   projectName: string
@@ -38,6 +39,7 @@ export interface ProjectConfig {
   routing: Routing
   dependencies: string[]
   devDependencies: string[]
+  testing: Testing
 }
 
 /* ---------------------------------------------------

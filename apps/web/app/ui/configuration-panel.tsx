@@ -5,10 +5,10 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Check, Settings2, Package, Palette, Search } from "lucide-react"
-import { ConfigurationPanelProps, ConfigKey, ConfigValue, Linting, Framework, Routing, Styling, StateManagement } from "@/types/project-config"
+import { ConfigurationPanelProps, ConfigKey, ConfigValue, Linting, Framework, Routing, Styling, StateManagement, Testing } from "@/types/project-config"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { DependencySearchResult, searchDependencies } from "@/lib/api"
+import { DependencySearchResult, FeatureResponse, getFeatures, getPresets, ProjectPreset, searchDependencies, SupportStatus } from "@/lib/api"
 import { useEffect, useState } from "react"
 
 export interface Feature {
@@ -87,7 +87,14 @@ export function ConfigurationPanel({
   const [npmResults, setNpmResults] = useState<DependencySearchResult[]>([]);
   const [isSearchingDependencies, setIsSearchingDependencies] = useState(false);
   const [dependencySearchError, setDependencySearchError] = useState<string | null>(null);
+  const [features, setFeatures] = useState<FeatureResponse[]>([]);
+  const [presets, setPresets] = useState<ProjectPreset[]>([]);
+  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
   const updateConfig = (key: ConfigKey, value: ConfigValue) => {
+    if (key !== "projectName") {
+      setSelectedPresetId(null);
+    }
+
     if (key === "framework") {
       const framework = value as Framework;
       const options = routingOptionsForFramework(framework, dictionary.noRouting);
@@ -105,6 +112,7 @@ export function ConfigurationPanel({
   }
 
   const updateLinting = (value: Linting) => {
+    setSelectedPresetId(null);
     setConfig({ ...config, linting: value })
   }
 
@@ -115,8 +123,13 @@ export function ConfigurationPanel({
     { value: "svelte-ts", label: "Svelte", hint: dictionary.options.lightweightTs },
     { value: "solid-ts", label: "Solid", hint: "Fine-grained UI" },
     { value: "preact-ts", label: "Preact", hint: dictionary.options.minimalReactLike },
+    { value: "preact-ts-official", label: "Preact official", hint: "Official template" },
     { value: "nuxt-ts", label: "Nuxt", hint: "Vue full stack" },
     { value: "angular-ts", label: "Angular", hint: "Enterprise SPA" },
+    { value: "qwik-ts", label: "Qwik", hint: "Resumable UI" },
+    { value: "lit-ts", label: "Lit", hint: "Web components" },
+    { value: "ember-ts", label: "Ember", hint: "Convention-driven SPA" },
+    { value: "marko-ts", label: "Marko", hint: "Server-first UI" },
   ]
   const stylingOptions: { value: Styling; label: string; hint: string }[] = [
     { value: "tailwind", label: "Tailwind", hint: "Utility-first CSS" },
@@ -137,8 +150,14 @@ export function ConfigurationPanel({
     { value: "biome", label: "Biome", hint: dictionary.options.fastLint },
     { value: "none", label: dictionary.options.noLinter, hint: dictionary.options.noLinterHint },
   ]
+  const testingOptions: { value: Testing; label: string; hint: string }[] = [
+    { value: "none", label: dictionary.options.none, hint: dictionary.options.noTesting },
+    { value: "vitest", label: "Vitest", hint: dictionary.options.unitTesting },
+    { value: "playwright", label: "Playwright", hint: dictionary.options.e2eTesting },
+  ]
   const routingOptions = routingOptionsForFramework(config.framework, dictionary.noRouting);
   const stateOptions = supportsReactState(config.framework) ? reactStateOptions : nonReactStateOptions;
+  const featureStatus = new Map(features.map((feature) => [feature.name, feature.support_status]));
   const remoteDependencies = npmResults.map((dep) => ({
     id: `${dep.name}@${dep.version}`,
     name: dep.name,
@@ -148,6 +167,7 @@ export function ConfigurationPanel({
   }));
   const dependencyItems: DependencyListItem[] = remoteDependencies;
   const removeDependency = (bucket: "prod" | "dev", dependency: string) => {
+    setSelectedPresetId(null);
     setConfig({
       ...config,
       dependencies: bucket === "prod"
@@ -194,6 +214,45 @@ export function ConfigurationPanel({
     };
   }, [dependencyQuery, dictionary.dependencySearchError]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    getFeatures()
+      .then((nextFeatures) => {
+        if (!cancelled) setFeatures(nextFeatures);
+      })
+      .catch(() => {
+        if (!cancelled) setFeatures([]);
+      });
+
+    getPresets()
+      .then((nextPresets) => {
+        if (!cancelled) setPresets(nextPresets);
+      })
+      .catch(() => {
+        if (!cancelled) setPresets([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const applyPreset = (preset: ProjectPreset) => {
+    setSelectedPresetId(preset.id);
+    setConfig({
+      ...config,
+      framework: preset.config.framework as Framework,
+      routing: preset.config.routing as Routing,
+      styling: preset.config.styling as Styling,
+      linting: (preset.config.linting ?? "eslint") as Linting,
+      stateManagement: preset.config.state_management as StateManagement,
+      dependencies: preset.config.dependencies,
+      devDependencies: preset.config.dev_dependencies,
+      testing: (preset.config.testing ?? "none") as Testing,
+    });
+  };
+
   return (
     <Card className="gap-4 border-border/50 py-4 shadow-lg">
       <CardHeader className="px-5">
@@ -203,7 +262,53 @@ export function ConfigurationPanel({
         </CardTitle>
         <CardDescription>{dictionary.description}</CardDescription>
       </CardHeader>
-      <CardContent className="px-5">
+      <CardContent className="space-y-5 px-5">
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <Label>{dictionary.presets}</Label>
+            <span className="text-xs text-muted-foreground">
+              {selectedPresetId ? presets.find((preset) => preset.id === selectedPresetId)?.label : dictionary.customConfiguration}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            {presets.map((preset) => {
+              const selected = selectedPresetId === preset.id;
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className={cn(
+                    "min-h-20 rounded-md border p-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    selected
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                  )}
+                  onClick={() => applyPreset(preset)}
+                >
+                  <span className="flex items-start justify-between gap-2">
+                    <span className="text-sm font-semibold leading-5">{preset.label}</span>
+                    <StatusBadge status={preset.status} dictionary={dictionary} />
+                  </span>
+                  <span className="mt-1 block text-xs leading-4 text-muted-foreground">
+                    {preset.description}
+                  </span>
+                </button>
+              );
+            })}
+            {presets.length === 0 && (
+              <p className="rounded-md border border-border/50 bg-muted/20 p-3 text-sm text-muted-foreground">
+                {dictionary.presetsUnavailable}
+              </p>
+            )}
+          </div>
+        </section>
+
+        <div className="flex items-center justify-between gap-3">
+          <Label>{dictionary.manualConfiguration}</Label>
+          {!selectedPresetId && (
+            <span className="text-xs font-medium text-primary">{dictionary.customConfiguration}</span>
+          )}
+        </div>
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="basic">{dictionary.tabs.basic}</TabsTrigger>
@@ -227,21 +332,31 @@ export function ConfigurationPanel({
               <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 2xl:grid-cols-4" role="radiogroup" aria-label={dictionary.framework}>
                 {frameworkOptions.map((option) => {
                   const selected = config.framework === option.value
+                  const status = featureStatus.get(option.value) ?? "experimental"
+                  const unavailable = status === "unavailable"
                   return (
                     <button
                       key={option.value}
                       type="button"
                       role="radio"
                       aria-checked={selected}
+                      disabled={unavailable}
                       className={cn(
                         "min-h-14 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
                           ? "border-primary bg-primary/10 text-foreground"
                           : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                        unavailable && "cursor-not-allowed opacity-70 hover:bg-background hover:text-foreground",
                       )}
                       onClick={() => updateConfig("framework", option.value)}
                     >
-                      <span className="block text-sm font-semibold leading-5">{option.label}</span>
+                      <span className="flex items-start justify-between gap-2">
+                        <span className="text-sm font-semibold leading-5">{option.label}</span>
+                        <StatusBadge
+                          status={status}
+                          dictionary={dictionary}
+                        />
+                      </span>
                       <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">{option.hint}</span>
                     </button>
                   )
@@ -376,6 +491,35 @@ export function ConfigurationPanel({
               )}
             </div>
 
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                {dictionary.testing}
+              </Label>
+              <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label={dictionary.testing}>
+                {testingOptions.map((option) => {
+                  const selected = config.testing === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      className={cn(
+                        "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        selected
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                      )}
+                      onClick={() => updateConfig("testing", option.value)}
+                    >
+                      <span className="block text-sm font-semibold leading-5">{option.label}</span>
+                      <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">{option.hint}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* Dependency search / selection */}
             <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -429,6 +573,7 @@ export function ConfigurationPanel({
                     const selectedProd = config.dependencies.some((item) => dependencyName(item) === dep.name)
                     const selectedDev = config.devDependencies.some((item) => dependencyName(item) === dep.name)
                     const selectDependency = (bucket: "prod" | "dev") => {
+                      setSelectedPresetId(null)
                       const token = dependencyToken(dep)
                       const nextDependencies = config.dependencies.filter((item) => dependencyName(item) !== dep.name)
                       const nextDevDependencies = config.devDependencies.filter((item) => dependencyName(item) !== dep.name)
@@ -574,4 +719,31 @@ function SelectedDependency({
 function dependencyVersion(raw: string, name: string) {
   const prefix = `${name}@`
   return raw.startsWith(prefix) ? raw.slice(prefix.length) : undefined
+}
+
+function StatusBadge({
+  status,
+  dictionary,
+}: {
+  status: SupportStatus
+  dictionary: ConfigurationPanelProps["dictionary"]
+}) {
+  const label = status === "supported"
+    ? dictionary.status.supported
+    : status === "experimental"
+      ? dictionary.status.experimental
+      : dictionary.status.unavailable
+
+  return (
+    <span
+      className={cn(
+        "shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-4",
+        status === "supported" && "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+        status === "experimental" && "border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-300",
+        status === "unavailable" && "border-border bg-muted text-muted-foreground",
+      )}
+    >
+      {label}
+    </span>
+  )
 }

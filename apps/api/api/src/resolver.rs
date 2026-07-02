@@ -211,6 +211,7 @@ mod tests {
             routing: Routing::None,
             dependencies: vec![],
             dev_dependencies: vec![],
+            testing: crate::schema::Testing::None,
         }
     }
 
@@ -252,6 +253,7 @@ mod tests {
             routing: Routing::None,
             dependencies: vec![],
             dev_dependencies: vec![],
+            testing: crate::schema::Testing::None,
         };
 
         let err = resolve_from_config(&cfg).expect_err("resolver should fail");

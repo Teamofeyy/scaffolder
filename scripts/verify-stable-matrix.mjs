@@ -36,34 +36,29 @@ try {
   await ensureBackend()
 
   for (const [name, options] of matrix) {
-    const projectName = `stable-${name}`
-    const caseDir = path.join(outputRoot, name)
-    await rm(caseDir, { recursive: true, force: true })
-    await mkdir(caseDir, { recursive: true })
-
-    console.log(`==> ${name}: generate`)
-    const zipPath = path.join(caseDir, `${projectName}.zip`)
-    await generateZip(zipPath, {
-      project_name: projectName,
+    await verifyCase(name, {
       ...options,
       linting: 'eslint',
       state_management: 'none',
       dependencies: [],
       dev_dependencies: [],
+      testing: 'none',
     })
+  }
 
-    console.log(`==> ${name}: extract`)
-    await run('python3', ['-m', 'zipfile', '-e', zipPath, caseDir], { cwd: repoRoot })
-    const projectRoot = await findProjectRoot(caseDir)
-
-    console.log(`==> ${name}: install`)
-    await runShell(installCommand, projectRoot)
-
-    console.log(`==> ${name}: build`)
-    await runShell(buildCommand, projectRoot)
+  const presets = await fetchJson(`${baseUrl}/presets`)
+  const supportedPresets = presets.filter((preset) => preset.status === 'supported')
+  for (const preset of supportedPresets) {
+    await verifyCase(`preset-${preset.id}`, {
+      ...preset.config,
+      dependencies: preset.config.dependencies ?? [],
+      dev_dependencies: preset.config.dev_dependencies ?? [],
+      testing: preset.config.testing ?? 'none',
+    })
   }
 
   console.log(`Stable matrix verified: ${matrix.length}/${matrix.length}`)
+  console.log(`Supported presets verified: ${supportedPresets.length}/${supportedPresets.length}`)
   if (keepOutput) {
     console.log(`Output kept at ${outputRoot}`)
   }
@@ -74,6 +69,33 @@ try {
   if (backend) {
     backend.kill('SIGTERM')
   }
+}
+
+async function verifyCase(name, options) {
+  const projectName = `stable-${name}`
+  const caseDir = path.join(outputRoot, name)
+  await rm(caseDir, { recursive: true, force: true })
+  await mkdir(caseDir, { recursive: true })
+
+  console.log(`==> ${name}: generate`)
+  const zipPath = path.join(caseDir, `${projectName}.zip`)
+  const config = {
+    project_name: projectName,
+    ...options,
+  }
+  await previewDetails(config)
+  await generateZip(zipPath, config)
+
+  console.log(`==> ${name}: extract`)
+  await run('python3', ['-m', 'zipfile', '-e', zipPath, caseDir], { cwd: repoRoot })
+  const projectRoot = await findProjectRoot(caseDir)
+  await access(path.join(projectRoot, 'README.md'))
+
+  console.log(`==> ${name}: install`)
+  await runShell(installCommand, projectRoot)
+
+  console.log(`==> ${name}: build`)
+  await runShell(buildCommand, projectRoot)
 }
 
 async function ensureBackend() {
@@ -129,6 +151,33 @@ async function generateZip(zipPath, config) {
     file.on('error', reject)
     response.body.pipeTo(Writable.toWeb(file)).catch(reject)
   })
+}
+
+async function previewDetails(config) {
+  const response = await fetch(`${baseUrl}/preview/details`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(config),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Preview details failed with ${response.status}: ${await response.text()}`)
+  }
+
+  const details = await response.json()
+  const readme = details.files?.find((file) => file.path === 'README.md')
+  const packageJson = details.files?.find((file) => file.path === 'package.json')
+  if (!details.tree || !readme || !packageJson || !details.commands?.length) {
+    throw new Error('Preview details response is missing tree, README, package.json, or commands')
+  }
+}
+
+async function fetchJson(url) {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Fetch failed for ${url} with ${response.status}: ${await response.text()}`)
+  }
+  return response.json()
 }
 
 async function findProjectRoot(caseDir) {

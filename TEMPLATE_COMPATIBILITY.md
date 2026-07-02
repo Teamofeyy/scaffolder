@@ -26,6 +26,23 @@ The guarantee applies to the generated output at generation time. It does not
 guarantee compatibility with future major versions of frameworks or arbitrary
 third-party dependencies.
 
+The 1.1.0 frontend and API expose this guarantee through support status fields
+and the static `/verification-matrix` manifest. A framework being present in
+the template inventory is not enough to make it supported.
+
+## Preview and README contract
+
+Supported combinations must produce deterministic preview details through
+`POST /preview/details`. Preview may read only files inside the generated
+workspace and should limit large file content before returning it to clients.
+
+Every generated supported project must include a README that documents:
+
+- Project name.
+- Framework, routing, styling, linting, state, and testing selections.
+- npm commands to install, develop, build, and test when applicable.
+- Scaffolder version and support status.
+
 ## Dependency updates
 
 - Patch updates may refresh compatible dependency versions.
@@ -61,7 +78,7 @@ Experimental templates:
 
 - May track upstream changes more quickly.
 - May have incomplete feature integration.
-- May be removed or renamed in a minor release before `1.0.0`.
+- May be removed or renamed in a minor release before promotion to supported.
 - Do not receive the same compatibility guarantee as supported combinations.
 
 After `1.0.0`, removal of a previously supported template or option requires a

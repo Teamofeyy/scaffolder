@@ -22,6 +22,19 @@
   "preview": {
     "structure": "Structure preview",
     "description": "Files and folders in your project",
+    "tabs": {
+      "structure": "Structure",
+      "commands": "Commands"
+    },
+    "status": {
+      "supported": "Supported",
+      "experimental": "Experimental",
+      "unavailable": "Coming later"
+    },
+    "verifiedIn": "Verified in {version}",
+    "generate": "Generate",
+    "install": "Install",
+    "build": "Build",
     "loading": "Loading...",
     "updating": "Updating...",
     "unavailable": "Preview unavailable",
@@ -36,11 +49,16 @@
       "tools": "Tools"
     },
     "projectName": "Project name",
+    "presets": "Presets",
+    "presetsUnavailable": "Presets are unavailable",
+    "manualConfiguration": "Manual configuration",
+    "customConfiguration": "Custom configuration",
     "framework": "Framework",
     "routing": "Routing",
     "noRouting": "No routing",
     "stylingSystem": "Styling system",
     "stateManagement": "State management",
+    "testing": "Testing",
     "linter": "Linter",
     "linterUnavailable": "The linter can only be configured for Next.js projects. Other frameworks use the template defaults.",
     "dependencies": "Additional dependencies",
@@ -64,10 +82,18 @@
       "minimalStore": "Minimal store",
       "structuredState": "Structured state management",
       "noStateForTemplate": "No state layer is added for this template",
+      "noTesting": "Do not add test tooling",
+      "unitTesting": "Unit and component tests",
+      "e2eTesting": "Browser smoke tests",
       "nextLint": "Standard Next.js checks",
       "fastLint": "Fast formatter and linter",
       "noLinter": "No linter",
       "noLinterHint": "Do not add linting configuration"
+    },
+    "status": {
+      "supported": "Supported",
+      "experimental": "Experimental",
+      "unavailable": "Coming later"
     }
   },
   "generate": {

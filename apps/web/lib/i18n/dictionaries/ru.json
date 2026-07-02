@@ -22,6 +22,19 @@
   "preview": {
     "structure": "Предпросмотр структуры",
     "description": "Файлы и папки вашего проекта",
+    "tabs": {
+      "structure": "Структура",
+      "commands": "Команды"
+    },
+    "status": {
+      "supported": "Supported",
+      "experimental": "Experimental",
+      "unavailable": "Coming later"
+    },
+    "verifiedIn": "Проверено в {version}",
+    "generate": "Generate",
+    "install": "Install",
+    "build": "Build",
     "loading": "Загрузка...",
     "updating": "Обновление...",
     "unavailable": "Предпросмотр недоступен",
@@ -36,11 +49,16 @@
       "tools": "Инструменты"
     },
     "projectName": "Название проекта",
+    "presets": "Пресеты",
+    "presetsUnavailable": "Пресеты недоступны",
+    "manualConfiguration": "Ручная настройка",
+    "customConfiguration": "Custom configuration",
     "framework": "Фреймворк",
     "routing": "Роутинг",
     "noRouting": "Без роутинга",
     "stylingSystem": "Система стилизации",
     "stateManagement": "Управление состоянием",
+    "testing": "Тестирование",
     "linter": "Линтер",
     "linterUnavailable": "Линтер настраивается только для Next.js проектов. Для других фреймворков будут использованы настройки шаблона.",
     "dependencies": "Дополнительные зависимости",
@@ -64,10 +82,18 @@
       "minimalStore": "Минимальный store",
       "structuredState": "Структурированный state",
       "noStateForTemplate": "Для этого шаблона state layer не добавляется",
+      "noTesting": "Не добавлять тестовые инструменты",
+      "unitTesting": "Unit и component tests",
+      "e2eTesting": "Browser smoke tests",
       "nextLint": "Стандартная проверка Next.js",
       "fastLint": "Быстрый formatter/linter",
       "noLinter": "Без линтера",
       "noLinterHint": "Не добавлять настройку"
+    },
+    "status": {
+      "supported": "Supported",
+      "experimental": "Experimental",
+      "unavailable": "Coming later"
     }
   },
   "generate": {

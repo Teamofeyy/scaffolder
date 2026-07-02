@@ -1,0 +1,118 @@
+{
+  "version": "1.1.0",
+  "verified_at": "2026-07-02",
+  "combinations": [
+    {
+      "framework": "react",
+      "routing": "none",
+      "styling": "css-modules",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "react",
+      "routing": "none",
+      "styling": "tailwind",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "react",
+      "routing": "react-router",
+      "styling": "css-modules",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "react",
+      "routing": "react-router",
+      "styling": "tailwind",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "react",
+      "routing": "react-router-data",
+      "styling": "css-modules",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "react",
+      "routing": "react-router-data",
+      "styling": "tailwind",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "vue",
+      "routing": "none",
+      "styling": "css-modules",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "vue",
+      "routing": "none",
+      "styling": "tailwind",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "vue",
+      "routing": "vue-router",
+      "styling": "css-modules",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "vue",
+      "routing": "vue-router",
+      "styling": "tailwind",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "nextjs",
+      "routing": "app-router",
+      "styling": "css-modules",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "nextjs",
+      "routing": "app-router",
+      "styling": "tailwind",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "nextjs",
+      "routing": "pages-router",
+      "styling": "css-modules",
+      "generate": true,
+      "install": true,
+      "build": true
+    },
+    {
+      "framework": "nextjs",
+      "routing": "pages-router",
+      "styling": "tailwind",
+      "generate": true,
+      "install": true,
+      "build": true
+    }
+  ]
+}

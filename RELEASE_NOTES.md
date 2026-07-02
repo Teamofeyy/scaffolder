@@ -1,95 +1,74 @@
-# Scaffolder 1.0.0
+# Scaffolder 1.1.0
 
-Scaffolder `1.0.0` is the first stable release. It defines the public API,
-frontend workflow, template support matrix, deployment baseline, and
-maintenance policy for supported generated projects.
+Scaffolder `1.1.0` focuses on trust in generated output: backend-defined
+presets, visible support levels, deterministic preview details, generated
+project README files, and a verification matrix that the UI can display.
 
 ## Highlights
 
-- Generate supported React, Vue, and Next.js projects from a web UI.
-- Preview the generated file tree before downloading a ZIP archive.
-- Configure routing, styling, linting, state management, and additional npm
-  dependencies.
-- Use React Router component or data-router modes.
-- Use Vue Router and Next.js App Router or Pages Router.
-- Apply Tailwind CSS integrations for the supported React, Vue, and Next.js
-  profiles.
-- Search npm registry dependencies from the UI.
-- Run the service through Docker Compose with readiness checks, bounded logs,
-  Caddy access-log rotation, and rollback-oriented deployment diagnostics.
-- Use `/live`, `/ready`, `/metrics`, `/capabilities`, `/preview`, and
-  `/generate` as the stable HTTP API surface documented for this release.
+- Choose stable presets from the first configuration step.
+- See Supported, Experimental, and Coming later badges for framework cards and
+  presets.
+- Inspect `package.json`, README, entry files, dependencies, and post-download
+  commands before generating the ZIP archive.
+- Use `GET /presets`, `GET /verification-matrix`, and
+  `POST /preview/details` as the new 1.1.0 API surface.
+- Generate README files that document the selected stack, npm commands,
+  Scaffolder version, and support status.
+- Verify supported presets in the stable matrix script in addition to the base
+  React, Vue, and Next.js matrix.
 
 ## Stable support
 
-The stable matrix is limited to the combinations listed in
-`SUPPORTED_COMBINATIONS.md`:
+The stable 1.1.0 matrix remains intentionally narrow:
 
-- React + TypeScript with base CSS or Tailwind CSS, with no router, React
-  Router, or React Router Data APIs.
-- Vue + TypeScript with base CSS or Tailwind CSS, with no router or Vue Router.
-- Next.js with App Router or Pages Router, with base CSS or Tailwind CSS.
+- React with no router, React Router, or React Router Data APIs.
+- Vue with no router or Vue Router.
+- Next.js with App Router or Pages Router.
+- Base CSS/CSS Modules and Tailwind CSS variants for those profiles.
 
-Experimental framework templates remain available where exposed by the API, but
-they are not part of the 1.0.0 compatibility guarantee.
+Angular, Svelte, Solid, Preact, Nuxt, Qwik, Lit, Ember, and Marko remain
+experimental unless a future release promotes them after install and build
+verification.
 
-## API and UI contract
+## API and compatibility
 
-Installer selection is not part of the 1.0.0 API or frontend contract.
-Generated projects are ordinary npm ecosystem projects; release verification
-uses the documented generated-project install and build commands rather than a
-user-selectable installer field.
+- `ProjectConfig.testing` is additive and defaults to `none` when omitted.
+- Existing `/generate`, `/preview`, `/features`, `/capabilities`, `/ready`,
+  `/live`, and `/metrics` endpoints remain available.
+- Package manager or installer selection is still intentionally absent from
+  the public contract.
 
-## Security and dependency status
+## Upgrade notes
 
-- The frontend runtime has been updated to Next.js `15.5.20`.
-- The frontend dependency graph resolves `form-data` to `4.0.6`.
-- The experimental Angular template production dependency graph resolves to
-  Angular `21.2.17`.
-- CI keeps CycloneDX SBOM generation for production images.
-- Blocking Trivy deployment gates are intentionally outside the deploy path;
-  dependency review is handled as a release responsibility before tagging.
+- Frontend clients should fetch presets from `/presets`; do not duplicate
+  preset definitions in UI code.
+- Frontend clients should use `/features` or detailed preview responses for
+  support status rather than maintaining local stable/experimental lists.
+- Consumers that want richer preview should move from `/preview` to
+  `/preview/details`; the old file-tree endpoint remains compatible.
 
-## Known limitations
+## Verification status
 
-- State-management presets may add dependencies without generating a complete
-  store or provider integration.
-- Biome and no-linter modes may leave configuration inherited from a base
-  template.
-- Experimental framework templates have less feature-specific patch coverage.
-- The AI assistant is hidden unless the backend reports that AI
-  recommendations are configured.
-
-## Upgrade and migration notes
-
-From `0.9.0-beta.1`:
-
-- Remove any client usage of the old installer field before calling the API.
-- Update deployment files from this release so backend containers resolve
-  templates through `SCAFFOLDER_TEMPLATE_ROOT=/app/templates`.
-- Rebuild and redeploy both backend and frontend images; the frontend image now
-  runs from the preserved workspace layout.
-- Confirm the `apps/api/templates` submodule commit is available remotely
-  before tagging or deploying.
-
-## Verification
-
-The following release gates were completed locally for this release
-preparation:
+Completed locally during release preparation:
 
 ```bash
-cargo fmt --manifest-path apps/api/Cargo.toml --all --check
 cargo test --manifest-path apps/api/Cargo.toml --locked
 pnpm --filter nextjs-scaffolder typecheck
 pnpm --filter nextjs-scaffolder test
+pnpm --filter nextjs-scaffolder lint
 pnpm --filter nextjs-scaffolder test:e2e
 pnpm run build:web
 cargo clippy --manifest-path apps/api/Cargo.toml --workspace --all-targets -- -D warnings
+pnpm run check
 pnpm run verify:stable-matrix
 ```
 
-`pnpm run verify:stable-matrix` generated, installed, and built all 14 stable
-React, Vue, and Next.js combinations.
+HTTP smoke checks were also completed for `/presets`, `/verification-matrix`,
+`/features`, and `/preview/details`.
+
+`pnpm run verify:stable-matrix` generated, previewed, installed, and built all
+14 stable combinations and all 8 supported presets.
 
 The production deployment for the release commit must complete successfully on
-`master` before creating the `v1.0.0` tag.
+`master` before creating the `v1.1.0` tag.

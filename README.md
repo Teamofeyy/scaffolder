@@ -16,11 +16,14 @@
 
 ## Возможности
 
+- Готовые presets для стабильных React, Vue и Next.js профилей.
+- Backend-driven статусы Supported, Experimental и Coming later для шаблонов.
 - Выбор frontend-шаблона: React, Vue, Svelte, Solid, Preact, Nuxt, Angular.
 - Выбор роутинга, стилизации и state management.
 - Поиск дополнительных библиотек в npm registry.
 - Добавление пакетов отдельно в `dependencies` или `devDependencies`.
-- Предпросмотр структуры проекта перед скачиванием.
+- Предпросмотр структуры, `package.json`, README, entry files, зависимостей и
+  команд перед скачиванием.
 - Генерация ZIP-архива с итоговым проектом.
 
 ## Быстрый запуск
@@ -67,14 +70,36 @@ http://localhost:3000
 ## Как пользоваться
 
 1. Введите название проекта, например `my-app`.
-2. Выберите фреймворк.
-3. Выберите роутинг, стилизацию и state management.
+2. Выберите preset или перейдите к ручной настройке.
+3. Выберите фреймворк, роутинг, стилизацию, state management и testing.
 4. В разделе инструментов найдите npm-пакет по названию.
 5. Нажмите `dep`, чтобы добавить пакет в `dependencies`, или `dev`, чтобы добавить в `devDependencies`.
-6. Проверьте предпросмотр структуры.
+6. Проверьте preview tabs: структура, `package.json`, README и команды.
 7. Нажмите `Сгенерировать проект`.
 
-Браузер скачает ZIP-архив. Внутри будет `package.json` с выбранными зависимостями и базовые файлы шаблона.
+Браузер скачает ZIP-архив. Внутри будет `package.json` с выбранными
+зависимостями, README с описанием stack и базовые файлы шаблона.
+
+## API contract
+
+Stable endpoints:
+
+- `GET /presets` - backend-owned preset definitions.
+- `GET /verification-matrix` - stable generation/install/build matrix.
+- `POST /preview/details` - deterministic tree, key files, dependencies,
+  commands, support status, and verification flags.
+- `POST /preview` - backward-compatible file-tree preview.
+- `POST /generate` - ZIP generation.
+- `GET /features` - feature metadata with support status.
+- `GET /capabilities`, `/ready`, `/live`, `/metrics` - runtime status.
+
+Installer or package-manager selection is not part of the API.
+
+More detail:
+
+- [Presets](docs/presets.md)
+- [Verification matrix](docs/verification-matrix.md)
+- [CLI design](docs/cli.md)
 
 ## Обновление preset-зависимостей
 
@@ -150,6 +175,9 @@ Backend endpoints:
 - `/ready` - readiness for Compose health checks.
 - `/health` - backward-compatible health check.
 - `/capabilities` - currently reports whether AI recommendations are configured.
+- `/presets` - stable preset definitions.
+- `/verification-matrix` - verified stable combinations.
+- `/preview/details` - deterministic detailed preview.
 - `/metrics` - Prometheus-compatible generation and error counters.
 
 AI recommendations are optional. Set `AI_PROXY_URL` and `AI_PROXY_SECRET` in the production environment to expose the AI assistant in the frontend; otherwise the UI hides it.

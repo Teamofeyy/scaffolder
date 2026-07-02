@@ -6,6 +6,7 @@ import {
   Routing,
   StateManagement,
   Styling,
+  Testing,
 } from '@/types/project-config'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
 import type { Locale } from '@/lib/i18n/config'
@@ -19,6 +20,7 @@ export interface BackendProjectConfig {
   routing: string
   dependencies: string[]
   dev_dependencies: string[]
+  testing: string
 }
 
 export interface BuildResponse {
@@ -30,6 +32,65 @@ export interface ProjectTreeNode {
   name: string
   type: 'file' | 'folder'
   children?: ProjectTreeNode[]
+}
+
+export type SupportStatus = 'supported' | 'experimental' | 'unavailable'
+
+export interface FeatureResponse {
+  name: string
+  label: string
+  description: string
+  category: string
+  requires: string[]
+  conflicts: string[]
+  support_status: SupportStatus
+}
+
+export interface ProjectPreset {
+  id: string
+  label: string
+  description: string
+  status: SupportStatus
+  config: Omit<BackendProjectConfig, 'project_name'>
+}
+
+export interface VerifiedCombination {
+  framework: string
+  routing: string
+  styling: string
+  state_management?: string
+  testing?: Testing
+  generate: boolean
+  install: boolean
+  build: boolean
+}
+
+export interface VerificationMatrix {
+  version: string
+  verified_at: string
+  combinations: VerifiedCombination[]
+}
+
+export interface PreviewFile {
+  path: string
+  language: string
+  content: string
+  truncated: boolean
+}
+
+export interface PreviewDetails {
+  tree: ProjectTreeNode
+  files: PreviewFile[]
+  dependencies: string[]
+  dev_dependencies: string[]
+  commands: string[]
+  support_status: SupportStatus
+  verification: {
+    matrix: string
+    generate: boolean
+    install: boolean
+    build: boolean
+  }
 }
 
 export interface DependencySearchResult {
@@ -44,6 +105,7 @@ export interface AiConfigPatch {
   styling?: Styling
   linting?: Linting
   state_management?: StateManagement
+  testing?: Testing
   dependencies?: string[]
   dev_dependencies?: string[]
 }
@@ -75,6 +137,7 @@ export function mapConfigToBackend(config: ProjectConfig): BackendProjectConfig 
     routing: config.routing,
     dependencies: config.dependencies,
     dev_dependencies: config.devDependencies,
+    testing: config.testing,
   }
 }
 
@@ -190,6 +253,43 @@ export async function previewProject(config: ProjectConfig): Promise<ProjectTree
 
   const response = await axios.post(`${AGENT_URL}/preview`, backendConfig, {
     timeout: 30000,
+  })
+
+  return response.data
+}
+
+export async function previewProjectDetails(config: ProjectConfig): Promise<PreviewDetails> {
+  const backendConfig = mapConfigToBackend({
+    ...config,
+    projectName: config.projectName.trim() || 'my-project',
+  })
+
+  const response = await axios.post(`${AGENT_URL}/preview/details`, backendConfig, {
+    timeout: 30000,
+  })
+
+  return response.data
+}
+
+export async function getFeatures(): Promise<FeatureResponse[]> {
+  const response = await axios.get(`${AGENT_URL}/features`, {
+    timeout: 5000,
+  })
+
+  return response.data
+}
+
+export async function getPresets(): Promise<ProjectPreset[]> {
+  const response = await axios.get(`${AGENT_URL}/presets`, {
+    timeout: 5000,
+  })
+
+  return response.data
+}
+
+export async function getVerificationMatrix(): Promise<VerificationMatrix> {
+  const response = await axios.get(`${AGENT_URL}/verification-matrix`, {
+    timeout: 5000,
   })
 
   return response.data

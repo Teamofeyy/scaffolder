@@ -30,11 +30,16 @@ before attaching files.
 - **Supported:** Covered by the published support matrix and release checks.
 - **Experimental:** Available for evaluation, but may have incomplete feature
   integration or weaker test coverage.
-- **Unsupported:** Not offered by the current release or outside the documented
-  environment.
+- **Coming later:** Visible or documented as planned, but not offered as a
+  supported generator option in the current release.
+- **Unsupported:** Outside the documented environment or rejected by the API.
 
 Experimental features may change without a major-version release until they
 are promoted to supported status.
+
+The API exposes support status through `/features`, `/presets`, and
+`/preview/details`. The frontend should display those backend statuses instead
+of maintaining a separate stable/experimental list.
 
 ## Response expectations
 

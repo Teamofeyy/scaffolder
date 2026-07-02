@@ -7,7 +7,33 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-No unreleased changes.
+### Added
+
+- Backend-driven support statuses for features and framework cards using
+  `supported`, `experimental`, and `unavailable` states.
+- Stable project presets from `GET /presets` for React, Vue, Next.js, and
+  Minimal profiles.
+- `GET /verification-matrix` with the 1.1.0 stable React/Vue/Next.js
+  generation, install, and build matrix.
+- `POST /preview/details` with deterministic file tree, `package.json`,
+  README, entry files, dependencies, commands, support status, and verification
+  flags.
+- Generated project README output documenting stack choices, npm commands,
+  Scaffolder version, and support status.
+- Preview tabs in the frontend for structure, `package.json`, README, entry
+  files, and commands.
+- Frontend framework and preset badges that distinguish Supported,
+  Experimental, and Coming later options.
+- Additive `testing` field on project configuration with a default `none`
+  value for backward-compatible API requests.
+- Documentation for presets, the verification matrix, and the planned CLI MVP.
+
+### Changed
+
+- The stable matrix verification script now also fetches supported presets from
+  the backend and verifies each preset through generate, install, and build.
+- Frontend preset definitions and support statuses now come from the backend
+  instead of being duplicated in the UI.
 
 ## [1.0.0] - 2026-07-02
 

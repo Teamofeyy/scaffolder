@@ -4,5 +4,6 @@ import type { Linting } from "./Linting";
 import type { Routing } from "./Routing";
 import type { StateManagement } from "./StateManagement";
 import type { Styling } from "./Styling";
+import type { Testing } from "./Testing";
 
-export interface ProjectConfig { project_name: string, framework: Framework, styling: Styling, linting: Linting, state_management: StateManagement, routing: Routing, dependencies: Array<string>, dev_dependencies: Array<string>, }
+export interface ProjectConfig { project_name: string, framework: Framework, styling: Styling, linting: Linting, state_management: StateManagement, routing: Routing, dependencies: Array<string>, dev_dependencies: Array<string>, testing: Testing, }

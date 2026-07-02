@@ -29,6 +29,7 @@ export function ScaffolderPage({ locale, dictionary }: ScaffolderPageProps) {
     routing: "react-router",
     dependencies: [],
     devDependencies: [],
+    testing: "none",
   })
 
   useEffect(() => {

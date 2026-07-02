@@ -1,7 +1,10 @@
 use crate::{
-    generation_service::{generate_project, preview_project_tree},
+    generation_service::{generate_project, preview_project_details, preview_project_tree},
     npm_registry::search_dependencies as search_npm_dependencies,
-    schema::{FeatureResponse, ProjectConfig, feature_registry_for_api},
+    schema::{
+        FeatureResponse, PreviewDetailsResponse, ProjectConfig, ProjectPreset, VerificationMatrix,
+        feature_registry_for_api, project_presets, verification_matrix,
+    },
 };
 use axum::{
     Json, Router,
@@ -46,9 +49,18 @@ pub mod workspace;
         capabilities,
         metrics_endpoint,
         generate,
-        features
+        features,
+        presets,
+        verification_matrix_endpoint,
+        preview_details
     ),
-    components(schemas(ProjectConfig, FeatureResponse))
+    components(schemas(
+        ProjectConfig,
+        FeatureResponse,
+        ProjectPreset,
+        VerificationMatrix,
+        PreviewDetailsResponse
+    ))
 )]
 struct ApiDoc;
 
@@ -99,6 +111,9 @@ fn app() -> Router {
         .routes(utoipa_axum::routes!(metrics_endpoint))
         .routes(utoipa_axum::routes!(generate))
         .routes(utoipa_axum::routes!(features))
+        .routes(utoipa_axum::routes!(presets))
+        .routes(utoipa_axum::routes!(verification_matrix_endpoint))
+        .routes(utoipa_axum::routes!(preview_details))
         .split_for_parts();
 
     // создаём Cors слой
@@ -280,6 +295,51 @@ async fn preview(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
     }
 }
 
+#[utoipa::path(
+    post,
+    path = "/preview/details",
+    request_body = ProjectConfig,
+    responses (
+        (status = 200,
+         description = "Detailed deterministic project preview",
+         content_type = "application/json",
+         body = PreviewDetailsResponse
+        )
+    )
+)]
+async fn preview_details(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
+    let request_id = request_id();
+    info!(
+        request_id = %request_id,
+        project_name = %req.project_name,
+        framework = ?req.framework,
+        routing = ?req.routing,
+        styling = ?req.styling,
+        "Detailed project preview requested"
+    );
+    let started_at = Instant::now();
+    match preview_project_details(req) {
+        Ok(details) => {
+            info!(
+                request_id = %request_id,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Detailed project preview generated"
+            );
+            Json(details).into_response()
+        }
+        Err(err) => {
+            metrics::record_http_error();
+            error!(
+                request_id = %request_id,
+                error = ?err,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Failed to generate detailed project preview"
+            );
+            (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 struct DependencySearchQuery {
     q: String,
@@ -338,6 +398,36 @@ async fn search_dependencies(Query(query): Query<DependencySearchQuery>) -> impl
 async fn features() -> impl IntoResponse {
     debug!("Got an features request");
     Json(feature_registry_for_api())
+}
+
+#[utoipa::path(
+    get,
+    path = "/presets",
+    responses (
+        (status = 200,
+         description = "List of project presets",
+         content_type = "application/json",
+         body = [ProjectPreset]
+        )
+    )
+)]
+async fn presets() -> impl IntoResponse {
+    Json(project_presets())
+}
+
+#[utoipa::path(
+    get,
+    path = "/verification-matrix",
+    responses (
+        (status = 200,
+         description = "Stable verification matrix",
+         content_type = "application/json",
+         body = VerificationMatrix
+        )
+    )
+)]
+async fn verification_matrix_endpoint() -> impl IntoResponse {
+    Json(verification_matrix())
 }
 
 fn ai_proxy_configured() -> bool {
