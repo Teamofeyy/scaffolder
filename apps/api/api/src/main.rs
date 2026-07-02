@@ -65,6 +65,11 @@ async fn main() -> Result<()> {
         .await
         .expect("failed to bind backend listener");
     let local_addr = listener.local_addr()?;
+    if let Err(err) = template_engine::validate_template_inventory() {
+        error!(error = ?err, "Template inventory validation failed at startup");
+        return Err(err);
+    }
+
     info!(
         address = %local_addr,
         swagger_path = "/swagger-ui",
@@ -147,7 +152,17 @@ async fn liveness_check() -> impl IntoResponse {
 
 #[utoipa::path(get, path = "/ready", responses())]
 async fn readiness_check() -> impl IntoResponse {
-    (StatusCode::OK, "Ready")
+    match template_engine::validate_template_inventory() {
+        Ok(()) => (StatusCode::OK, "Ready").into_response(),
+        Err(err) => {
+            error!(error = ?err, "Readiness check failed");
+            (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "Template inventory is unavailable",
+            )
+                .into_response()
+        }
+    }
 }
 
 #[derive(Serialize)]

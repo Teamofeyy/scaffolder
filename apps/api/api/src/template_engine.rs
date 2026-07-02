@@ -4,11 +4,36 @@ use std::path::{Path, PathBuf};
 
 use crate::schema::ProjectConfig;
 
+const REQUIRED_TEMPLATE_DIRS: &[&str] = &["react-ts", "vue-ts", "nextjs", "patches"];
+
 pub fn template_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../templates")
 }
 
+pub fn validate_template_inventory() -> Result<()> {
+    let root = template_root();
+    if !root.is_dir() {
+        return Err(color_eyre::eyre::eyre!(
+            "template submodule is missing or not a directory: {}",
+            root.display()
+        ));
+    }
+
+    for dir in REQUIRED_TEMPLATE_DIRS {
+        let path = root.join(dir);
+        if !path.is_dir() {
+            return Err(color_eyre::eyre::eyre!(
+                "required template directory is missing: {}",
+                path.display()
+            ));
+        }
+    }
+
+    Ok(())
+}
+
 pub fn materialize(config: &ProjectConfig, workspace: &Path) -> Result<()> {
+    validate_template_inventory()?;
     let template_path = resolve_template(config);
 
     if !template_path.exists() {

@@ -28,6 +28,10 @@ RUN apt-get update \
 
 COPY --from=builder /scaf-api /usr/local/bin/scaf-api
 COPY templates templates
+RUN test -d templates/react-ts \
+    && test -d templates/vue-ts \
+    && test -d templates/nextjs \
+    && test -d templates/patches
 
 RUN useradd --create-home --uid 10001 appuser
 

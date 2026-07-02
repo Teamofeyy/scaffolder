@@ -18,6 +18,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Backend liveness (`/live`), readiness (`/ready`), and Prometheus-compatible
   `/metrics` endpoints for generation count, error count, and generation
   latency totals.
+- Backend startup, readiness checks, and Docker builds now validate that the
+  templates submodule inventory is present before preview or generation runs.
 - Structured backend logs for startup context, HTTP request status/latency,
   generation, preview, and dependency-search diagnostics.
 - Graceful backend shutdown on `SIGTERM`/Ctrl+C.

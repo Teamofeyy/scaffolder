@@ -31,6 +31,15 @@
 pnpm bootstrap
 ```
 
+Если репозиторий был склонирован без submodules, подтяните шаблоны отдельно:
+
+```bash
+git submodule update --init --recursive
+```
+
+Без `apps/api/templates` backend не пройдет readiness-check, а предпросмотр и
+генерация проектов будут недоступны.
+
 Запустить только backend:
 
 ```bash
