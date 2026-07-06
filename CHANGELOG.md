@@ -30,6 +30,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 
+- Caddy now routes requests by the forwarded `Host` header on port 80 so it can
+  run behind an external reverse proxy that connects by IP.
 - The stable matrix verification script now also fetches supported presets from
   the backend and verifies each preset through generate, install, and build.
 - Frontend preset definitions and support statuses now come from the backend

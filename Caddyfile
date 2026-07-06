@@ -2,7 +2,7 @@
 	email {$ACME_EMAIL:admin@example.com}
 }
 
-{$DOMAIN:localhost} {
+:80 {
 	encode zstd gzip
 
 	header {
@@ -12,14 +12,24 @@
 		X-Frame-Options "SAMEORIGIN"
 	}
 
-	route {
-        handle_path /api/* {
-	        reverse_proxy backend:8000
-        }
+	@site_host host {$DOMAIN:localhost}
+
+	handle @site_host {
+		handle_path /api/* {
+			reverse_proxy backend:8000 {
+				header_up Host {http.request.host}
+			}
+		}
 
 		handle {
-			reverse_proxy frontend:3000
+			reverse_proxy frontend:3000 {
+				header_up Host {http.request.host}
+			}
 		}
+	}
+
+	handle {
+		respond "Not found" 404
 	}
 
 	log {
