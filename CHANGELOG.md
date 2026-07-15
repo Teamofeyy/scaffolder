@@ -27,6 +27,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Additive `testing` field on project configuration with a default `none`
   value for backward-compatible API requests.
 - Documentation for presets, the verification matrix, and the planned CLI MVP.
+- Nix development shell tooling for Node.js 22, pnpm 10, pre-commit, and the
+  repository's pinned Rust toolchain.
 
 ### Changed
 
