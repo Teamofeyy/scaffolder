@@ -9,9 +9,9 @@
     "language": "Language"
   },
   "hero": {
-    "eyebrow": "template generation runtime",
+    "eyebrow": "project foundry",
     "title": "Scaffolder",
-    "description": "Create the structure for your next project in seconds"
+    "description": "Choose the stack, inspect the files, and download a ready frontend starter without leaving the page."
   },
   "terminal": {
     "framework": "Framework",
@@ -106,7 +106,9 @@
     "errorTitle": "Project generation failed",
     "unknownError": "Unknown error",
     "generating": "Generating project...",
-    "button": "Generate project"
+    "button": "Generate project",
+    "archiveTarget": "Archive target",
+    "dependencyCount": "{count} deps"
   },
   "ai": {
     "emptyMessage": "Describe the project you want to build",

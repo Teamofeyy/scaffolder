@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Eye } from "lucide-react"
+import { Eye, FolderTree, ShieldCheck } from "lucide-react"
 import { FileTree } from "./file-tree"
 import { PreviewPanelProps } from "@/types/project-config"
 import { previewProjectDetails, PreviewDetails, PreviewFile } from "@/lib/api"
@@ -47,11 +47,11 @@ export function PreviewPanel({ config, dictionary }: PreviewPanelProps) {
   const entryFiles = details?.files.filter((file) => file.path !== "package.json" && file.path !== "README.md") ?? []
 
   return (
-    <Card className="gap-4 border-border/50 py-4 shadow-lg">
-      <CardHeader className="px-5">
+    <Card className="preview-panel gap-0 overflow-hidden border-0 py-0 shadow-none">
+      <CardHeader className="preview-panel__header px-5 py-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Eye className="h-5 w-5 text-primary" />
               {dictionary.structure}
             </CardTitle>
@@ -60,10 +60,10 @@ export function PreviewPanel({ config, dictionary }: PreviewPanelProps) {
           {details && (
             <span
               className={cn(
-                "rounded-md border px-2 py-1 text-xs font-semibold uppercase",
-                details.support_status === "supported" && "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-                details.support_status === "experimental" && "border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-300",
-                details.support_status === "unavailable" && "border-border bg-muted text-muted-foreground",
+                "status-badge",
+                details.support_status === "supported" && "status-badge--supported",
+                details.support_status === "experimental" && "status-badge--experimental",
+                details.support_status === "unavailable" && "status-badge--unavailable",
               )}
             >
               {details.support_status === "supported"
@@ -75,11 +75,14 @@ export function PreviewPanel({ config, dictionary }: PreviewPanelProps) {
           )}
         </div>
       </CardHeader>
-      <CardContent className="px-5">
+      <CardContent className="px-5 py-5">
         {details && (
-          <div className="mb-3 rounded-md border border-border/50 bg-muted/20 p-3 text-sm">
-            <p className="font-medium">{dictionary.verifiedIn.replace("{version}", details.verification.matrix)}</p>
-            <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+          <div className="verification-strip mb-4 text-sm">
+            <p className="flex items-center gap-2 font-medium">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              {dictionary.verifiedIn.replace("{version}", details.verification.matrix)}
+            </p>
+            <div className="verification-strip__items">
               <VerificationItem label={dictionary.generate} value={details.verification.generate} />
               <VerificationItem label={dictionary.install} value={details.verification.install} />
               <VerificationItem label={dictionary.build} value={details.verification.build} />
@@ -88,15 +91,19 @@ export function PreviewPanel({ config, dictionary }: PreviewPanelProps) {
         )}
 
         <Tabs defaultValue="tree" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="tree">{dictionary.tabs.structure}</TabsTrigger>
-            <TabsTrigger value="package">package.json</TabsTrigger>
-            <TabsTrigger value="readme">README</TabsTrigger>
-            <TabsTrigger value="commands">{dictionary.tabs.commands}</TabsTrigger>
+          <TabsList className="preview-tabs grid h-auto w-full grid-cols-2 sm:grid-cols-4">
+            <TabsTrigger value="tree" className="h-8 text-xs sm:text-sm">{dictionary.tabs.structure}</TabsTrigger>
+            <TabsTrigger value="package" className="h-8 text-xs sm:text-sm">package.json</TabsTrigger>
+            <TabsTrigger value="readme" className="h-8 text-xs sm:text-sm">README</TabsTrigger>
+            <TabsTrigger value="commands" className="h-8 text-xs sm:text-sm">{dictionary.tabs.commands}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tree" className="mt-3">
-            <ScrollArea className="h-[420px] w-full rounded-md border border-border/50 bg-muted/20 p-3">
+            <ScrollArea className="blueprint-canvas h-[520px] w-full rounded-md p-4">
+              <div className="blueprint-canvas__label">
+                <FolderTree className="h-4 w-4" />
+                <span>{dictionary.structure}</span>
+              </div>
               {details?.tree ? (
                 <FileTree data={details.tree} />
               ) : (
@@ -134,11 +141,11 @@ export function PreviewPanel({ config, dictionary }: PreviewPanelProps) {
           </TabsContent>
 
           <TabsContent value="commands" className="mt-3">
-            <ScrollArea className="h-[420px] w-full rounded-md border border-border/50 bg-muted/20 p-3">
+            <ScrollArea className="blueprint-canvas h-[520px] w-full rounded-md p-4">
               {details ? (
                 <div className="space-y-2">
                   {details.commands.map((command) => (
-                    <code key={command} className="block rounded-md border border-border/60 bg-background px-3 py-2 font-mono text-sm">
+                    <code key={command} className="command-line block rounded-md px-3 py-2 font-mono text-sm">
                       {command}
                     </code>
                   ))}
@@ -158,7 +165,7 @@ export function PreviewPanel({ config, dictionary }: PreviewPanelProps) {
 
 function VerificationItem({ label, value }: { label: string; value: boolean }) {
   return (
-    <span className="rounded-md border border-border/60 bg-background px-2 py-1">
+    <span className="verification-chip">
       {label} {value ? "OK" : "-"}
     </span>
   )
@@ -174,7 +181,7 @@ function PreviewCode({
   title?: string
 }) {
   return (
-    <ScrollArea className="h-[420px] w-full rounded-md border border-border/50 bg-muted/20">
+    <ScrollArea className="blueprint-canvas h-[520px] w-full rounded-md">
       {file ? (
         <div>
           {title && (
@@ -195,7 +202,7 @@ function PreviewCode({
 
 function DependencyList({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="rounded-md border border-border/50 bg-muted/20 p-3">
+    <div className="rounded-md bg-muted/35 p-3">
       <p className="font-mono font-medium text-foreground">{title}</p>
       <p className="mt-1 font-mono">{items.length > 0 ? items.join(", ") : "none"}</p>
     </div>

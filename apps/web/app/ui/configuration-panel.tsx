@@ -254,23 +254,23 @@ export function ConfigurationPanel({
   };
 
   return (
-    <Card className="gap-4 border-border/50 py-4 shadow-lg">
-      <CardHeader className="px-5">
-        <CardTitle className="flex items-center gap-2">
+    <Card className="config-panel gap-0 overflow-hidden border-0 py-0 shadow-none">
+      <CardHeader className="config-panel__header px-5 py-5">
+        <CardTitle className="flex items-center gap-2 text-base">
           <Settings2 className="h-5 w-5 text-primary" />
           {dictionary.title}
         </CardTitle>
         <CardDescription>{dictionary.description}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-5 px-5">
-        <section className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <Label>{dictionary.presets}</Label>
+      <CardContent className="space-y-5 px-5 py-5">
+        <section className="builder-step">
+          <div className="builder-step__head">
+            <Label className="builder-step__title">{dictionary.presets}</Label>
             <span className="text-xs text-muted-foreground">
               {selectedPresetId ? presets.find((preset) => preset.id === selectedPresetId)?.label : dictionary.customConfiguration}
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+          <div className="preset-strip">
             {presets.map((preset) => {
               const selected = selectedPresetId === preset.id;
               return (
@@ -278,10 +278,10 @@ export function ConfigurationPanel({
                   key={preset.id}
                   type="button"
                   className={cn(
-                    "min-h-20 rounded-md border p-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "option-card min-h-20 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     selected
-                      ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                      ? "option-card--selected"
+                      : "option-card--idle",
                   )}
                   onClick={() => applyPreset(preset)}
                 >
@@ -296,21 +296,21 @@ export function ConfigurationPanel({
               );
             })}
             {presets.length === 0 && (
-              <p className="rounded-md border border-border/50 bg-muted/20 p-3 text-sm text-muted-foreground">
+              <p className="rounded-md bg-muted/25 p-3 text-sm text-muted-foreground md:col-span-2">
                 {dictionary.presetsUnavailable}
               </p>
             )}
           </div>
         </section>
 
-        <div className="flex items-center justify-between gap-3">
-          <Label>{dictionary.manualConfiguration}</Label>
+        <div className="builder-step__head">
+          <Label className="builder-step__title">{dictionary.manualConfiguration}</Label>
           {!selectedPresetId && (
             <span className="text-xs font-medium text-primary">{dictionary.customConfiguration}</span>
           )}
         </div>
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="config-tabs grid h-auto w-full grid-cols-3">
             <TabsTrigger value="basic">{dictionary.tabs.basic}</TabsTrigger>
             <TabsTrigger value="styling">{dictionary.tabs.styling}</TabsTrigger>
             <TabsTrigger value="tools">{dictionary.tabs.tools}</TabsTrigger>
@@ -329,7 +329,7 @@ export function ConfigurationPanel({
 
             <div className="space-y-2">
               <Label>{dictionary.framework}</Label>
-              <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 2xl:grid-cols-4" role="radiogroup" aria-label={dictionary.framework}>
+              <div className="framework-grid" role="radiogroup" aria-label={dictionary.framework}>
                 {frameworkOptions.map((option) => {
                   const selected = config.framework === option.value
                   const status = featureStatus.get(option.value) ?? "experimental"
@@ -342,11 +342,11 @@ export function ConfigurationPanel({
                       aria-checked={selected}
                       disabled={unavailable}
                       className={cn(
-                        "min-h-14 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "option-card min-h-16 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
-                        unavailable && "cursor-not-allowed opacity-70 hover:bg-background hover:text-foreground",
+                          ? "option-card--selected"
+                          : "option-card--idle",
+                        unavailable && "cursor-not-allowed opacity-70",
                       )}
                       onClick={() => updateConfig("framework", option.value)}
                     >
@@ -366,7 +366,7 @@ export function ConfigurationPanel({
 
             <div className="space-y-2">
               <Label>{dictionary.routing}</Label>
-              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={dictionary.routing}>
+              <div className="choice-row" role="radiogroup" aria-label={dictionary.routing}>
                 {routingOptions.map((option) => {
                   const selected = config.routing === option.value
                   return (
@@ -376,10 +376,10 @@ export function ConfigurationPanel({
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "h-10 rounded-md border px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "choice-pill h-11 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                          ? "choice-pill--selected"
+                          : "choice-pill--idle",
                       )}
                       onClick={() => updateConfig("routing", option.value)}
                     >
@@ -408,10 +408,10 @@ export function ConfigurationPanel({
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "option-card min-h-14 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                          ? "option-card--selected"
+                          : "option-card--idle",
                       )}
                       onClick={() => updateConfig("styling", option.value)}
                     >
@@ -438,10 +438,10 @@ export function ConfigurationPanel({
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "option-card min-h-14 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                          ? "option-card--selected"
+                          : "option-card--idle",
                       )}
                       onClick={() => updateConfig("stateManagement", option.value)}
                     >
@@ -471,10 +471,10 @@ export function ConfigurationPanel({
                         role="radio"
                         aria-checked={selected}
                         className={cn(
-                          "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "option-card min-h-14 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
                           selected
-                            ? "border-primary bg-primary/10 text-foreground"
-                            : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                            ? "option-card--selected"
+                            : "option-card--idle",
                         )}
                         onClick={() => updateLinting(option.value)}
                       >
@@ -505,10 +505,10 @@ export function ConfigurationPanel({
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "option-card min-h-14 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                          ? "option-card--selected"
+                          : "option-card--idle",
                       )}
                       onClick={() => updateConfig("testing", option.value)}
                     >
@@ -542,7 +542,7 @@ export function ConfigurationPanel({
               />
 
               {(config.dependencies.length > 0 || config.devDependencies.length > 0) && (
-                <div className="space-y-2 rounded-md border border-border/50 bg-muted/20 p-3">
+                <div className="space-y-2 rounded-md bg-muted/35 p-3">
                   <p className="text-sm font-medium">{dictionary.selectedDependencies}</p>
                   <div className="space-y-2">
                     {config.dependencies.map((dependency) => (
@@ -567,7 +567,7 @@ export function ConfigurationPanel({
                 </div>
               )}
 
-              <ScrollArea className="h-48 w-full rounded-md border border-border/50 bg-muted/20">
+              <ScrollArea className="h-56 w-full rounded-md bg-muted/35">
                 <div className="p-2 space-y-1">
                   {dependencyItems.map((dep) => {
                     const selectedProd = config.dependencies.some((item) => dependencyName(item) === dep.name)
@@ -595,9 +595,9 @@ export function ConfigurationPanel({
                     return (
                       <div
                         key={dep.id}
-                        className={cn(
-                          "flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors",
-                          selectedProd || selectedDev ? "border-primary/40 bg-primary/10" : "border-transparent hover:bg-accent/40",
+                          className={cn(
+                          "flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 transition-colors",
+                          selectedProd || selectedDev ? "bg-primary/10" : "hover:bg-accent/50",
                         )}
                       >
                         <div className="space-y-0.5">
@@ -690,7 +690,7 @@ function SelectedDependency({
   const version = dependencyVersion(dependency, name)
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-background px-3 py-2">
+    <div className="flex items-center justify-between gap-3 rounded-md bg-background px-3 py-2">
       <div className="min-w-0">
         <p className="truncate font-mono text-sm">
           {name}
@@ -737,10 +737,10 @@ function StatusBadge({
   return (
     <span
       className={cn(
-        "shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-4",
-        status === "supported" && "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-        status === "experimental" && "border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-300",
-        status === "unavailable" && "border-border bg-muted text-muted-foreground",
+        "status-badge",
+        status === "supported" && "status-badge--supported",
+        status === "experimental" && "status-badge--experimental",
+        status === "unavailable" && "status-badge--unavailable",
       )}
     >
       {label}

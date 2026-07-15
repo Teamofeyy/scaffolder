@@ -1,3 +1,7 @@
+/* Hallmark · pre-emit critique: P4 H5 E4 S5 R4 V5
+ * Hallmark · genre: modern-minimal · macrostructure: Component Playground · design-system: design.md · designed-as-app
+ * contrast: pass (40-41) · chrome: pass (47) · tokens: pass (48) · mobile: pass (34, 49, 50-57)
+ */
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -6,9 +10,9 @@
 :root {
   --background: oklch(0.9750 0.0100 155.0000);
   --foreground: oklch(0.2450 0.0300 155.0000);
-  --card: oklch(1.0000 0 0);
+  --card: oklch(0.9900 0.0060 155.0000);
   --card-foreground: oklch(0.2450 0.0300 155.0000);
-  --popover: oklch(1.0000 0 0);
+  --popover: oklch(0.9900 0.0060 155.0000);
   --popover-foreground: oklch(0.2450 0.0300 155.0000);
   --primary: oklch(0.5000 0.1450 145.0000);
   --primary-foreground: oklch(0.9850 0.0100 145.0000);
@@ -19,7 +23,7 @@
   --accent: oklch(0.9100 0.0400 155.0000);
   --accent-foreground: oklch(0.2450 0.0300 155.0000);
   --destructive: oklch(0.6861 0.2061 14.9941);
-  --destructive-foreground: oklch(1.0000 0 0);
+  --destructive-foreground: oklch(0.9850 0.0100 145.0000);
   --border: oklch(0.8850 0.0200 155.0000);
   --input: oklch(0.8850 0.0200 155.0000);
   --ring: oklch(0.5000 0.1450 145.0000);
@@ -32,7 +36,7 @@
   --sidebar: oklch(0.9580 0.0133 286.1454);
   --sidebar-foreground: oklch(0.3015 0.0572 282.4176);
   --sidebar-primary: oklch(0.5417 0.1790 288.0332);
-  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-primary-foreground: oklch(0.9850 0.0100 145.0000);
   --sidebar-accent: oklch(0.9221 0.0373 262.1410);
   --sidebar-accent-foreground: oklch(0.3015 0.0572 282.4176);
   --sidebar-border: oklch(0.9115 0.0216 285.9625);
@@ -45,7 +49,23 @@
   --shadow-blur: 2px;
   --shadow-spread: 0px;
   --shadow-opacity: 0.05;
-  --shadow-color: #000000;
+  --shadow-color: oklch(0.2100 0.0200 155.0000);
+  --foundry-surface: oklch(0.1850 0.0260 155.0000);
+  --foundry-surface-2: oklch(0.2350 0.0300 155.0000);
+  --foundry-line: oklch(0.3600 0.0400 155.0000);
+  --foundry-ink: oklch(0.9350 0.0180 155.0000);
+  --foundry-muted: oklch(0.7000 0.0250 155.0000);
+  --foundry-glow: oklch(0.7150 0.1600 145.0000);
+  --status-supported: oklch(0.5000 0.1450 145.0000);
+  --status-supported-bg: oklch(0.9250 0.0400 150.0000);
+  --status-experimental: oklch(0.5600 0.1300 70.0000);
+  --status-experimental-bg: oklch(0.9400 0.0400 82.0000);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
 }
 
 .dark {
@@ -64,7 +84,7 @@
   --accent: oklch(0.3150 0.0550 155.0000);
   --accent-foreground: oklch(0.9300 0.0200 155.0000);
   --destructive: oklch(0.6861 0.2061 14.9941);
-  --destructive-foreground: oklch(1.0000 0 0);
+  --destructive-foreground: oklch(0.9850 0.0100 145.0000);
   --border: oklch(0.3300 0.0350 155.0000);
   --input: oklch(0.3300 0.0350 155.0000);
   --ring: oklch(0.7150 0.1600 145.0000);
@@ -86,7 +106,17 @@
   --shadow-blur: 2px;
   --shadow-spread: 0px;
   --shadow-opacity: 0.05;
-  --shadow-color: #000000;
+  --shadow-color: oklch(0.0800 0.0140 155.0000);
+  --foundry-surface: oklch(0.1250 0.0200 155.0000);
+  --foundry-surface-2: oklch(0.1900 0.0250 155.0000);
+  --foundry-line: oklch(0.3450 0.0360 155.0000);
+  --foundry-ink: oklch(0.9300 0.0180 155.0000);
+  --foundry-muted: oklch(0.7100 0.0300 155.0000);
+  --foundry-glow: oklch(0.7150 0.1600 145.0000);
+  --status-supported: oklch(0.7800 0.1400 145.0000);
+  --status-supported-bg: oklch(0.2600 0.0550 150.0000);
+  --status-experimental: oklch(0.7600 0.1200 75.0000);
+  --status-experimental-bg: oklch(0.2800 0.0600 75.0000);
 }
 
 @theme inline {
@@ -147,6 +177,11 @@
 }
 
 @layer base {
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -159,11 +194,9 @@
   .app-shell {
     position: relative;
     isolation: isolate;
-    overflow-x: hidden;
+    overflow-x: clip;
     background:
-      radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--primary) 18%, transparent) 0, transparent 28rem),
-      radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--chart-2) 14%, transparent) 0, transparent 24rem),
-      linear-gradient(180deg, color-mix(in srgb, var(--background) 88%, black 12%), var(--background));
+      linear-gradient(180deg, var(--foundry-surface) 0, var(--foundry-surface-2) 24rem, var(--background) 24rem);
   }
 
   .app-shell::before {
@@ -173,69 +206,455 @@
     z-index: -2;
     pointer-events: none;
     background-image:
-      linear-gradient(color-mix(in srgb, var(--foreground) 8%, transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in srgb, var(--foreground) 8%, transparent) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: linear-gradient(to bottom, black 0%, black 58%, transparent 100%);
+      linear-gradient(color-mix(in srgb, var(--foundry-ink) 9%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--foundry-ink) 9%, transparent) 1px, transparent 1px);
+    background-size: 38px 38px;
+    opacity: 0.48;
   }
 
-  .app-shell::after {
-    content: "npm create vite@latest  pnpm create vite";
-    position: fixed;
-    top: 4.7rem;
-    left: -4rem;
-    z-index: -1;
-    width: 120vw;
-    transform: rotate(-4deg);
-    border-block: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
-    background: color-mix(in srgb, var(--primary) 9%, transparent);
-    color: color-mix(in srgb, var(--primary) 48%, transparent);
-    font-family: var(--font-mono);
-    font-size: clamp(1rem, 2.6vw, 2.6rem);
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0;
-    padding: 0.55rem 0;
-    white-space: nowrap;
+  .foundry-header {
+    padding-inline: clamp(0.75rem, 2vw, 1.5rem);
+    padding-block-start: 0.75rem;
     pointer-events: none;
   }
 
-  .terminal-hero {
-    overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--border));
+  .foundry-nav {
+    pointer-events: auto;
+    border: 1px solid color-mix(in srgb, var(--foundry-line) 65%, transparent);
     border-radius: var(--radius);
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, var(--primary) 8%), color-mix(in srgb, var(--card) 96%, black 4%));
-    box-shadow:
-      0 20px 60px color-mix(in srgb, var(--primary) 12%, transparent),
-      inset 0 1px 0 color-mix(in srgb, white 12%, transparent);
+    background: color-mix(in srgb, var(--foundry-surface) 86%, transparent);
+    color: var(--foundry-ink);
+    box-shadow: 0 18px 46px color-mix(in srgb, var(--shadow-color) 36%, transparent);
+    backdrop-filter: blur(18px) saturate(1.15);
   }
 
-  .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.75rem;
+  .foundry-nav .text-muted-foreground {
+    color: var(--foundry-muted);
+  }
 
-  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
-  border-radius: 0.375rem;
+  .foundry-shell {
+    min-width: 0;
+  }
 
-  color: var(--primary);
-  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  .foundry-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: clamp(1rem, 3vw, 2.5rem) 1rem;
+    color: var(--foundry-ink);
+  }
 
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  font-weight: 500;
+  .foundry-hero__copy {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
 
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card) 92%, var(--primary) 8%),
-      color-mix(in srgb, var(--card) 96%, black 4%)
-    );
-}
+  .foundry-kicker {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--foundry-line) 60%, transparent);
+    border-radius: var(--radius);
+    padding: 0.45rem 0.65rem;
+    background: color-mix(in srgb, var(--foundry-surface-2) 82%, transparent);
+    color: var(--foundry-muted);
+    font-size: 0.8125rem;
+    font-weight: 650;
+  }
 
-  .terminal-hero > div:last-child {
-    padding-block: 0.8rem;
+  .foundry-title {
+    max-width: 10ch;
+    color: var(--foundry-ink);
+    font-size: clamp(3.25rem, 9vw, 7.5rem);
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 0.9;
+    overflow-wrap: anywhere;
+  }
+
+  .foundry-lede {
+    max-width: 62ch;
+    color: var(--foundry-muted);
+    font-size: clamp(1rem, 1.2vw + 0.7rem, 1.375rem);
+    line-height: 1.55;
+  }
+
+  .recipe-card {
+    display: grid;
+    align-self: end;
+    gap: 1rem;
+    border: 1px solid color-mix(in srgb, var(--foundry-line) 80%, transparent);
+    border-radius: var(--radius);
+    padding: 1rem;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--foundry-surface-2) 90%, var(--foundry-glow) 10%), var(--foundry-surface));
+    box-shadow: 0 18px 48px color-mix(in srgb, var(--shadow-color) 38%, transparent);
+  }
+
+  .recipe-card__top,
+  .recipe-card__footer,
+  .recipe-card__row,
+  .recipe-card__row dt {
+    display: flex;
+    align-items: center;
+  }
+
+  .recipe-card__top,
+  .recipe-card__row,
+  .recipe-card__footer {
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .recipe-card__label {
+    color: var(--foundry-muted);
+    font-size: 0.75rem;
+    font-weight: 650;
+    text-transform: uppercase;
+  }
+
+  .recipe-card__name {
+    margin-block-start: 0.15rem;
+    color: var(--foundry-ink);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .recipe-card__list {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .recipe-card__row {
+    border: 1px solid color-mix(in srgb, var(--foundry-line) 52%, transparent);
+    border-radius: var(--radius);
+    padding: 0.75rem;
+    background: color-mix(in srgb, var(--foundry-surface) 72%, transparent);
+  }
+
+  .recipe-card__row dt {
+    gap: 0.45rem;
+    color: var(--foundry-muted);
+    font-size: 0.78rem;
+    font-weight: 650;
+  }
+
+  .recipe-card__row dd {
+    color: var(--foundry-ink);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .recipe-card__footer {
+    justify-content: flex-start;
+    color: var(--foundry-glow);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .foundry-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .config-panel,
+  .preview-panel {
+    border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--card) 92%, var(--background) 8%);
+    box-shadow: 0 12px 34px color-mix(in srgb, var(--shadow-color) 20%, transparent);
+  }
+
+  .config-panel__header,
+  .preview-panel__header {
+    border-block-end: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--muted) 70%, transparent), transparent);
+  }
+
+  .builder-step {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .builder-step__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .builder-step__title {
+    font-size: 0.9rem;
+    font-weight: 750;
+  }
+
+  .preset-strip,
+  .framework-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.55rem;
+  }
+
+  .option-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem;
+    transition:
+      background-color var(--dur-short) var(--ease-out),
+      border-color var(--dur-short) var(--ease-out),
+      transform var(--dur-micro) var(--ease-out),
+      box-shadow var(--dur-short) var(--ease-out);
+  }
+
+  .option-card--idle {
+    background: color-mix(in srgb, var(--background) 76%, var(--muted) 24%);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .option-card--idle:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--primary) 36%, var(--border));
+      background: color-mix(in srgb, var(--accent) 72%, var(--background) 28%);
+    }
+  }
+
+  .option-card--selected {
+    border-color: color-mix(in srgb, var(--primary) 68%, var(--border));
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--primary) 13%, transparent), transparent),
+      color-mix(in srgb, var(--accent) 72%, var(--background) 28%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 16%, transparent);
+  }
+
+  .choice-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.55rem;
+  }
+
+  .choice-pill {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding-inline: 0.85rem;
+    white-space: nowrap;
+    transition:
+      background-color var(--dur-short) var(--ease-out),
+      border-color var(--dur-short) var(--ease-out),
+      transform var(--dur-micro) var(--ease-out);
+  }
+
+  .choice-pill--idle {
+    background: color-mix(in srgb, var(--background) 78%, var(--muted) 22%);
+  }
+
+  .choice-pill--selected {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  .preview-tabs,
+  .config-tabs {
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  }
+
+  .verification-strip {
+    display: grid;
+    gap: 0.75rem;
+    border-radius: var(--radius);
+    padding: 0.85rem;
+    background: color-mix(in srgb, var(--muted) 50%, transparent);
+  }
+
+  .verification-strip__items {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .verification-chip {
+    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    border-radius: var(--radius);
+    padding: 0.45rem 0.55rem;
+    background: var(--background);
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .blueprint-canvas {
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    background:
+      linear-gradient(color-mix(in srgb, var(--primary) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--primary) 5%, transparent) 1px, transparent 1px),
+      color-mix(in srgb, var(--muted) 35%, var(--background) 65%);
+    background-size: 28px 28px;
+  }
+
+  .blueprint-canvas__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-block-end: 0.85rem;
+    color: var(--primary);
+    font-size: 0.78rem;
+    font-weight: 750;
+  }
+
+  .command-line {
+    border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+    background: color-mix(in srgb, var(--background) 78%, var(--muted) 22%);
+  }
+
+  .status-badge {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.2rem 0.45rem;
+    font-size: 0.625rem;
+    font-weight: 800;
+    line-height: 1rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .status-badge--supported {
+    border-color: color-mix(in srgb, var(--status-supported) 42%, transparent);
+    background: var(--status-supported-bg);
+    color: var(--status-supported);
+  }
+
+  .status-badge--experimental {
+    border-color: color-mix(in srgb, var(--status-experimental) 42%, transparent);
+    background: var(--status-experimental-bg);
+    color: var(--status-experimental);
+  }
+
+  .status-badge--unavailable {
+    background: var(--muted);
+    color: var(--muted-foreground);
+  }
+
+  .generate-dock {
+    position: fixed;
+    z-index: 60;
+    inset-inline: max(0.75rem, env(safe-area-inset-left)) max(0.75rem, env(safe-area-inset-right));
+    inset-block-end: max(0.75rem, env(safe-area-inset-bottom));
+    display: grid;
+    gap: 0.75rem;
+    align-items: center;
+    border: 1px solid color-mix(in srgb, var(--foundry-line) 70%, transparent);
+    border-radius: var(--radius);
+    padding: 0.75rem;
+    background: color-mix(in srgb, var(--foundry-surface) 88%, transparent);
+    color: var(--foundry-ink);
+    box-shadow: 0 18px 54px color-mix(in srgb, var(--shadow-color) 48%, transparent);
+    backdrop-filter: blur(18px) saturate(1.1);
+  }
+
+  .generate-dock__copy {
+    min-width: 0;
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .generate-dock__label {
+    color: var(--foundry-muted);
+    font-size: 0.72rem;
+    font-weight: 750;
+    text-transform: uppercase;
+  }
+
+  .generate-dock__name {
+    color: var(--foundry-ink);
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 750;
+    overflow-wrap: anywhere;
+  }
+
+  .generate-dock__meta {
+    color: var(--foundry-muted);
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+  }
+
+  .generate-dock__button {
+    width: 100%;
+    min-height: 3rem;
+    white-space: nowrap;
+    box-shadow: none;
+  }
+
+  @media (min-width: 40rem) {
+    .foundry-hero {
+      grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
+      align-items: end;
+    }
+
+    .preset-strip,
+    .choice-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .generate-dock {
+      grid-template-columns: minmax(0, 1fr) auto;
+      max-width: 56rem;
+      margin-inline: auto;
+      padding: 0.85rem 0.9rem;
+    }
+
+    .generate-dock__button {
+      width: auto;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .foundry-workspace {
+      grid-template-columns: minmax(25rem, 0.75fr) minmax(0, 1.25fr);
+      gap: 1rem;
+    }
+
+    .config-panel {
+      position: sticky;
+      top: 6.25rem;
+      max-height: calc(100dvh - 8rem);
+      overflow: auto;
+    }
+
+    .framework-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 88rem) {
+    .foundry-workspace {
+      grid-template-columns: minmax(28rem, 0.68fr) minmax(0, 1.32fr);
+      gap: 1.25rem;
+    }
+
+    .framework-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .option-card,
+    .choice-pill,
+    .generate-dock__button {
+      transition-duration: 150ms;
+    }
   }
 }

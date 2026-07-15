@@ -90,9 +90,9 @@
           ];
 
           shellHook = ''
-            echo "Rust stable: $(rustc --version)"
-            echo "Rust nightly: $(${nightlyToolchain}/bin/rustc --version)"
-            echo "Cargo: $(cargo --version)"
+            echo "🦀 Rust stable: $(rustc --version)"
+            echo "🌙 Rust nightly: $(${nightlyToolchain}/bin/rustc --version)"
+            echo "📦 Cargo: $(cargo --version)"
             echo "Node: $(node --version)"
             echo "pnpm: $(pnpm --version)"
           '';

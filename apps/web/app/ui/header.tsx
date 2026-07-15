@@ -38,11 +38,11 @@ export function Header({ locale, dictionary }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/75 backdrop-blur-xl">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between max-w-7xl">
-        <div className="flex items-center gap-3">
-          <Image src="/brand-mark.svg" alt="" width={40} height={40} priority />
-          <div>
+    <header className="foundry-header sticky top-0 z-50">
+      <div className="foundry-nav mx-auto flex max-w-[1720px] items-center justify-between px-3 py-3 sm:px-4">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <Image src="/brand-mark.svg" alt="" width={40} height={40} priority className="size-9 sm:size-10" />
+          <div className="hidden min-[360px]:block">
             <span className="block text-xl font-bold leading-5">Scaffolder</span>
             <span className="block font-mono text-xs text-muted-foreground">
               {dictionary.subtitle}
@@ -50,9 +50,9 @@ export function Header({ locale, dictionary }: HeaderProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <div
-            className="flex h-9 items-center rounded-md border border-border bg-muted/30 p-0.5"
+            className="flex h-9 items-center rounded-md border border-border bg-muted/40 p-0.5"
             aria-label={dictionary.language}
           >
             {locales.map((item) => (

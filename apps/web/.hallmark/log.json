@@ -1,0 +1,18 @@
+[
+  {
+    "date": "2026-07-15",
+    "scope": "app",
+    "macrostructure": "Component Playground",
+    "theme": "Scaffolder Project Foundry",
+    "enrichment": "blueprint preview surface",
+    "brief": "Full Scaffolder web app redesign after user rejected cleanup-only pass"
+  },
+  {
+    "date": "2026-07-15",
+    "scope": "app",
+    "macrostructure": "Workbench",
+    "theme": "Scaffolder green modern-minimal",
+    "enrichment": "none",
+    "brief": "Scaffolder web app redesign after Hallmark audit"
+  }
+]

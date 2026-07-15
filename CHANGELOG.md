@@ -34,6 +34,12 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 - Caddy now routes requests by the forwarded `Host` header on port 80 so it can
   run behind an external reverse proxy that connects by IP.
+- Refined the frontend Scaffolder surface with a Hallmark workbench redesign:
+  removed decorative terminal chrome, reduced nested panel framing, tightened
+  motion states, and improved mobile option grids.
+- Reworked the frontend Scaffolder page into a Project Foundry experience with
+  a stronger recipe header, guided builder, blueprint preview canvas, floating
+  app chrome, and persistent archive generation dock.
 - The stable matrix verification script now also fetches supported presets from
   the backend and verifies each preset through generate, install, and build.
 - Frontend preset definitions and support statuses now come from the backend

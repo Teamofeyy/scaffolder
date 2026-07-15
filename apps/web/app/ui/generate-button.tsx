@@ -47,13 +47,23 @@ export function GenerateButton({ config, dictionary, errors }: GenerateButtonPro
     }
   }
 
+  const projectName = config.projectName.trim() || "my-awesome-app"
+  const dependencyCount = config.dependencies.length + config.devDependencies.length
+
   return (
-    <div className="flex justify-center">
+    <div className="generate-dock" role="region" aria-label={dictionary.button}>
+      <div className="generate-dock__copy">
+        <span className="generate-dock__label">{dictionary.archiveTarget}</span>
+        <span className="generate-dock__name">{projectName}.zip</span>
+        <span className="generate-dock__meta">
+          {config.framework} · {config.styling} · {dictionary.dependencyCount.replace("{count}", String(dependencyCount))}
+        </span>
+      </div>
       <Button
         size="lg"
         onClick={handleGenerate}
         disabled={isGenerating}
-        className="gap-2 text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all"
+        className="generate-dock__button gap-2 px-6 py-5 text-base transition-[background-color,color,box-shadow,transform] hover:-translate-y-0.5"
       >
         {isGenerating ? (
           <>

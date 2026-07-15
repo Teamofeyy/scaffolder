@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Boxes, Terminal } from "lucide-react"
+import { Boxes, FileArchive, GitBranch, Layers3, PackageCheck, Palette } from "lucide-react"
 import { Header } from "./header"
 import { ConfigurationPanel } from "./configuration-panel"
 import { PreviewPanel } from "./preview-panel"
@@ -48,40 +48,63 @@ export function ScaffolderPage({ locale, dictionary }: ScaffolderPageProps) {
     }
   }, [])
 
+  const projectName = config.projectName.trim() || "my-awesome-app"
+  const dependencyCount = config.dependencies.length + config.devDependencies.length
+  const recipeItems = [
+    { label: dictionary.terminal.framework, value: config.framework, icon: Boxes },
+    { label: dictionary.terminal.style, value: config.styling, icon: Palette },
+    { label: dictionary.terminal.dependencies, value: dependencyCount === 0 ? "template defaults" : `${dependencyCount} selected`, icon: PackageCheck },
+  ]
+
   return (
     <div className="app-shell min-h-screen">
       <Header locale={locale} dictionary={dictionary.header} />
 
-      <main className="relative z-10 mx-auto max-w-[1600px] px-5 py-5">
-        <div className="mb-6 grid gap-5 lg:grid-cols-[1fr_360px] lg:items-end">
-          <div className="space-y-3">
-            <div className="eyebrow">
-              <Boxes className="h-4 w-4" />
-              {dictionary.hero.eyebrow}
+      <main className="foundry-shell relative z-10 mx-auto max-w-[1720px] px-3 pb-28 pt-4 sm:px-5 lg:px-6">
+        <section className="foundry-hero" aria-labelledby="scaffolder-title">
+          <div className="foundry-hero__copy">
+            <div className="foundry-kicker">
+              <Layers3 className="h-4 w-4" />
+              <span>{dictionary.hero.eyebrow}</span>
             </div>
-            <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-balance md:text-5xl">
+            <h1 id="scaffolder-title" className="foundry-title">
               {dictionary.hero.title}
             </h1>
-            <p className="max-w-2xl text-lg text-muted-foreground text-pretty">
+            <p className="foundry-lede">
               {dictionary.hero.description}
             </p>
           </div>
 
-          <div className="terminal-hero" aria-hidden="true">
-            <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3 text-xs text-muted-foreground">
-              <Terminal className="h-4 w-4 text-primary" />
-              scaffold.config
+          <aside className="recipe-card" aria-label={dictionary.preview.structure}>
+            <div className="recipe-card__top">
+              <div>
+                <p className="recipe-card__label">{dictionary.preview.structure}</p>
+                <p className="recipe-card__name">{projectName}</p>
+              </div>
+              <FileArchive className="h-5 w-5 text-primary" />
             </div>
-            <div className="space-y-2 p-4 font-mono text-sm">
-              <p><span className="text-primary">{dictionary.terminal.framework}</span> = react</p>
-              <p><span className="text-primary">{dictionary.terminal.style}</span> = tailwind</p>
-              <p><span className="text-primary">{dictionary.terminal.dependencies}</span> = npm registry</p>
-              <p className="text-primary">{dictionary.terminal.ready}</p>
+            <dl className="recipe-card__list">
+              {recipeItems.map((item) => {
+                const Icon = item.icon
+                return (
+                  <div key={item.label} className="recipe-card__row">
+                    <dt>
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </dt>
+                    <dd>{item.value}</dd>
+                  </div>
+                )
+              })}
+            </dl>
+            <div className="recipe-card__footer">
+              <GitBranch className="h-4 w-4" />
+              <span>{dictionary.terminal.ready}</span>
             </div>
-          </div>
-        </div>
+          </aside>
+        </section>
 
-        <div className="mb-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(520px,0.95fr)]">
+        <div className="foundry-workspace">
           <ConfigurationPanel
             config={config}
             setConfig={setConfig}
