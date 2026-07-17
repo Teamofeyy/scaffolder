@@ -9,6 +9,9 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- Phase 0 recipe-first product documentation covering recipes, recipe
+  authoring, recipe review, template update policy, and the recipe pull request
+  checklist.
 - Backend-driven support statuses for features and framework cards using
   `supported`, `experimental`, and `unavailable` states.
 - Stable project presets from `GET /presets` for React, Vue, Next.js, and

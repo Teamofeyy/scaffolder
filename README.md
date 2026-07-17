@@ -1,6 +1,15 @@
 # Scaffolder
 
-Веб-сервис для генерации базовой структуры frontend-проекта по выбранным параметрам. Пользователь выбирает стек, дополнительные библиотеки и получает ZIP-архив с готовым шаблоном.
+Scaffolder is an open-source frontend Initializr. It generates real project
+archives from curated, verified recipes instead of asking developers to rebuild
+the same Vite, React, Tailwind CSS, shadcn/ui, routing, testing, and project
+structure setup by hand.
+
+The current 1.1.x implementation still exposes the legacy
+framework/routing/styling configurator. The next product direction is
+recipe-first: choose a recipe, configure the knobs that recipe explicitly
+supports, inspect the generated files, and download a ZIP that was verified by
+the release pipeline.
 
 ## Project policies
 
@@ -14,75 +23,102 @@
 - [Template compatibility policy](TEMPLATE_COMPATIBILITY.md)
 - [Versioning and migration policy](VERSIONING.md)
 
-## Возможности
+## Product direction
 
-- Готовые presets для стабильных React, Vue и Next.js профилей.
-- Backend-driven статусы Supported, Experimental и Coming later для шаблонов.
-- Выбор frontend-шаблона: React, Vue, Svelte, Solid, Preact, Nuxt, Angular.
-- Выбор роутинга, стилизации и state management.
-- Поиск дополнительных библиотек в npm registry.
-- Добавление пакетов отдельно в `dependencies` или `devDependencies`.
-- Предпросмотр структуры, `package.json`, README, entry files, зависимостей и
-  команд перед скачиванием.
-- Генерация ZIP-архива с итоговым проектом.
+Scaffolder is moving toward a recipe catalog:
 
-## Быстрый запуск
+- **Recipes** describe useful starting points such as a React Router app or a
+  Vite React app.
+- **Blocks** provide reusable integrations or starter structure, for example
+  Tailwind CSS, React Router, shadcn/ui, Vitest, Zustand, or an app shell.
+- **Pinned base templates** come from official upstream sources and are stored
+  locally so generation stays deterministic.
+- **Verification** proves that recommended recipes can be generated, installed,
+  and built before they are promoted.
+- **Custom dependencies** are allowed as package.json-only extras, but they are
+  outside the verified recipe guarantee.
 
-Установите зависимости проекта одной командой из корня репозитория:
+Read the Phase 0 design documents:
+
+- [Recipes](docs/recipes.md)
+- [Recipe authoring](docs/recipe-authoring.md)
+- [Recipe review](docs/recipe-review.md)
+- [Template updates](docs/template-updates.md)
+
+## Current features
+
+- Backend-owned presets for stable React, Vue, and Next.js profiles.
+- Backend-driven support states: `supported`, `experimental`, and
+  `unavailable`.
+- Frontend template selection for React, Vue, Svelte, Solid, Preact, Nuxt, and
+  Angular templates.
+- Routing, styling, linting, state-management, and testing options.
+- npm registry package search.
+- Separate `dependencies` and `devDependencies` additions.
+- Detailed preview for the generated tree, `package.json`, README, entry
+  files, dependencies, commands, support status, and verification flags.
+- ZIP archive generation.
+
+## Quick start
+
+Install JavaScript dependencies and fetch Cargo dependencies from the repository
+root:
 
 ```bash
 pnpm bootstrap
 ```
 
-Если репозиторий был склонирован без submodules, подтяните шаблоны отдельно:
+If the repository was cloned without submodules, initialize templates:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-Без `apps/api/templates` backend не пройдет readiness-check, а предпросмотр и
-генерация проектов будут недоступны.
+Without `apps/api/templates`, the backend readiness check fails and preview or
+generation endpoints are unavailable.
 
-Запустить только backend:
+Run only the backend:
 
 ```bash
 pnpm dev:api
 ```
 
-Запустить только frontend:
+Run only the frontend:
 
 ```bash
 pnpm dev:web
 ```
 
-Запустить backend и frontend вместе:
+Run both services:
 
 ```bash
 pnpm dev
 ```
 
-Откройте:
+Open:
 
 ```text
 http://localhost:3000
 ```
 
-## Как пользоваться
+## Current usage
 
-1. Введите название проекта, например `my-app`.
-2. Выберите preset или перейдите к ручной настройке.
-3. Выберите фреймворк, роутинг, стилизацию, state management и testing.
-4. В разделе инструментов найдите npm-пакет по названию.
-5. Нажмите `dep`, чтобы добавить пакет в `dependencies`, или `dev`, чтобы добавить в `devDependencies`.
-6. Проверьте preview tabs: структура, `package.json`, README и команды.
-7. Нажмите `Сгенерировать проект`.
+The current UI is still the legacy configurator:
 
-Браузер скачает ZIP-архив. Внутри будет `package.json` с выбранными
-зависимостями, README с описанием stack и базовые файлы шаблона.
+1. Enter a project name, for example `my-app`.
+2. Choose a preset or open manual configuration.
+3. Choose framework, routing, styling, state management, and testing.
+4. Search npm packages if you need additional libraries.
+5. Add packages to `dependencies` or `devDependencies`.
+6. Inspect the generated preview.
+7. Generate the project ZIP.
+
+The generated archive contains a `package.json`, README, selected dependencies,
+and template files for the chosen stack.
 
 ## API contract
 
-Stable endpoints:
+Stable current endpoints:
 
 - `GET /presets` - backend-owned preset definitions.
 - `GET /verification-matrix` - stable generation/install/build matrix.
@@ -100,48 +136,52 @@ More detail:
 - [Presets](docs/presets.md)
 - [Verification matrix](docs/verification-matrix.md)
 - [CLI design](docs/cli.md)
+- [Recipe model](docs/recipes.md)
 
-## Обновление preset-зависимостей
+## Updating preset dependencies
 
-Feature-зависимости хранятся в:
+Feature dependencies are stored in:
 
 ```text
 apps/api/api/dependency-presets.json
 ```
 
-Обновить версии в пределах текущего major:
+Update versions within the current major range:
 
 ```bash
 npm run deps:update-presets
 ```
 
-Скрипт не переключает preset на новый major, чтобы случайно не сломать совместимость шаблонов.
+The script intentionally avoids switching presets to a new major version
+because that may break template compatibility.
 
-## Нагрузочная проверка
+## Load testing
 
-Перед запуском нагрузочного теста backend должен быть доступен на `http://127.0.0.1:8000`.
+Before running a load test, the backend must be available at
+`http://127.0.0.1:8000`.
 
-Проверить генерацию ZIP:
+Check ZIP generation:
 
 ```bash
 npm run load:test:generate
 ```
 
-Проверить предпросмотр:
+Check preview:
 
 ```bash
 npm run load:test:preview
 ```
 
-Настройки через переменные окружения:
+Tune request count and concurrency:
 
 ```bash
 LOAD_TEST_REQUESTS=100 LOAD_TEST_CONCURRENCY=10 npm run load:test:generate
 ```
 
-Результат выводится в JSON: количество запросов, успешные/ошибочные ответы, RPS и latency `min/p50/p95/max`.
+The result is JSON with request counts, successes, failures, RPS, and latency
+`min/p50/p95/max`.
 
-Пороговые значения для release gate:
+Release gate thresholds:
 
 ```bash
 LOAD_TEST_MAX_P95_MS=15000 LOAD_TEST_MAX_ERROR_RATE=0 npm run load:test:generate
@@ -155,7 +195,8 @@ Component tests:
 pnpm --filter nextjs-scaffolder test
 ```
 
-E2E, accessibility audit, ZIP download, locale switch, and mobile regression screenshots:
+E2E, accessibility audit, ZIP download, locale switch, and mobile regression
+screenshots:
 
 ```bash
 pnpm --filter nextjs-scaffolder test:e2e
@@ -174,44 +215,46 @@ Backend endpoints:
 - `/live` - process liveness.
 - `/ready` - readiness for Compose health checks.
 - `/health` - backward-compatible health check.
-- `/capabilities` - currently reports whether AI recommendations are configured.
+- `/capabilities` - reports whether AI recommendations are configured.
 - `/presets` - stable preset definitions.
 - `/verification-matrix` - verified stable combinations.
 - `/preview/details` - deterministic detailed preview.
 - `/metrics` - Prometheus-compatible generation and error counters.
 
-AI recommendations are optional. Set `AI_PROXY_URL` and `AI_PROXY_SECRET` in the production environment to expose the AI assistant in the frontend; otherwise the UI hides it.
+AI recommendations are optional. Set `AI_PROXY_URL` and `AI_PROXY_SECRET` in
+the production environment to expose the assistant in the frontend; otherwise
+the UI hides it. The recipe-first MVP keeps AI outside the core flow.
 
-## Архитектура
+## Architecture
 
 - `apps/web` - Next.js frontend.
 - `apps/api/api` - Rust/Axum backend.
-- `apps/api/templates` - шаблоны проектов, подключенные как git submodule.
-- `apps/api/api/dependency-presets.json` - зависимости, которые добавляются выбранными feature-опциями.
-- `scripts/load-test.mjs` - простой нагрузочный тест без внешних зависимостей.
+- `apps/api/templates` - project templates, currently connected as a Git
+  submodule.
+- `apps/api/api/dependency-presets.json` - dependencies added by selected
+  feature options.
+- `scripts/load-test.mjs` - dependency-free load test script.
 
-## Перед коммитом
+## Before committing
 
-В репозитории настроен `pre-commit`. Он проверяет формат YAML, конец файлов,
-лишние пробелы, конфликтные маркеры, а также через Turbo запускает `cargo fmt`,
-`cargo clippy`, `cargo check`, frontend `eslint` и `tsc`.
+The repository uses `pre-commit`. It checks YAML formatting, end-of-file
+markers, trailing whitespace, conflict markers, and runs Turbo tasks for
+formatting, linting, typechecking, and tests where configured.
 
-Один раз установите зависимости проекта и git hooks. Если `pre-commit` не
-установлен, сначала поставьте его через `pipx install pre-commit` или другим
-удобным способом.
+Install dependencies and hooks once:
 
 ```bash
 pnpm bootstrap
 pre-commit install
 ```
 
-Перед коммитом запустите все pre-commit проверки на всем репозитории:
+Run all pre-commit checks:
 
 ```bash
 pre-commit run --all-files
 ```
 
-Дополнительно запустите backend-тесты, потому что они не входят в pre-commit:
+Run backend tests separately:
 
 ```bash
 cargo test --manifest-path apps/api/api/Cargo.toml --locked
