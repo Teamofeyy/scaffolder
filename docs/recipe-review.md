@@ -47,16 +47,19 @@ telemetry in the open-source core.
 
 ## Automated checks
 
-The future `pnpm verify:recipes` command should report:
+`pnpm verify:recipes` currently reports:
 
 - manifest validation;
 - block compatibility;
+- forbidden hooks or scripts;
+- missing files referenced by operations.
+
+Future phases should extend it to report:
+
 - generation success;
 - install success;
 - build success;
-- test success when tests are enabled;
-- forbidden hooks or scripts;
-- missing files referenced by operations.
+- test success when tests are enabled.
 
 CI reports should be understandable to contributors. A failing recipe should
 tell the author what to fix instead of producing an opaque failure.

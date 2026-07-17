@@ -4,8 +4,9 @@ Recipes are the future product model for Scaffolder. A recipe is a curated,
 verified frontend starting point, not an arbitrary cross-product of framework,
 routing, styling, state, and testing options.
 
-The current 1.1.x product still uses the legacy `ProjectConfig` model. This
-document defines the target contract for the recipe-first rewrite.
+The current 1.1.x product still uses the legacy `ProjectConfig` model at
+runtime. The recipe manifests in `recipes/` define the target contract for the
+recipe-first rewrite and are validated by `pnpm verify:recipes`.
 
 ## Goals
 
@@ -54,7 +55,7 @@ A recipe is a verified composition:
 base template + integration blocks + starter blocks + recipe-specific patches
 ```
 
-Example shape:
+Recipe manifests live in `recipes/catalog/*.json`. Example shape:
 
 ```yaml
 id: react-router-app
@@ -78,8 +79,37 @@ verification:
   test: optional
 ```
 
-The exact schema will be introduced in a later phase. Phase 0 documents the
-contract before the implementation.
+Reference schemas live in `recipes/schemas/`. The current validator is
+implemented in `scripts/verify-recipes.mjs` without external dependencies so it
+can run in CI and local development without installing an additional schema
+runtime.
+
+## Repository layout
+
+```text
+recipes/
+  base-templates/
+    vite-react-ts.json
+  blocks/
+    react-router.json
+    shadcn.json
+    tailwind-vite.json
+    vitest.json
+    zustand.json
+  catalog/
+    react-router-app.json
+    react-vite-app.json
+  schemas/
+    base-template.schema.json
+    block.schema.json
+    recipe.schema.json
+```
+
+Validate manifests:
+
+```bash
+pnpm verify:recipes
+```
 
 ## Trust tiers
 

@@ -20,6 +20,7 @@
     "load:test": "node scripts/load-test.mjs",
     "load:test:preview": "LOAD_TEST_ENDPOINT=preview node scripts/load-test.mjs",
     "load:test:generate": "LOAD_TEST_ENDPOINT=generate node scripts/load-test.mjs",
+    "verify:recipes": "node scripts/verify-recipes.mjs",
     "verify:stable-matrix": "node scripts/verify-stable-matrix.mjs"
   },
   "keywords": [],

@@ -1,0 +1,91 @@
+{
+  "$schema": "../schemas/recipe.schema.json",
+  "id": "react-router-app",
+  "name": "React Router App",
+  "description": "Vite, React, TypeScript, Tailwind CSS, and React Router baseline with optional shadcn/ui, testing, and state management.",
+  "tier": "experimental",
+  "status": "draft",
+  "baseTemplate": "vite-react-ts",
+  "blocks": ["tailwind-vite", "react-router"],
+  "options": {
+    "ui": {
+      "label": "UI kit",
+      "description": "Optional component-system integration.",
+      "default": "none",
+      "values": [
+        {
+          "id": "none",
+          "label": "None",
+          "description": "Do not add a UI kit.",
+          "blocks": []
+        },
+        {
+          "id": "shadcn",
+          "label": "shadcn/ui",
+          "description": "Add shadcn/ui configuration and starter utilities.",
+          "blocks": ["shadcn"]
+        }
+      ]
+    },
+    "testing": {
+      "label": "Testing",
+      "description": "Optional test runner setup.",
+      "default": "none",
+      "values": [
+        {
+          "id": "none",
+          "label": "None",
+          "description": "Do not add a test runner.",
+          "blocks": []
+        },
+        {
+          "id": "vitest",
+          "label": "Vitest",
+          "description": "Add Vitest and a starter test.",
+          "blocks": ["vitest"]
+        }
+      ]
+    },
+    "state": {
+      "label": "State management",
+      "description": "Optional client state setup.",
+      "default": "none",
+      "values": [
+        {
+          "id": "none",
+          "label": "None",
+          "description": "Use React state only.",
+          "blocks": []
+        },
+        {
+          "id": "zustand",
+          "label": "Zustand",
+          "description": "Add Zustand and a minimal store.",
+          "blocks": ["zustand"]
+        }
+      ]
+    }
+  },
+  "customDependencies": {
+    "allow": true,
+    "policy": "package-json-only"
+  },
+  "verification": {
+    "generate": true,
+    "install": true,
+    "build": true,
+    "test": "optional"
+  },
+  "preview": {
+    "curatedFiles": [
+      "package.json",
+      "README.md",
+      "vite.config.ts",
+      "tsconfig.json",
+      "src/main.tsx",
+      "src/routes/root.tsx",
+      "src/routes/home.tsx"
+    ],
+    "showAllFiles": true
+  }
+}

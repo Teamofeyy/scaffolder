@@ -9,6 +9,9 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- Recipe schema MVP with base-template, block, and recipe manifests under
+  `recipes/`, plus `pnpm verify:recipes` for strict manifest and compatibility
+  validation.
 - Phase 0 recipe-first product documentation covering recipes, recipe
   authoring, recipe review, template update policy, and the recipe pull request
   checklist.

@@ -1,0 +1,34 @@
+{
+  "$schema": "../schemas/block.schema.json",
+  "id": "vitest",
+  "name": "Vitest",
+  "description": "Adds Vitest dependencies, scripts, and a starter component test.",
+  "category": "integration",
+  "status": "draft",
+  "requires": {
+    "baseTemplates": ["vite-react-ts"],
+    "blocks": [],
+    "capabilities": ["bundler:vite"]
+  },
+  "conflicts": {
+    "blocks": [],
+    "capabilities": []
+  },
+  "provides": {
+    "capabilities": ["testing:vitest"]
+  },
+  "filesTouched": ["package.json", "vite.config.ts", "src/App.test.tsx"],
+  "operations": [
+    {
+      "type": "package-json-merge",
+      "target": "package.json",
+      "description": "Add Vitest dependencies and test script."
+    },
+    {
+      "type": "file-template",
+      "target": "src/App.test.tsx",
+      "description": "Add a starter test.",
+      "template": "vitest/App.test.tsx"
+    }
+  ]
+}

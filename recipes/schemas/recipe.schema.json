@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scaffolder.local/schemas/recipe.schema.json",
+  "title": "Scaffolder recipe manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "id",
+    "name",
+    "description",
+    "tier",
+    "status",
+    "baseTemplate",
+    "blocks",
+    "options",
+    "customDependencies",
+    "verification",
+    "preview"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "tier": { "enum": ["recommended", "community", "experimental", "deprecated"] },
+    "status": { "enum": ["draft", "active", "deprecated"] },
+    "baseTemplate": { "type": "string" },
+    "blocks": { "type": "array", "items": { "type": "string" } },
+    "options": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "description", "default", "values"],
+        "properties": {
+          "label": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "default": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$" },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "label", "description", "blocks"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$" },
+                "label": { "type": "string", "minLength": 1 },
+                "description": { "type": "string", "minLength": 1 },
+                "blocks": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "customDependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allow", "policy"],
+      "properties": {
+        "allow": { "type": "boolean" },
+        "policy": { "const": "package-json-only" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generate", "install", "build", "test"],
+      "properties": {
+        "generate": { "type": "boolean" },
+        "install": { "type": "boolean" },
+        "build": { "type": "boolean" },
+        "test": { "enum": ["none", "optional", "required"] }
+      }
+    },
+    "preview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["curatedFiles", "showAllFiles"],
+      "properties": {
+        "curatedFiles": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "showAllFiles": { "type": "boolean" }
+      }
+    }
+  }
+}

@@ -24,7 +24,7 @@ Use this template for new or changed recipes and blocks.
 
 ## Verification
 
-Run these when the tooling exists:
+Run:
 
 ```bash
 pnpm verify:recipes

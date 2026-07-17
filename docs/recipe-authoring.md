@@ -1,8 +1,8 @@
 # Recipe Authoring
 
 This document describes how contributors should think about new recipes and
-blocks. The schema and validation command are planned work; until they exist,
-this document is the authoring contract.
+blocks. Recipe, block, and base-template manifests live in `recipes/` and are
+validated by `pnpm verify:recipes`.
 
 ## Before proposing a recipe
 
@@ -24,11 +24,11 @@ Weak examples:
 
 1. Check existing recipes and blocks.
 2. Prefer composing existing blocks before adding new ones.
-3. Add a recipe manifest.
+3. Add a recipe manifest in `recipes/catalog/`.
 4. Add only the blocks, templates, and structured operations the recipe needs.
 5. Keep custom dependencies out of the recipe unless they are part of the
    verified baseline.
-6. Run recipe verification once the command exists.
+6. Run recipe verification.
 7. Fill out the recipe pull request checklist.
 
 ## Recipe requirements
@@ -44,6 +44,12 @@ Each recipe should define:
 - user-configurable `options`;
 - verification expectations;
 - owner or maintainer information once community recipes are supported.
+
+Validate recipe manifests before opening a pull request:
+
+```bash
+pnpm verify:recipes
+```
 
 ## Block requirements
 

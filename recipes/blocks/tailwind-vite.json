@@ -1,0 +1,39 @@
+{
+  "$schema": "../schemas/block.schema.json",
+  "id": "tailwind-vite",
+  "name": "Tailwind CSS for Vite",
+  "description": "Configures Tailwind CSS for a Vite-based TypeScript project.",
+  "category": "integration",
+  "status": "draft",
+  "requires": {
+    "baseTemplates": ["vite-react-ts"],
+    "blocks": [],
+    "capabilities": ["bundler:vite"]
+  },
+  "conflicts": {
+    "blocks": [],
+    "capabilities": []
+  },
+  "provides": {
+    "capabilities": ["styling:tailwind"]
+  },
+  "filesTouched": ["package.json", "src/index.css", "vite.config.ts", ".env.example"],
+  "operations": [
+    {
+      "type": "package-json-merge",
+      "target": "package.json",
+      "description": "Add Tailwind CSS dependencies and scripts where needed."
+    },
+    {
+      "type": "css-append",
+      "target": "src/index.css",
+      "description": "Add Tailwind CSS imports."
+    },
+    {
+      "type": "file-template",
+      "target": ".env.example",
+      "description": "Add a starter environment example file.",
+      "template": "tailwind/.env.example.tpl"
+    }
+  ]
+}

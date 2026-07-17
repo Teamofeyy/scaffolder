@@ -45,6 +45,12 @@ Read the Phase 0 design documents:
 - [Recipe review](docs/recipe-review.md)
 - [Template updates](docs/template-updates.md)
 
+Validate recipe manifests:
+
+```bash
+pnpm verify:recipes
+```
+
 ## Current features
 
 - Backend-owned presets for stable React, Vue, and Next.js profiles.

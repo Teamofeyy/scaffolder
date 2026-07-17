@@ -1,0 +1,34 @@
+{
+  "$schema": "../schemas/block.schema.json",
+  "id": "zustand",
+  "name": "Zustand",
+  "description": "Adds Zustand and a minimal store module.",
+  "category": "integration",
+  "status": "draft",
+  "requires": {
+    "baseTemplates": ["vite-react-ts"],
+    "blocks": [],
+    "capabilities": ["framework:react"]
+  },
+  "conflicts": {
+    "blocks": [],
+    "capabilities": []
+  },
+  "provides": {
+    "capabilities": ["state:zustand"]
+  },
+  "filesTouched": ["package.json", "src/stores/app-store.ts"],
+  "operations": [
+    {
+      "type": "package-json-merge",
+      "target": "package.json",
+      "description": "Add Zustand dependency."
+    },
+    {
+      "type": "file-template",
+      "target": "src/stores/app-store.ts",
+      "description": "Add a minimal application store.",
+      "template": "zustand/app-store.ts"
+    }
+  ]
+}
