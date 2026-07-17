@@ -1,13 +1,17 @@
-"use client"
+'use client'
 
-import { Button } from "@/components/ui/button"
-import { Download, Sparkles } from "lucide-react"
-import { useState } from "react"
-import { toast } from "sonner"
-import { GenerateButtonProps } from "@/types/project-config"
-import { buildProject, downloadFile, validateConfig } from "@/lib/api"
+import { Button } from '@/components/ui/button'
+import { Download, Sparkles } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { GenerateButtonProps } from '@/types/project-config'
+import { buildProject, downloadFile, validateConfig } from '@/lib/api'
 
-export function GenerateButton({ config, dictionary, errors }: GenerateButtonProps) {
+export function GenerateButton({
+  config,
+  dictionary,
+  errors,
+}: GenerateButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const handleGenerate = async () => {
@@ -35,12 +39,16 @@ export function GenerateButton({ config, dictionary, errors }: GenerateButtonPro
       downloadFile(zipBlob, filename)
 
       toast.success(dictionary.successTitle, {
-        description: dictionary.successDescription.replace("{filename}", filename),
+        description: dictionary.successDescription.replace(
+          '{filename}',
+          filename,
+        ),
       })
     } catch (error) {
       console.error(dictionary.errorTitle, error)
       toast.error(dictionary.errorTitle, {
-        description: error instanceof Error ? error.message : dictionary.unknownError,
+        description:
+          error instanceof Error ? error.message : dictionary.unknownError,
       })
     } finally {
       setIsGenerating(false)

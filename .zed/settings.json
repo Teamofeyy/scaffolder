@@ -1,0 +1,128 @@
+{
+  "format_on_save": "on",
+  "languages": {
+    "JavaScript": {
+      "formatter": [
+        { "code_action": "source.fixAll.eslint" },
+        {
+          "external": {
+            "command": "pnpm",
+            "arguments": [
+              "--dir",
+              "apps/web",
+              "exec",
+              "prettier",
+              "--stdin-filepath",
+              "{buffer_path}"
+            ]
+          }
+        }
+      ],
+      "format_on_save": "on"
+    },
+    "TypeScript": {
+      "formatter": [
+        { "code_action": "source.fixAll.eslint" },
+        {
+          "external": {
+            "command": "pnpm",
+            "arguments": [
+              "--dir",
+              "apps/web",
+              "exec",
+              "prettier",
+              "--stdin-filepath",
+              "{buffer_path}"
+            ]
+          }
+        }
+      ],
+      "format_on_save": "on"
+    },
+    "TSX": {
+      "formatter": [
+        { "code_action": "source.fixAll.eslint" },
+        {
+          "external": {
+            "command": "pnpm",
+            "arguments": [
+              "--dir",
+              "apps/web",
+              "exec",
+              "prettier",
+              "--stdin-filepath",
+              "{buffer_path}"
+            ]
+          }
+        }
+      ],
+      "format_on_save": "on"
+    },
+    "CSS": {
+      "formatter": {
+        "external": {
+          "command": "pnpm",
+          "arguments": [
+            "--dir",
+            "apps/web",
+            "exec",
+            "prettier",
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
+        }
+      },
+      "format_on_save": "on"
+    },
+    "JSON": {
+      "formatter": {
+        "external": {
+          "command": "pnpm",
+          "arguments": [
+            "--dir",
+            "apps/web",
+            "exec",
+            "prettier",
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
+        }
+      },
+      "format_on_save": "on"
+    },
+    "Markdown": {
+      "formatter": {
+        "external": {
+          "command": "pnpm",
+          "arguments": [
+            "--dir",
+            "apps/web",
+            "exec",
+            "prettier",
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
+        }
+      },
+      "format_on_save": "on"
+    },
+    "Rust": {
+      "formatter": "language_server",
+      "format_on_save": "on"
+    }
+  },
+  "lsp": {
+    "eslint": {
+      "settings": {
+        "workingDirectories": [{ "mode": "auto" }]
+      }
+    },
+    "rust-analyzer": {
+      "initialization_options": {
+        "check": {
+          "command": "clippy"
+        }
+      }
+    }
+  }
+}

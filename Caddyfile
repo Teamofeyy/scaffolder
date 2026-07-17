@@ -15,6 +15,9 @@
 	@site_host host {$DOMAIN:localhost}
 
 	handle @site_host {
+		@blocked_backend_admin path /api/metrics /api/api-docs* /api/swagger-ui*
+		respond @blocked_backend_admin "Not found" 404
+
 		handle_path /api/* {
 			reverse_proxy backend:8000 {
 				header_up Host {http.request.host}

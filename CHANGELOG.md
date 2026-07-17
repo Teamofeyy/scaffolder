@@ -29,9 +29,21 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Documentation for presets, the verification matrix, and the planned CLI MVP.
 - Nix development shell tooling for Node.js 22, pnpm 10, pre-commit, and the
   repository's pinned Rust toolchain.
+- Project Zed settings for format-on-save with ESLint, Prettier, rustfmt, and
+  rust-analyzer Clippy diagnostics.
 
 ### Changed
 
+- Hardened production API exposure: CORS now uses an explicit origin allowlist,
+  Swagger and metrics are disabled by default, and Caddy blocks public
+  `/api/metrics`, `/api/api-docs`, and `/api/swagger-ui*` routing.
+- Added backend validation, request body limits, timeouts, and concurrency
+  guards for expensive generation and preview requests, including malformed
+  project-name rejection before filesystem materialization.
+- The frontend API client now consumes generated Rust TypeScript bindings for
+  backend project configuration types instead of duplicating that contract.
+- Preview requests are debounced more conservatively and cache identical
+  configuration previews in memory.
 - Caddy now routes requests by the forwarded `Host` header on port 80 so it can
   run behind an external reverse proxy that connects by IP.
 - The stable matrix verification script now also fetches supported presets from

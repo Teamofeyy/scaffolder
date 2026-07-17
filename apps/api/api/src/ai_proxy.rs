@@ -1,5 +1,7 @@
 use crate::metrics;
-use crate::schema::{Framework, Linting, ProjectConfig, Routing, StateManagement, Styling};
+use crate::schema::{
+    Framework, Linting, ProjectConfig, Routing, StateManagement, Styling, Testing,
+};
 use axum::{Json, http::StatusCode, response::IntoResponse};
 use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderValue};
 use serde::{Deserialize, Serialize};
@@ -49,6 +51,8 @@ pub struct ConfigPatch {
     #[serde(default)]
     pub linting: Option<Linting>,
     #[serde(default)]
+    pub testing: Option<Testing>,
+    #[serde(default)]
     pub dependencies: Vec<String>,
     #[serde(default)]
     pub dev_dependencies: Vec<String>,
@@ -68,6 +72,10 @@ pub async fn recommend(Json(req): Json<AiRecommendRequest>) -> impl IntoResponse
 
     if message.chars().count() > MAX_MESSAGE_CHARS {
         return error_response(StatusCode::BAD_REQUEST, "Message is too long");
+    }
+
+    if let Err(err) = req.current_config.validate_for_generation() {
+        return error_response(StatusCode::BAD_REQUEST, err.to_string());
     }
 
     let Ok(proxy_url) = std::env::var("AI_PROXY_URL") else {
@@ -154,12 +162,12 @@ async fn call_ai_proxy(
         .map_err(|_| AiProxyError::InvalidResponse)
 }
 
-fn error_response(status: StatusCode, message: &'static str) -> axum::response::Response {
+fn error_response(status: StatusCode, message: impl Into<String>) -> axum::response::Response {
     if status.is_client_error() || status.is_server_error() {
         metrics::record_http_error();
     }
 
-    (status, Json(json!({ "error": message }))).into_response()
+    (status, Json(json!({ "error": message.into() }))).into_response()
 }
 
 fn request_id() -> String {

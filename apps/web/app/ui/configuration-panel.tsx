@@ -1,63 +1,94 @@
-"use client"
+'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Check, Settings2, Package, Palette, Search } from "lucide-react"
-import { ConfigurationPanelProps, ConfigKey, ConfigValue, Linting, Framework, Routing, Styling, StateManagement, Testing } from "@/types/project-config"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { cn } from "@/lib/utils"
-import { DependencySearchResult, FeatureResponse, getFeatures, getPresets, ProjectPreset, searchDependencies, SupportStatus } from "@/lib/api"
-import { useEffect, useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Check, Settings2, Package, Palette, Search } from 'lucide-react'
+import {
+  ConfigurationPanelProps,
+  ConfigKey,
+  ConfigValue,
+  Linting,
+  Framework,
+  Routing,
+  Styling,
+  StateManagement,
+  Testing,
+} from '@/types/project-config'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { cn } from '@/lib/utils'
+import {
+  DependencySearchResult,
+  FeatureResponse,
+  getFeatures,
+  getPresets,
+  ProjectPreset,
+  searchDependencies,
+  SupportStatus,
+} from '@/lib/api'
+import { useEffect, useState } from 'react'
 
 export interface Feature {
-  name: string;
-  label: string;
-  description: string;
-  category: string;
-  requires: string[];
-  conflicts: string[];
+  name: string
+  label: string
+  description: string
+  category: string
+  requires: string[]
+  conflicts: string[]
 }
 
 function defaultRoutingForFramework(framework: Framework): Routing {
-  if (framework === "nextjs") return "app-router";
-  if (framework === "react" || framework === "react-ts") return "react-router";
-  if (framework === "vue" || framework === "vue-ts" || framework === "nuxt-ts") return "vue-router";
-  return "none";
+  if (framework === 'nextjs') return 'app-router'
+  if (framework === 'react' || framework === 'react-ts') return 'react-router'
+  if (framework === 'vue' || framework === 'vue-ts' || framework === 'nuxt-ts')
+    return 'vue-router'
+  return 'none'
 }
 
 function routingOptionsForFramework(
   framework: Framework,
   noRouting: string,
 ): { value: Routing; label: string }[] {
-  if (framework === "nextjs") {
+  if (framework === 'nextjs') {
     return [
-      { value: "app-router", label: "App Router" },
-      { value: "pages-router", label: "Pages Router" },
-    ];
+      { value: 'app-router', label: 'App Router' },
+      { value: 'pages-router', label: 'Pages Router' },
+    ]
   }
 
-  if (framework === "react" || framework === "react-ts") {
+  if (framework === 'react' || framework === 'react-ts') {
     return [
-      { value: "react-router", label: "React Router" },
-      { value: "react-router-data", label: "React Router Data" },
-      { value: "none", label: noRouting },
-    ];
+      { value: 'react-router', label: 'React Router' },
+      { value: 'react-router-data', label: 'React Router Data' },
+      { value: 'none', label: noRouting },
+    ]
   }
 
-  if (framework === "vue" || framework === "vue-ts" || framework === "nuxt-ts") {
+  if (
+    framework === 'vue' ||
+    framework === 'vue-ts' ||
+    framework === 'nuxt-ts'
+  ) {
     return [
-      { value: "vue-router", label: "Vue Router" },
-      { value: "none", label: noRouting },
-    ];
+      { value: 'vue-router', label: 'Vue Router' },
+      { value: 'none', label: noRouting },
+    ]
   }
 
-  return [{ value: "none", label: noRouting }];
+  return [{ value: 'none', label: noRouting }]
 }
 
 function supportsReactState(framework: Framework) {
-  return framework === "react" || framework === "react-ts" || framework === "nextjs";
+  return (
+    framework === 'react' || framework === 'react-ts' || framework === 'nextjs'
+  )
 }
 
 type DependencyListItem = {
@@ -69,7 +100,7 @@ type DependencyListItem = {
 }
 
 function dependencyName(raw: string) {
-  const idx = raw.lastIndexOf("@")
+  const idx = raw.lastIndexOf('@')
   if (idx > 0) return raw.slice(0, idx)
   return raw
 }
@@ -83,175 +114,256 @@ export function ConfigurationPanel({
   setConfig,
   dictionary,
 }: ConfigurationPanelProps) {
-  const [dependencyQuery, setDependencyQuery] = useState("");
-  const [npmResults, setNpmResults] = useState<DependencySearchResult[]>([]);
-  const [isSearchingDependencies, setIsSearchingDependencies] = useState(false);
-  const [dependencySearchError, setDependencySearchError] = useState<string | null>(null);
-  const [features, setFeatures] = useState<FeatureResponse[]>([]);
-  const [presets, setPresets] = useState<ProjectPreset[]>([]);
-  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
+  const [dependencyQuery, setDependencyQuery] = useState('')
+  const [npmResults, setNpmResults] = useState<DependencySearchResult[]>([])
+  const [isSearchingDependencies, setIsSearchingDependencies] = useState(false)
+  const [dependencySearchError, setDependencySearchError] = useState<
+    string | null
+  >(null)
+  const [features, setFeatures] = useState<FeatureResponse[]>([])
+  const [presets, setPresets] = useState<ProjectPreset[]>([])
+  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
   const updateConfig = (key: ConfigKey, value: ConfigValue) => {
-    if (key !== "projectName") {
-      setSelectedPresetId(null);
+    if (key !== 'projectName') {
+      setSelectedPresetId(null)
     }
 
-    if (key === "framework") {
-      const framework = value as Framework;
-      const options = routingOptionsForFramework(framework, dictionary.noRouting);
-      const currentRoutingStillValid = options.some((option) => option.value === config.routing);
+    if (key === 'framework') {
+      const framework = value as Framework
+      const options = routingOptionsForFramework(
+        framework,
+        dictionary.noRouting,
+      )
+      const currentRoutingStillValid = options.some(
+        (option) => option.value === config.routing,
+      )
       setConfig({
         ...config,
         framework,
-        routing: currentRoutingStillValid ? config.routing : defaultRoutingForFramework(framework),
-        stateManagement: supportsReactState(framework) ? config.stateManagement : "none",
-      });
-      return;
+        routing: currentRoutingStillValid
+          ? config.routing
+          : defaultRoutingForFramework(framework),
+        stateManagement: supportsReactState(framework)
+          ? config.stateManagement
+          : 'none',
+      })
+      return
     }
 
     setConfig({ ...config, [key]: value })
   }
 
   const updateLinting = (value: Linting) => {
-    setSelectedPresetId(null);
+    setSelectedPresetId(null)
     setConfig({ ...config, linting: value })
   }
 
-  const frameworkOptions: { value: Framework; label: string; hint: string }[] = [
-    { value: "react", label: "React", hint: dictionary.options.viteSpa },
-    { value: "nextjs", label: "Next.js", hint: dictionary.options.reactFullstack },
-    { value: "vue", label: "Vue", hint: dictionary.options.viteSpa },
-    { value: "svelte-ts", label: "Svelte", hint: dictionary.options.lightweightTs },
-    { value: "solid-ts", label: "Solid", hint: "Fine-grained UI" },
-    { value: "preact-ts", label: "Preact", hint: dictionary.options.minimalReactLike },
-    { value: "preact-ts-official", label: "Preact official", hint: "Official template" },
-    { value: "nuxt-ts", label: "Nuxt", hint: "Vue full stack" },
-    { value: "angular-ts", label: "Angular", hint: "Enterprise SPA" },
-    { value: "qwik-ts", label: "Qwik", hint: "Resumable UI" },
-    { value: "lit-ts", label: "Lit", hint: "Web components" },
-    { value: "ember-ts", label: "Ember", hint: "Convention-driven SPA" },
-    { value: "marko-ts", label: "Marko", hint: "Server-first UI" },
-  ]
+  const frameworkOptions: { value: Framework; label: string; hint: string }[] =
+    [
+      { value: 'react', label: 'React', hint: dictionary.options.viteSpa },
+      {
+        value: 'nextjs',
+        label: 'Next.js',
+        hint: dictionary.options.reactFullstack,
+      },
+      { value: 'vue', label: 'Vue', hint: dictionary.options.viteSpa },
+      {
+        value: 'svelte-ts',
+        label: 'Svelte',
+        hint: dictionary.options.lightweightTs,
+      },
+      { value: 'solid-ts', label: 'Solid', hint: 'Fine-grained UI' },
+      {
+        value: 'preact-ts',
+        label: 'Preact',
+        hint: dictionary.options.minimalReactLike,
+      },
+      {
+        value: 'preact-ts-official',
+        label: 'Preact official',
+        hint: 'Official template',
+      },
+      { value: 'nuxt-ts', label: 'Nuxt', hint: 'Vue full stack' },
+      { value: 'angular-ts', label: 'Angular', hint: 'Enterprise SPA' },
+      { value: 'qwik-ts', label: 'Qwik', hint: 'Resumable UI' },
+      { value: 'lit-ts', label: 'Lit', hint: 'Web components' },
+      { value: 'ember-ts', label: 'Ember', hint: 'Convention-driven SPA' },
+      { value: 'marko-ts', label: 'Marko', hint: 'Server-first UI' },
+    ]
   const stylingOptions: { value: Styling; label: string; hint: string }[] = [
-    { value: "tailwind", label: "Tailwind", hint: "Utility-first CSS" },
-    { value: "css-modules", label: "CSS Modules", hint: dictionary.options.localCss },
-    { value: "styled-components", label: "Styled Components", hint: "CSS-in-JS" },
+    { value: 'tailwind', label: 'Tailwind', hint: 'Utility-first CSS' },
+    {
+      value: 'css-modules',
+      label: 'CSS Modules',
+      hint: dictionary.options.localCss,
+    },
+    {
+      value: 'styled-components',
+      label: 'Styled Components',
+      hint: 'CSS-in-JS',
+    },
   ]
-  const reactStateOptions: { value: StateManagement; label: string; hint: string }[] = [
-    { value: "none", label: dictionary.options.none, hint: dictionary.options.noState },
-    { value: "zustand", label: "Zustand", hint: dictionary.options.minimalStore },
-    { value: "redux", label: "Redux Toolkit", hint: dictionary.options.structuredState },
-    { value: "jotai", label: "Jotai", hint: "Atom-based state" },
+  const reactStateOptions: {
+    value: StateManagement
+    label: string
+    hint: string
+  }[] = [
+    {
+      value: 'none',
+      label: dictionary.options.none,
+      hint: dictionary.options.noState,
+    },
+    {
+      value: 'zustand',
+      label: 'Zustand',
+      hint: dictionary.options.minimalStore,
+    },
+    {
+      value: 'redux',
+      label: 'Redux Toolkit',
+      hint: dictionary.options.structuredState,
+    },
+    { value: 'jotai', label: 'Jotai', hint: 'Atom-based state' },
   ]
-  const nonReactStateOptions: { value: StateManagement; label: string; hint: string }[] = [
-    { value: "none", label: dictionary.options.none, hint: dictionary.options.noStateForTemplate },
+  const nonReactStateOptions: {
+    value: StateManagement
+    label: string
+    hint: string
+  }[] = [
+    {
+      value: 'none',
+      label: dictionary.options.none,
+      hint: dictionary.options.noStateForTemplate,
+    },
   ]
   const lintingOptions: { value: Linting; label: string; hint: string }[] = [
-    { value: "eslint", label: "ESLint", hint: dictionary.options.nextLint },
-    { value: "biome", label: "Biome", hint: dictionary.options.fastLint },
-    { value: "none", label: dictionary.options.noLinter, hint: dictionary.options.noLinterHint },
+    { value: 'eslint', label: 'ESLint', hint: dictionary.options.nextLint },
+    { value: 'biome', label: 'Biome', hint: dictionary.options.fastLint },
+    {
+      value: 'none',
+      label: dictionary.options.noLinter,
+      hint: dictionary.options.noLinterHint,
+    },
   ]
   const testingOptions: { value: Testing; label: string; hint: string }[] = [
-    { value: "none", label: dictionary.options.none, hint: dictionary.options.noTesting },
-    { value: "vitest", label: "Vitest", hint: dictionary.options.unitTesting },
-    { value: "playwright", label: "Playwright", hint: dictionary.options.e2eTesting },
+    {
+      value: 'none',
+      label: dictionary.options.none,
+      hint: dictionary.options.noTesting,
+    },
+    { value: 'vitest', label: 'Vitest', hint: dictionary.options.unitTesting },
+    {
+      value: 'playwright',
+      label: 'Playwright',
+      hint: dictionary.options.e2eTesting,
+    },
   ]
-  const routingOptions = routingOptionsForFramework(config.framework, dictionary.noRouting);
-  const stateOptions = supportsReactState(config.framework) ? reactStateOptions : nonReactStateOptions;
-  const featureStatus = new Map(features.map((feature) => [feature.name, feature.support_status]));
+  const routingOptions = routingOptionsForFramework(
+    config.framework,
+    dictionary.noRouting,
+  )
+  const stateOptions = supportsReactState(config.framework)
+    ? reactStateOptions
+    : nonReactStateOptions
+  const featureStatus = new Map(
+    features.map((feature) => [feature.name, feature.support_status]),
+  )
   const remoteDependencies = npmResults.map((dep) => ({
     id: `${dep.name}@${dep.version}`,
     name: dep.name,
     label: dep.name,
     version: dep.version,
     description: dep.description,
-  }));
-  const dependencyItems: DependencyListItem[] = remoteDependencies;
-  const removeDependency = (bucket: "prod" | "dev", dependency: string) => {
-    setSelectedPresetId(null);
+  }))
+  const dependencyItems: DependencyListItem[] = remoteDependencies
+  const removeDependency = (bucket: 'prod' | 'dev', dependency: string) => {
+    setSelectedPresetId(null)
     setConfig({
       ...config,
-      dependencies: bucket === "prod"
-        ? config.dependencies.filter((item) => item !== dependency)
-        : config.dependencies,
-      devDependencies: bucket === "dev"
-        ? config.devDependencies.filter((item) => item !== dependency)
-        : config.devDependencies,
+      dependencies:
+        bucket === 'prod'
+          ? config.dependencies.filter((item) => item !== dependency)
+          : config.dependencies,
+      devDependencies:
+        bucket === 'dev'
+          ? config.devDependencies.filter((item) => item !== dependency)
+          : config.devDependencies,
     })
   }
 
   useEffect(() => {
-    const query = dependencyQuery.trim();
+    const query = dependencyQuery.trim()
     if (query.length < 2) {
-      setNpmResults([]);
-      setDependencySearchError(null);
-      setIsSearchingDependencies(false);
-      return;
+      setNpmResults([])
+      setDependencySearchError(null)
+      setIsSearchingDependencies(false)
+      return
     }
 
-    let cancelled = false;
-    setIsSearchingDependencies(true);
-    setDependencySearchError(null);
+    let cancelled = false
+    setIsSearchingDependencies(true)
+    setDependencySearchError(null)
 
     const timeoutId = window.setTimeout(() => {
       searchDependencies(query)
         .then((results) => {
-          if (!cancelled) setNpmResults(results);
+          if (!cancelled) setNpmResults(results)
         })
         .catch(() => {
           if (!cancelled) {
-            setNpmResults([]);
-            setDependencySearchError(dictionary.dependencySearchError);
+            setNpmResults([])
+            setDependencySearchError(dictionary.dependencySearchError)
           }
         })
         .finally(() => {
-          if (!cancelled) setIsSearchingDependencies(false);
-        });
-    }, 300);
+          if (!cancelled) setIsSearchingDependencies(false)
+        })
+    }, 300)
 
     return () => {
-      cancelled = true;
-      window.clearTimeout(timeoutId);
-    };
-  }, [dependencyQuery, dictionary.dependencySearchError]);
+      cancelled = true
+      window.clearTimeout(timeoutId)
+    }
+  }, [dependencyQuery, dictionary.dependencySearchError])
 
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
 
     getFeatures()
       .then((nextFeatures) => {
-        if (!cancelled) setFeatures(nextFeatures);
+        if (!cancelled) setFeatures(nextFeatures)
       })
       .catch(() => {
-        if (!cancelled) setFeatures([]);
-      });
+        if (!cancelled) setFeatures([])
+      })
 
     getPresets()
       .then((nextPresets) => {
-        if (!cancelled) setPresets(nextPresets);
+        if (!cancelled) setPresets(nextPresets)
       })
       .catch(() => {
-        if (!cancelled) setPresets([]);
-      });
+        if (!cancelled) setPresets([])
+      })
 
     return () => {
-      cancelled = true;
-    };
-  }, []);
+      cancelled = true
+    }
+  }, [])
 
   const applyPreset = (preset: ProjectPreset) => {
-    setSelectedPresetId(preset.id);
+    setSelectedPresetId(preset.id)
     setConfig({
       ...config,
       framework: preset.config.framework as Framework,
       routing: preset.config.routing as Routing,
       styling: preset.config.styling as Styling,
-      linting: (preset.config.linting ?? "eslint") as Linting,
+      linting: (preset.config.linting ?? 'eslint') as Linting,
       stateManagement: preset.config.state_management as StateManagement,
       dependencies: preset.config.dependencies,
       devDependencies: preset.config.dev_dependencies,
-      testing: (preset.config.testing ?? "none") as Testing,
-    });
-  };
+      testing: (preset.config.testing ?? 'none') as Testing,
+    })
+  }
 
   return (
     <Card className="gap-4 border-border/50 py-4 shadow-lg">
@@ -267,33 +379,41 @@ export function ConfigurationPanel({
           <div className="flex items-center justify-between gap-3">
             <Label>{dictionary.presets}</Label>
             <span className="text-xs text-muted-foreground">
-              {selectedPresetId ? presets.find((preset) => preset.id === selectedPresetId)?.label : dictionary.customConfiguration}
+              {selectedPresetId
+                ? presets.find((preset) => preset.id === selectedPresetId)
+                    ?.label
+                : dictionary.customConfiguration}
             </span>
           </div>
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             {presets.map((preset) => {
-              const selected = selectedPresetId === preset.id;
+              const selected = selectedPresetId === preset.id
               return (
                 <button
                   key={preset.id}
                   type="button"
                   className={cn(
-                    "min-h-20 rounded-md border p-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    'min-h-20 rounded-md border p-3 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     selected
-                      ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                      ? 'border-primary bg-primary/10 text-foreground'
+                      : 'border-border bg-background hover:bg-accent hover:text-accent-foreground',
                   )}
                   onClick={() => applyPreset(preset)}
                 >
                   <span className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-semibold leading-5">{preset.label}</span>
-                    <StatusBadge status={preset.status} dictionary={dictionary} />
+                    <span className="text-sm font-semibold leading-5">
+                      {preset.label}
+                    </span>
+                    <StatusBadge
+                      status={preset.status}
+                      dictionary={dictionary}
+                    />
                   </span>
                   <span className="mt-1 block text-xs leading-4 text-muted-foreground">
                     {preset.description}
                   </span>
                 </button>
-              );
+              )
             })}
             {presets.length === 0 && (
               <p className="rounded-md border border-border/50 bg-muted/20 p-3 text-sm text-muted-foreground">
@@ -306,7 +426,9 @@ export function ConfigurationPanel({
         <div className="flex items-center justify-between gap-3">
           <Label>{dictionary.manualConfiguration}</Label>
           {!selectedPresetId && (
-            <span className="text-xs font-medium text-primary">{dictionary.customConfiguration}</span>
+            <span className="text-xs font-medium text-primary">
+              {dictionary.customConfiguration}
+            </span>
           )}
         </div>
         <Tabs defaultValue="basic" className="w-full">
@@ -323,17 +445,22 @@ export function ConfigurationPanel({
                 id="projectName"
                 placeholder="my-awesome-app"
                 value={config.projectName}
-                onChange={(e) => updateConfig("projectName", e.target.value)}
+                onChange={(e) => updateConfig('projectName', e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
               <Label>{dictionary.framework}</Label>
-              <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 2xl:grid-cols-4" role="radiogroup" aria-label={dictionary.framework}>
+              <div
+                className="grid grid-cols-2 gap-2 lg:grid-cols-3 2xl:grid-cols-4"
+                role="radiogroup"
+                aria-label={dictionary.framework}
+              >
                 {frameworkOptions.map((option) => {
                   const selected = config.framework === option.value
-                  const status = featureStatus.get(option.value) ?? "experimental"
-                  const unavailable = status === "unavailable"
+                  const status =
+                    featureStatus.get(option.value) ?? 'experimental'
+                  const unavailable = status === 'unavailable'
                   return (
                     <button
                       key={option.value}
@@ -342,22 +469,24 @@ export function ConfigurationPanel({
                       aria-checked={selected}
                       disabled={unavailable}
                       className={cn(
-                        "min-h-14 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        'min-h-14 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         selected
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
-                        unavailable && "cursor-not-allowed opacity-70 hover:bg-background hover:text-foreground",
+                          ? 'border-primary bg-primary/10 text-foreground'
+                          : 'border-border bg-background hover:bg-accent hover:text-accent-foreground',
+                        unavailable &&
+                          'cursor-not-allowed opacity-70 hover:bg-background hover:text-foreground',
                       )}
-                      onClick={() => updateConfig("framework", option.value)}
+                      onClick={() => updateConfig('framework', option.value)}
                     >
                       <span className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-semibold leading-5">{option.label}</span>
-                        <StatusBadge
-                          status={status}
-                          dictionary={dictionary}
-                        />
+                        <span className="text-sm font-semibold leading-5">
+                          {option.label}
+                        </span>
+                        <StatusBadge status={status} dictionary={dictionary} />
                       </span>
-                      <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">{option.hint}</span>
+                      <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">
+                        {option.hint}
+                      </span>
                     </button>
                   )
                 })}
@@ -366,7 +495,11 @@ export function ConfigurationPanel({
 
             <div className="space-y-2">
               <Label>{dictionary.routing}</Label>
-              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={dictionary.routing}>
+              <div
+                className="grid grid-cols-2 gap-2"
+                role="radiogroup"
+                aria-label={dictionary.routing}
+              >
                 {routingOptions.map((option) => {
                   const selected = config.routing === option.value
                   return (
@@ -376,12 +509,12 @@ export function ConfigurationPanel({
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "h-10 rounded-md border px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        'h-10 rounded-md border px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         selected
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-background hover:bg-accent hover:text-accent-foreground',
                       )}
-                      onClick={() => updateConfig("routing", option.value)}
+                      onClick={() => updateConfig('routing', option.value)}
                     >
                       {option.label}
                     </button>
@@ -389,7 +522,6 @@ export function ConfigurationPanel({
                 })}
               </div>
             </div>
-
           </TabsContent>
 
           <TabsContent value="styling" className="space-y-4 mt-4">
@@ -398,7 +530,11 @@ export function ConfigurationPanel({
                 <Palette className="h-4 w-4" />
                 {dictionary.stylingSystem}
               </Label>
-              <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label={dictionary.stylingSystem}>
+              <div
+                className="grid grid-cols-1 gap-2"
+                role="radiogroup"
+                aria-label={dictionary.stylingSystem}
+              >
                 {stylingOptions.map((option) => {
                   const selected = config.styling === option.value
                   return (
@@ -408,15 +544,19 @@ export function ConfigurationPanel({
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        'min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         selected
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                          ? 'border-primary bg-primary/10 text-foreground'
+                          : 'border-border bg-background hover:bg-accent hover:text-accent-foreground',
                       )}
-                      onClick={() => updateConfig("styling", option.value)}
+                      onClick={() => updateConfig('styling', option.value)}
                     >
-                      <span className="block text-sm font-semibold leading-5">{option.label}</span>
-                      <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">{option.hint}</span>
+                      <span className="block text-sm font-semibold leading-5">
+                        {option.label}
+                      </span>
+                      <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">
+                        {option.hint}
+                      </span>
                     </button>
                   )
                 })}
@@ -424,11 +564,18 @@ export function ConfigurationPanel({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="stateManagement" className="flex items-center gap-2">
+              <Label
+                htmlFor="stateManagement"
+                className="flex items-center gap-2"
+              >
                 <Package className="h-4 w-4" />
                 {dictionary.stateManagement}
               </Label>
-              <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label="State Management">
+              <div
+                className="grid grid-cols-1 gap-2"
+                role="radiogroup"
+                aria-label="State Management"
+              >
                 {stateOptions.map((option) => {
                   const selected = config.stateManagement === option.value
                   return (
@@ -438,15 +585,21 @@ export function ConfigurationPanel({
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        'min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         selected
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                          ? 'border-primary bg-primary/10 text-foreground'
+                          : 'border-border bg-background hover:bg-accent hover:text-accent-foreground',
                       )}
-                      onClick={() => updateConfig("stateManagement", option.value)}
+                      onClick={() =>
+                        updateConfig('stateManagement', option.value)
+                      }
                     >
-                      <span className="block text-sm font-semibold leading-5">{option.label}</span>
-                      <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">{option.hint}</span>
+                      <span className="block text-sm font-semibold leading-5">
+                        {option.label}
+                      </span>
+                      <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">
+                        {option.hint}
+                      </span>
                     </button>
                   )
                 })}
@@ -460,8 +613,12 @@ export function ConfigurationPanel({
               <Label htmlFor="linting" className="flex items-center gap-2">
                 {dictionary.linter}
               </Label>
-              {config.framework === "nextjs" ? (
-                <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label={dictionary.linter}>
+              {config.framework === 'nextjs' ? (
+                <div
+                  className="grid grid-cols-1 gap-2"
+                  role="radiogroup"
+                  aria-label={dictionary.linter}
+                >
                   {lintingOptions.map((option) => {
                     const selected = config.linting === option.value
                     return (
@@ -471,15 +628,19 @@ export function ConfigurationPanel({
                         role="radio"
                         aria-checked={selected}
                         className={cn(
-                          "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          'min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                           selected
-                            ? "border-primary bg-primary/10 text-foreground"
-                            : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                            ? 'border-primary bg-primary/10 text-foreground'
+                            : 'border-border bg-background hover:bg-accent hover:text-accent-foreground',
                         )}
                         onClick={() => updateLinting(option.value)}
                       >
-                        <span className="block text-sm font-semibold leading-5">{option.label}</span>
-                        <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">{option.hint}</span>
+                        <span className="block text-sm font-semibold leading-5">
+                          {option.label}
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">
+                          {option.hint}
+                        </span>
                       </button>
                     )
                   })}
@@ -495,7 +656,11 @@ export function ConfigurationPanel({
               <Label className="flex items-center gap-2">
                 {dictionary.testing}
               </Label>
-              <div className="grid grid-cols-1 gap-2" role="radiogroup" aria-label={dictionary.testing}>
+              <div
+                className="grid grid-cols-1 gap-2"
+                role="radiogroup"
+                aria-label={dictionary.testing}
+              >
                 {testingOptions.map((option) => {
                   const selected = config.testing === option.value
                   return (
@@ -505,15 +670,19 @@ export function ConfigurationPanel({
                       role="radio"
                       aria-checked={selected}
                       className={cn(
-                        "min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        'min-h-12 rounded-md border p-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         selected
-                          ? "border-primary bg-primary/10 text-foreground"
-                          : "border-border bg-background hover:bg-accent hover:text-accent-foreground",
+                          ? 'border-primary bg-primary/10 text-foreground'
+                          : 'border-border bg-background hover:bg-accent hover:text-accent-foreground',
                       )}
-                      onClick={() => updateConfig("testing", option.value)}
+                      onClick={() => updateConfig('testing', option.value)}
                     >
-                      <span className="block text-sm font-semibold leading-5">{option.label}</span>
-                      <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">{option.hint}</span>
+                      <span className="block text-sm font-semibold leading-5">
+                        {option.label}
+                      </span>
+                      <span className="mt-0.5 block text-xs leading-4 text-muted-foreground">
+                        {option.hint}
+                      </span>
                     </button>
                   )
                 })}
@@ -522,8 +691,8 @@ export function ConfigurationPanel({
 
             {/* Dependency search / selection */}
             <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
                   <Label className="flex items-center gap-2">
                     <Search className="h-4 w-4" />
                     {dictionary.dependencies}
@@ -541,9 +710,12 @@ export function ConfigurationPanel({
                 onChange={(e) => setDependencyQuery(e.target.value)}
               />
 
-              {(config.dependencies.length > 0 || config.devDependencies.length > 0) && (
+              {(config.dependencies.length > 0 ||
+                config.devDependencies.length > 0) && (
                 <div className="space-y-2 rounded-md border border-border/50 bg-muted/20 p-3">
-                  <p className="text-sm font-medium">{dictionary.selectedDependencies}</p>
+                  <p className="text-sm font-medium">
+                    {dictionary.selectedDependencies}
+                  </p>
                   <div className="space-y-2">
                     {config.dependencies.map((dependency) => (
                       <SelectedDependency
@@ -551,7 +723,7 @@ export function ConfigurationPanel({
                         dependency={dependency}
                         label="dep"
                         removeLabel={dictionary.removeDependency}
-                        onRemove={() => removeDependency("prod", dependency)}
+                        onRemove={() => removeDependency('prod', dependency)}
                       />
                     ))}
                     {config.devDependencies.map((dependency) => (
@@ -560,7 +732,7 @@ export function ConfigurationPanel({
                         dependency={dependency}
                         label="dev"
                         removeLabel={dictionary.removeDependency}
-                        onRemove={() => removeDependency("dev", dependency)}
+                        onRemove={() => removeDependency('dev', dependency)}
                       />
                     ))}
                   </div>
@@ -570,18 +742,26 @@ export function ConfigurationPanel({
               <ScrollArea className="h-48 w-full rounded-md border border-border/50 bg-muted/20">
                 <div className="p-2 space-y-1">
                   {dependencyItems.map((dep) => {
-                    const selectedProd = config.dependencies.some((item) => dependencyName(item) === dep.name)
-                    const selectedDev = config.devDependencies.some((item) => dependencyName(item) === dep.name)
-                    const selectDependency = (bucket: "prod" | "dev") => {
+                    const selectedProd = config.dependencies.some(
+                      (item) => dependencyName(item) === dep.name,
+                    )
+                    const selectedDev = config.devDependencies.some(
+                      (item) => dependencyName(item) === dep.name,
+                    )
+                    const selectDependency = (bucket: 'prod' | 'dev') => {
                       setSelectedPresetId(null)
                       const token = dependencyToken(dep)
-                      const nextDependencies = config.dependencies.filter((item) => dependencyName(item) !== dep.name)
-                      const nextDevDependencies = config.devDependencies.filter((item) => dependencyName(item) !== dep.name)
+                      const nextDependencies = config.dependencies.filter(
+                        (item) => dependencyName(item) !== dep.name,
+                      )
+                      const nextDevDependencies = config.devDependencies.filter(
+                        (item) => dependencyName(item) !== dep.name,
+                      )
 
-                      if (bucket === "prod" && !selectedProd) {
+                      if (bucket === 'prod' && !selectedProd) {
                         nextDependencies.push(token)
                       }
-                      if (bucket === "dev" && !selectedDev) {
+                      if (bucket === 'dev' && !selectedDev) {
                         nextDevDependencies.push(token)
                       }
 
@@ -596,8 +776,10 @@ export function ConfigurationPanel({
                       <div
                         key={dep.id}
                         className={cn(
-                          "flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors",
-                          selectedProd || selectedDev ? "border-primary/40 bg-primary/10" : "border-transparent hover:bg-accent/40",
+                          'flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors',
+                          selectedProd || selectedDev
+                            ? 'border-primary/40 bg-primary/10'
+                            : 'border-transparent hover:bg-accent/40',
                         )}
                       >
                         <div className="space-y-0.5">
@@ -610,23 +792,28 @@ export function ConfigurationPanel({
                             )}
                           </p>
                           {dep.description && (
-                            <p className="text-xs text-muted-foreground">{dep.description}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {dep.description}
+                            </p>
                           )}
                         </div>
                         <div
                           className="flex shrink-0 items-center gap-1"
                           role="group"
-                          aria-label={dictionary.addDependency.replace("{name}", dep.name)}
+                          aria-label={dictionary.addDependency.replace(
+                            '{name}',
+                            dep.name,
+                          )}
                         >
                           <button
                             type="button"
                             className={cn(
-                              "inline-flex h-8 items-center gap-1 rounded-md border px-2 text-xs font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                              'inline-flex h-8 items-center gap-1 rounded-md border px-2 text-xs font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                               selectedProd
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-border bg-background hover:bg-accent",
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'border-border bg-background hover:bg-accent',
                             )}
-                            onClick={() => selectDependency("prod")}
+                            onClick={() => selectDependency('prod')}
                           >
                             {selectedProd && <Check className="h-3 w-3" />}
                             dep
@@ -634,12 +821,12 @@ export function ConfigurationPanel({
                           <button
                             type="button"
                             className={cn(
-                              "inline-flex h-8 items-center gap-1 rounded-md border px-2 text-xs font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                              'inline-flex h-8 items-center gap-1 rounded-md border px-2 text-xs font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                               selectedDev
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-border bg-background hover:bg-accent",
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'border-border bg-background hover:bg-accent',
                             )}
-                            onClick={() => selectDependency("dev")}
+                            onClick={() => selectDependency('dev')}
                           >
                             {selectedDev && <Check className="h-3 w-3" />}
                             dev
@@ -658,13 +845,15 @@ export function ConfigurationPanel({
                       {dependencySearchError}
                     </p>
                   )}
-                  {!isSearchingDependencies && !dependencySearchError && dependencyItems.length === 0 && (
-                    <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-                      {dependencyQuery.trim().length < 2
-                        ? dictionary.dependencyPrompt
-                        : dictionary.dependencyEmpty}
-                    </p>
-                  )}
+                  {!isSearchingDependencies &&
+                    !dependencySearchError &&
+                    dependencyItems.length === 0 && (
+                      <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+                        {dependencyQuery.trim().length < 2
+                          ? dictionary.dependencyPrompt
+                          : dictionary.dependencyEmpty}
+                      </p>
+                    )}
                 </div>
               </ScrollArea>
             </div>
@@ -682,7 +871,7 @@ function SelectedDependency({
   onRemove,
 }: {
   dependency: string
-  label: "dep" | "dev"
+  label: 'dep' | 'dev'
   removeLabel: string
   onRemove: () => void
 }) {
@@ -695,7 +884,9 @@ function SelectedDependency({
         <p className="truncate font-mono text-sm">
           {name}
           {version && (
-            <span className="ml-2 font-sans text-xs text-muted-foreground">{version}</span>
+            <span className="ml-2 font-sans text-xs text-muted-foreground">
+              {version}
+            </span>
           )}
         </p>
       </div>
@@ -707,7 +898,7 @@ function SelectedDependency({
           type="button"
           className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-background text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           onClick={onRemove}
-          aria-label={removeLabel.replace("{name}", name)}
+          aria-label={removeLabel.replace('{name}', name)}
         >
           x
         </button>
@@ -726,21 +917,25 @@ function StatusBadge({
   dictionary,
 }: {
   status: SupportStatus
-  dictionary: ConfigurationPanelProps["dictionary"]
+  dictionary: ConfigurationPanelProps['dictionary']
 }) {
-  const label = status === "supported"
-    ? dictionary.status.supported
-    : status === "experimental"
-      ? dictionary.status.experimental
-      : dictionary.status.unavailable
+  const label =
+    status === 'supported'
+      ? dictionary.status.supported
+      : status === 'experimental'
+        ? dictionary.status.experimental
+        : dictionary.status.unavailable
 
   return (
     <span
       className={cn(
-        "shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-4",
-        status === "supported" && "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-        status === "experimental" && "border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-300",
-        status === "unavailable" && "border-border bg-muted text-muted-foreground",
+        'shrink-0 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-4',
+        status === 'supported' &&
+          'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+        status === 'experimental' &&
+          'border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-300',
+        status === 'unavailable' &&
+          'border-border bg-muted text-muted-foreground',
       )}
     >
       {label}
