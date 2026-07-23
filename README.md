@@ -5,10 +5,10 @@ archives from curated, verified recipes instead of asking developers to rebuild
 the same Vite, React, Tailwind CSS, shadcn/ui, routing, testing, and project
 structure setup by hand.
 
-The current web UI still exposes the legacy framework/routing/styling
-configurator. The backend now also exposes recipe-first endpoints: choose a
-recipe, configure the knobs that recipe explicitly supports, inspect the
-generated files, and download a ZIP.
+The current web UI is recipe-first: choose a recipe from the catalog, configure
+the knobs that recipe explicitly supports, inspect the generated files, and
+download a ZIP. Legacy configurator endpoints remain temporarily while the
+frontend migrates fully to recipes.
 
 ## Project policies
 
@@ -52,6 +52,10 @@ pnpm verify:recipes
 
 ## Current features
 
+- Recipe catalog with Recommended and Community tabs, experimental badges, and
+  verification metadata.
+- Recipe workspace with options, custom dependency inputs, a clickable file
+  explorer, curated/all files mode, file viewer, summary, and ZIP generation.
 - Backend-owned presets for stable React, Vue, and Next.js profiles.
 - Backend-driven support states: `supported`, `experimental`, and
   `unavailable`.

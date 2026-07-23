@@ -4,7 +4,6 @@ import { Suspense } from "react"
 import { Toaster } from "@/components/ui/sonner"
 import { getDictionary } from "@/lib/i18n/dictionaries"
 import { isLocale, locales } from "@/lib/i18n/config"
-import { geist, geistMono } from "../ui/fonts"
 import { ThemeProvider } from "../ui/theme-provider"
 import "../globals.css"
 
@@ -66,7 +65,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
 
   return (
     <html lang={lang} suppressHydrationWarning>
-      <body className={`${geist.className} ${geistMono.className} antialiased`}>
+      <body className="antialiased">
         <Suspense>
           <ThemeProvider
             attribute="class"

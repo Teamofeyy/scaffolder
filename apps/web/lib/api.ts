@@ -34,6 +34,87 @@ export interface ProjectTreeNode {
   children?: ProjectTreeNode[]
 }
 
+export interface RecipeOptionValue {
+  id: string
+  label: string
+  description: string
+  blocks: string[]
+}
+
+export interface RecipeOption {
+  label: string
+  description: string
+  default: string
+  values: RecipeOptionValue[]
+}
+
+export interface RecipeVerification {
+  generate: boolean
+  install: boolean
+  build: boolean
+  test: string
+}
+
+export interface RecipeCatalogItem {
+  id: string
+  name: string
+  description: string
+  tier: string
+  status: string
+  baseTemplate: string
+  options: Record<string, RecipeOption>
+  verification: RecipeVerification
+}
+
+export interface RecipeManifest extends RecipeCatalogItem {
+  blocks: string[]
+  customDependencies: {
+    allow: boolean
+    policy: string
+  }
+  preview: {
+    curatedFiles: string[]
+    showAllFiles: boolean
+  }
+}
+
+export interface RecipeProjectRequest {
+  projectName: string
+  options: Record<string, string>
+  extras: {
+    dependencies: string[]
+    devDependencies: string[]
+  }
+}
+
+export interface RecipePreviewDetails {
+  recipeId: string
+  projectName: string
+  tree: ProjectTreeNode
+  curatedTree: ProjectTreeNode
+  selectedFiles: PreviewFile[]
+  files: PreviewFile[]
+  dependencies: string[]
+  devDependencies: string[]
+  commands: string[]
+  selectedBlocks: string[]
+  customDependencies: string[]
+  customDevDependencies: string[]
+  recipeTier: string
+  recipeStatus: string
+  supportStatus: SupportStatus | string
+  baseTemplate: string
+  templateSnapshot: string
+  verification: RecipeVerification
+  warnings: string[]
+}
+
+export interface RecipeApiError {
+  code: string
+  message: string
+  details?: Record<string, string>
+}
+
 export type SupportStatus = 'supported' | 'experimental' | 'unavailable'
 
 export interface FeatureResponse {
@@ -175,6 +256,116 @@ export function validateConfig(
   }
 
   return { valid: true }
+}
+
+export function validateRecipeProjectName(projectName: string, errors: ErrorDictionary) {
+  if (!projectName || projectName.trim() === '') {
+    return { valid: false, error: errors.projectNameRequired }
+  }
+
+  const nameRegex = /^[a-z0-9-_]+$/
+  if (!nameRegex.test(projectName)) {
+    return { valid: false, error: errors.projectNameInvalid }
+  }
+
+  return { valid: true }
+}
+
+function recipeApiErrorMessage(error: unknown, fallback: string) {
+  if (!axios.isAxiosError(error)) return fallback
+
+  const data = error.response?.data
+  if (data instanceof Blob) {
+    return fallback
+  }
+
+  if (typeof data === 'object' && data !== null && 'message' in data) {
+    const apiError = data as RecipeApiError
+    const details = apiError.details
+      ? Object.values(apiError.details).filter(Boolean).join(' ')
+      : ''
+    return details ? `${apiError.message} ${details}` : apiError.message
+  }
+
+  if (error.request && !error.response) return fallback
+  return error.message || fallback
+}
+
+export async function getRecipes(): Promise<RecipeCatalogItem[]> {
+  const response = await axios.get(`${AGENT_URL}/recipes`, {
+    timeout: 10000,
+  })
+
+  return response.data
+}
+
+export async function getRecipe(recipeId: string): Promise<RecipeManifest> {
+  try {
+    const response = await axios.get(`${AGENT_URL}/recipes/${encodeURIComponent(recipeId)}`, {
+      timeout: 10000,
+    })
+
+    return response.data
+  } catch (error) {
+    throw new Error(recipeApiErrorMessage(error, 'Unable to load recipe'))
+  }
+}
+
+export async function previewRecipe(
+  recipeId: string,
+  request: RecipeProjectRequest,
+): Promise<RecipePreviewDetails> {
+  try {
+    const response = await axios.post(
+      `${AGENT_URL}/recipes/${encodeURIComponent(recipeId)}/preview`,
+      request,
+      { timeout: 30000 },
+    )
+
+    return response.data
+  } catch (error) {
+    throw new Error(recipeApiErrorMessage(error, 'Unable to build recipe preview'))
+  }
+}
+
+export async function generateRecipe(
+  recipeId: string,
+  request: RecipeProjectRequest,
+): Promise<Blob> {
+  try {
+    const response = await axios.post(
+      `${AGENT_URL}/recipes/${encodeURIComponent(recipeId)}/generate`,
+      request,
+      {
+        responseType: 'blob',
+        timeout: 300000,
+        validateStatus: (status) => status === 200,
+      },
+    )
+
+    return response.data
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+      const text = await error.response.data.text()
+      let apiError: RecipeApiError | null = null
+      try {
+        apiError = JSON.parse(text) as RecipeApiError
+      } catch {
+        apiError = null
+      }
+
+      if (apiError?.message) {
+        const details = apiError.details
+          ? Object.values(apiError.details).filter(Boolean).join(' ')
+          : ''
+        throw new Error(details ? `${apiError.message} ${details}` : apiError.message)
+      }
+
+      throw new Error('Recipe generation failed')
+    }
+
+    throw new Error(recipeApiErrorMessage(error, 'Recipe generation failed'))
+  }
 }
 
 /**

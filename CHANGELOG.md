@@ -9,6 +9,11 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- Recipe-first workbench UI as the primary frontend flow, with a catalog screen,
+  Recommended and Community tabs, experimental filtering, recipe cards with
+  verification metadata, a three-panel recipe workspace, clickable file tree,
+  curated/all files mode, preview file viewer, summary panel, and recipe ZIP
+  generation through the recipe API.
 - Stable recipe-first API response and error contract: recipe preview now
   includes full and curated trees, selected file contents, dependency lists,
   commands, support status, verification metadata, template snapshot, warnings,
