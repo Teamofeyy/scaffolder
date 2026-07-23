@@ -81,11 +81,38 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Restore generated project npm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-generated-npm-${{ hashFiles('recipes/**/*.json', 'recipes/templates/**/*', 'apps/api/templates/**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-generated-npm-
+
       - name: Install pre-commit
         run: pip install pre-commit
 
       - name: Run pre-commit checks
         run: pre-commit run --all-files --show-diff-on-failure
+
+      - name: Verify recipe projects
+        run: pnpm verify:recipes
+
+      - name: Publish recipe verification summary
+        if: always()
+        run: |
+          if [ -f artifacts/recipe-verification/report.md ]; then
+            cat artifacts/recipe-verification/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload recipe verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recipe-verification-report
+          path: artifacts/recipe-verification
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Run backend tests
         run: pnpm exec turbo run test --filter=api

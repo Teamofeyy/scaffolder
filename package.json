@@ -20,7 +20,9 @@
     "load:test": "node scripts/load-test.mjs",
     "load:test:preview": "LOAD_TEST_ENDPOINT=preview node scripts/load-test.mjs",
     "load:test:generate": "LOAD_TEST_ENDPOINT=generate node scripts/load-test.mjs",
-    "verify:recipes": "node scripts/verify-recipes.mjs",
+    "verify:recipes": "pnpm verify:recipes:manifests && pnpm verify:recipes:projects",
+    "verify:recipes:manifests": "node scripts/verify-recipes.mjs",
+    "verify:recipes:projects": "node scripts/verify-recipe-projects.mjs",
     "verify:stable-matrix": "node scripts/verify-stable-matrix.mjs"
   },
   "keywords": [],

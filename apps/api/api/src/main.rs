@@ -101,7 +101,9 @@ async fn main() -> Result<()> {
         )
         .init();
     let app = app();
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000")
+    let bind_address =
+        std::env::var("SCAFFOLDER_API_ADDR").unwrap_or_else(|_| "0.0.0.0:8000".to_owned());
+    let listener = tokio::net::TcpListener::bind(&bind_address)
         .await
         .expect("failed to bind backend listener");
     let local_addr = listener.local_addr()?;

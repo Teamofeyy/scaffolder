@@ -259,6 +259,7 @@ async function validateRecipe(manifest) {
   validateVerification(manifest.verification, context)
   validatePreview(manifest.preview, context)
   validateRecipeCompatibility(manifest, context)
+  validateRecommendedPromotionMetadata(manifest, context)
 }
 
 function validateOptions(options, context) {
@@ -396,6 +397,49 @@ function validateRecipeCompatibility(recipe, context) {
           fail(context, `${selection.name} includes "${blockId}" with conflicting capability "${conflictingCapability}"`)
         }
       }
+    }
+  }
+}
+
+function validateRecommendedPromotionMetadata(recipe, context) {
+  if (recipe.tier !== 'recommended') {
+    return
+  }
+
+  if (recipe.status !== 'active') {
+    fail(context, 'recommended recipes must have status "active"')
+  }
+
+  for (const key of ['generate', 'install', 'build']) {
+    if (recipe.verification?.[key] !== true) {
+      fail(context, `recommended recipes must set verification.${key} to true`)
+    }
+  }
+
+  const baseTemplate = baseTemplateById.get(recipe.baseTemplate)
+  if (baseTemplate && !['verified', 'promoted'].includes(baseTemplate.status)) {
+    fail(context, `recommended recipes must use a verified or promoted base template, got "${baseTemplate.status}"`)
+  }
+
+  const selectedBlockIds = new Set(recipe.blocks ?? [])
+  for (const option of Object.values(recipe.options ?? {})) {
+    for (const value of option.values ?? []) {
+      for (const blockId of value.blocks ?? []) {
+        selectedBlockIds.add(blockId)
+      }
+    }
+  }
+
+  for (const blockId of selectedBlockIds) {
+    const block = blockById.get(blockId)
+    if (block && block.status !== 'stable') {
+      fail(context, `recommended recipes must use stable blocks only, got "${blockId}" with status "${block.status}"`)
+    }
+  }
+
+  for (const requiredPreviewFile of ['package.json', 'README.md']) {
+    if (!recipe.preview?.curatedFiles?.includes(requiredPreviewFile)) {
+      fail(context, `recommended recipes must include ${requiredPreviewFile} in preview.curatedFiles`)
     }
   }
 }

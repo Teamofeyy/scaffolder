@@ -20,7 +20,9 @@ Checklist:
 - Blocks declare requirements, conflicts, provided capabilities, and files
   touched.
 - Generated project can be materialized.
-- Install and build checks pass when verification tooling exists.
+- Preview smoke, install, and build checks pass in CI.
+- Forbidden script/hook checks pass.
+- Dependency review passes.
 - Dependencies are reasonable for the stated recipe.
 - Recipe does not duplicate an existing recipe without a clear reason.
 - README or generated docs explain the resulting stack.
@@ -33,6 +35,7 @@ Recommended recipes are maintainer-endorsed.
 Promotion checklist:
 
 - All community acceptance checks pass.
+- The full recipe option matrix is green in CI.
 - Verification is stable across repeated runs.
 - Generated file structure is clean and understandable.
 - Defaults are useful for a broad audience.
@@ -47,19 +50,25 @@ telemetry in the open-source core.
 
 ## Automated checks
 
-`pnpm verify:recipes` currently reports:
+`pnpm verify:recipes` reports:
 
 - manifest validation;
 - block compatibility;
 - forbidden hooks or scripts;
-- missing files referenced by operations.
-
-Future phases should extend it to report:
-
+- missing files referenced by operations;
 - generation success;
+- preview smoke success;
 - install success;
 - build success;
-- test success when tests are enabled.
+- test success when tests are enabled;
+- dependency review status.
+
+Recommended recipes are verified across their full option matrix. Community and
+experimental recipes are verified with their default baseline unless maintainers
+ask for the full matrix.
+
+CI publishes `artifacts/recipe-verification/report.md` to the GitHub Actions
+summary and uploads the Markdown/JSON reports as artifacts.
 
 CI reports should be understandable to contributors. A failing recipe should
 tell the author what to fix instead of producing an opaque failure.

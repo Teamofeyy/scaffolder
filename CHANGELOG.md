@@ -9,6 +9,11 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- Phase 5 recipe verification pipeline: `pnpm verify:recipes` now combines
+  strict manifest validation with API-backed preview/generate checks,
+  generated ZIP extraction, forbidden script checks, dependency review,
+  install/build/test execution, Markdown/JSON reports, and CI report artifacts
+  for the recipe matrix.
 - Recipe-first workbench UI as the primary frontend flow, with a catalog screen,
   Recommended and Community tabs, experimental filtering, recipe cards with
   verification metadata, a three-panel recipe workspace, clickable file tree,

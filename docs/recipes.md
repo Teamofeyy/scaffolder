@@ -79,10 +79,11 @@ verification:
   test: optional
 ```
 
-Reference schemas live in `recipes/schemas/`. The current validator is
+Reference schemas live in `recipes/schemas/`. Manifest validation is
 implemented in `scripts/verify-recipes.mjs` without external dependencies so it
 can run in CI and local development without installing an additional schema
-runtime.
+runtime. Runtime project verification is implemented in
+`scripts/verify-recipe-projects.mjs`.
 
 ## Repository layout
 
@@ -105,10 +106,16 @@ recipes/
     recipe.schema.json
 ```
 
-Validate manifests:
+Verify manifests and generated projects:
 
 ```bash
 pnpm verify:recipes
+```
+
+For fast manifest-only feedback:
+
+```bash
+pnpm verify:recipes:manifests
 ```
 
 ## Runtime endpoints

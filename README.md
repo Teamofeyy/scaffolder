@@ -42,12 +42,19 @@ Read the Phase 0 design documents:
 - [Recipes](docs/recipes.md)
 - [Recipe authoring](docs/recipe-authoring.md)
 - [Recipe review](docs/recipe-review.md)
+- [Recipe verification](docs/recipe-verification.md)
 - [Template updates](docs/template-updates.md)
 
-Validate recipe manifests:
+Verify recipe manifests and generated projects:
 
 ```bash
 pnpm verify:recipes
+```
+
+For fast manifest-only feedback while authoring:
+
+```bash
+pnpm verify:recipes:manifests
 ```
 
 ## Current features
