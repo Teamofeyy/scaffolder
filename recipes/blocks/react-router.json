@@ -1,0 +1,52 @@
+{
+  "$schema": "../schemas/block.schema.json",
+  "id": "react-router",
+  "name": "React Router",
+  "description": "Adds React Router wiring and starter route files.",
+  "category": "integration",
+  "status": "stable",
+  "requires": {
+    "baseTemplates": ["vite-react-ts"],
+    "blocks": [],
+    "capabilities": ["framework:react"]
+  },
+  "conflicts": {
+    "blocks": [],
+    "capabilities": []
+  },
+  "provides": {
+    "capabilities": ["routing:react-router"]
+  },
+  "filesTouched": ["package.json", "src/main.tsx", "src/App.tsx", "src/routes/root.tsx", "src/routes/home.tsx"],
+  "operations": [
+    {
+      "type": "package-json-merge",
+      "target": "package.json",
+      "description": "Add React Router dependency."
+    },
+    {
+      "type": "file-template",
+      "target": "src/main.tsx",
+      "description": "Render the React entrypoint for the routed app.",
+      "template": "react-router/main.tsx"
+    },
+    {
+      "type": "file-template",
+      "target": "src/App.tsx",
+      "description": "Render the route table.",
+      "template": "react-router/App.tsx"
+    },
+    {
+      "type": "file-template",
+      "target": "src/routes/root.tsx",
+      "description": "Create the root route component.",
+      "template": "react-router/root.tsx"
+    },
+    {
+      "type": "file-template",
+      "target": "src/routes/home.tsx",
+      "description": "Create the home route component.",
+      "template": "react-router/home.tsx"
+    }
+  ]
+}

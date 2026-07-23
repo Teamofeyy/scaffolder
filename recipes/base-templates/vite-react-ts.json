@@ -1,0 +1,24 @@
+{
+  "$schema": "../schemas/base-template.schema.json",
+  "id": "vite-react-ts",
+  "name": "Vite React TypeScript",
+  "description": "Pinned local snapshot for the React TypeScript Vite base template.",
+  "status": "promoted",
+  "snapshotPath": "apps/api/templates/react-ts",
+  "source": {
+    "kind": "submodule",
+    "repository": "https://github.com/Teamofeyy/scaffolder-templates.git",
+    "ref": "2d44db47d45b6594d78eaed1ad7b8ffe6fea5c22",
+    "path": "react-ts"
+  },
+  "snapshot": {
+    "repository": "https://github.com/Teamofeyy/scaffolder-templates.git",
+    "commit": "2d44db47d45b6594d78eaed1ad7b8ffe6fea5c22",
+    "path": "react-ts",
+    "hash": "sha256:39386728ee287ad95102358a076251840ffe84334260e01c4052f7f36e5ea2c0",
+    "promotedAt": "2026-07-23"
+  },
+  "provides": {
+    "capabilities": ["framework:react", "language:typescript", "bundler:vite"]
+  }
+}

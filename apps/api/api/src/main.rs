@@ -1,16 +1,23 @@
 use crate::{
     generation_service::{generate_project, preview_project_details, preview_project_tree},
     npm_registry::search_dependencies as search_npm_dependencies,
+    recipe_service::{
+        CustomDependenciesPolicy, RecipeApiError, RecipeBlockManifest, RecipeCatalogItem,
+        RecipeErrorCode, RecipeManifest, RecipeOption, RecipeOptionValue,
+        RecipePreviewDetailsResponse, RecipePreviewPolicy, RecipeProjectExtras,
+        RecipeProjectRequest, RecipeVerification, generate_recipe_project, preview_recipe_project,
+        recipe_catalog, recipe_details, recipe_error_response,
+    },
     schema::{
-        FeatureResponse, PreviewDetailsResponse, ProjectConfig, ProjectPreset, VerificationMatrix,
-        feature_registry_for_api, project_presets, verification_matrix,
+        FeatureResponse, PreviewDetailsResponse, PreviewFile, ProjectConfig, ProjectPreset,
+        ProjectTreeNode, VerificationMatrix, feature_registry_for_api, project_presets,
+        verification_matrix,
     },
 };
 use axum::{
     Json, Router,
     body::Body,
-    extract::DefaultBodyLimit,
-    extract::Query,
+    extract::{DefaultBodyLimit, Path as AxumPath, Query},
     http::{HeaderValue, Method, Request, Response, StatusCode, header},
     response::IntoResponse,
     routing::{get, post},
@@ -47,6 +54,7 @@ pub mod generation_service;
 pub mod metrics;
 pub mod npm_registry;
 pub mod operations;
+pub mod recipe_service;
 pub mod resolver;
 pub mod schema;
 pub mod template_engine;
@@ -64,14 +72,33 @@ pub mod workspace;
         features,
         presets,
         verification_matrix_endpoint,
-        preview_details
+        preview_details,
+        recipes,
+        recipe,
+        recipe_preview,
+        recipe_generate
     ),
     components(schemas(
         ProjectConfig,
+        ProjectTreeNode,
+        PreviewFile,
         FeatureResponse,
         ProjectPreset,
         VerificationMatrix,
-        PreviewDetailsResponse
+        PreviewDetailsResponse,
+        RecipeProjectRequest,
+        RecipeProjectExtras,
+        RecipeApiError,
+        RecipeErrorCode,
+        RecipeCatalogItem,
+        RecipeBlockManifest,
+        RecipeManifest,
+        RecipeOption,
+        RecipeOptionValue,
+        CustomDependenciesPolicy,
+        RecipeVerification,
+        RecipePreviewPolicy,
+        RecipePreviewDetailsResponse
     ))
 )]
 struct ApiDoc;
@@ -85,7 +112,9 @@ async fn main() -> Result<()> {
         )
         .init();
     let app = app();
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000")
+    let bind_address =
+        std::env::var("SCAFFOLDER_API_ADDR").unwrap_or_else(|_| "0.0.0.0:8000".to_owned());
+    let listener = tokio::net::TcpListener::bind(&bind_address)
         .await
         .expect("failed to bind backend listener");
     let local_addr = listener.local_addr()?;
@@ -125,6 +154,10 @@ fn app() -> Router {
         .routes(utoipa_axum::routes!(presets))
         .routes(utoipa_axum::routes!(verification_matrix_endpoint))
         .routes(utoipa_axum::routes!(preview_details))
+        .routes(utoipa_axum::routes!(recipes))
+        .routes(utoipa_axum::routes!(recipe))
+        .routes(utoipa_axum::routes!(recipe_preview))
+        .routes(utoipa_axum::routes!(recipe_generate))
         .split_for_parts();
 
     let mut router = router
@@ -491,6 +524,157 @@ async fn preview_details(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
                 StatusCode::GATEWAY_TIMEOUT,
                 "Project preview timed out".to_owned(),
             )
+        }
+    }
+}
+
+#[utoipa::path(
+    get,
+    path = "/recipes",
+    responses (
+        (status = 200,
+         description = "Recipe catalog",
+         content_type = "application/json",
+         body = [RecipeCatalogItem]
+        ),
+        (status = 500, description = "Recipe catalog unavailable", body = RecipeApiError)
+    )
+)]
+async fn recipes() -> impl IntoResponse {
+    match recipe_catalog() {
+        Ok(items) => Json(items).into_response(),
+        Err(err) => recipe_error_response(err),
+    }
+}
+
+#[utoipa::path(
+    get,
+    path = "/recipes/{id}",
+    params(("id" = String, Path, description = "Recipe id")),
+    responses (
+        (status = 200,
+         description = "Recipe details",
+         content_type = "application/json",
+         body = RecipeManifest
+        ),
+        (status = 404, description = "Recipe id is invalid", body = RecipeApiError)
+    )
+)]
+async fn recipe(AxumPath(id): AxumPath<String>) -> impl IntoResponse {
+    match recipe_details(&id) {
+        Ok(details) => Json(details).into_response(),
+        Err(err) => recipe_error_response(err),
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/recipes/{id}/preview",
+    params(("id" = String, Path, description = "Recipe id")),
+    request_body = RecipeProjectRequest,
+    responses (
+        (status = 200,
+         description = "Detailed recipe project preview",
+         content_type = "application/json",
+         body = RecipePreviewDetailsResponse
+        ),
+        (status = 400, description = "Invalid recipe options or custom dependencies", body = RecipeApiError),
+        (status = 404, description = "Recipe id is invalid", body = RecipeApiError),
+        (status = 409, description = "Recipe block selection is incompatible", body = RecipeApiError),
+        (status = 503, description = "Required template files are unavailable", body = RecipeApiError),
+        (status = 500, description = "Recipe preview failed", body = RecipeApiError)
+    )
+)]
+async fn recipe_preview(
+    AxumPath(id): AxumPath<String>,
+    Json(req): Json<RecipeProjectRequest>,
+) -> impl IntoResponse {
+    let request_id = request_id();
+    info!(
+        request_id = %request_id,
+        recipe_id = %id,
+        project_name = %req.project_name,
+        "Recipe project preview requested"
+    );
+    let started_at = Instant::now();
+    match preview_recipe_project(&id, req) {
+        Ok(details) => {
+            info!(
+                request_id = %request_id,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Recipe project preview generated"
+            );
+            Json(details).into_response()
+        }
+        Err(err) => {
+            metrics::record_http_error();
+            error!(
+                request_id = %request_id,
+                error = ?err,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Failed to generate recipe project preview"
+            );
+            recipe_error_response(err)
+        }
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/recipes/{id}/generate",
+    params(("id" = String, Path, description = "Recipe id")),
+    request_body = RecipeProjectRequest,
+    responses(
+        (status = 200,
+         description = "Recipe ZIP successfully generated",
+         content_type = "application/zip"),
+        (status = 400, description = "Invalid recipe options or custom dependencies", body = RecipeApiError),
+        (status = 404, description = "Recipe id is invalid", body = RecipeApiError),
+        (status = 409, description = "Recipe block selection is incompatible", body = RecipeApiError),
+        (status = 503, description = "Required template files are unavailable", body = RecipeApiError),
+        (status = 500, description = "Recipe generation failed", body = RecipeApiError)
+    )
+)]
+async fn recipe_generate(
+    AxumPath(id): AxumPath<String>,
+    Json(req): Json<RecipeProjectRequest>,
+) -> impl IntoResponse {
+    let request_id = request_id();
+    info!(
+        request_id = %request_id,
+        recipe_id = %id,
+        project_name = %req.project_name,
+        "Recipe project generation requested"
+    );
+    let started_at = Instant::now();
+    match generate_recipe_project(&id, req).await {
+        Ok(archive) => {
+            metrics::record_generate(started_at.elapsed(), true);
+            info!(
+                request_id = %request_id,
+                file_name = %archive.file_name,
+                archive_bytes = archive.bytes.len(),
+                latency_ms = started_at.elapsed().as_millis(),
+                "Recipe project archive generated"
+            );
+            Response::builder()
+                .header(header::CONTENT_TYPE, "application/zip")
+                .header(
+                    header::CONTENT_DISPOSITION,
+                    format!("attachment; filename=\"{}\"", archive.file_name),
+                )
+                .body(Body::from(archive.bytes))
+                .unwrap()
+        }
+        Err(err) => {
+            metrics::record_generate(started_at.elapsed(), false);
+            error!(
+                request_id = %request_id,
+                error = ?err,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Failed to generate recipe project archive"
+            );
+            recipe_error_response(err)
         }
     }
 }

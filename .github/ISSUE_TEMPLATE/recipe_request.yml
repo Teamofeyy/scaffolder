@@ -1,0 +1,79 @@
+name: Recipe request
+description: Propose a new recipe or a change to an existing recipe.
+title: "Recipe request: "
+labels:
+  - recipe-request
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this when the request solves a specific repeated setup pain. If you
+        already have an implementation, open a recipe pull request instead.
+  - type: input
+    id: pain
+    attributes:
+      label: Developer pain
+      description: What repeated setup work should this recipe remove?
+      placeholder: "Example: React dashboard app with routing, Tailwind CSS, shadcn/ui, auth placeholder, and Vitest."
+    validations:
+      required: true
+  - type: textarea
+    id: target_stack
+    attributes:
+      label: Target stack
+      description: List the framework, router, styling, UI kit, testing, state, and starter structure you expect.
+      placeholder: |
+        Framework:
+        Router:
+        Styling:
+        UI kit:
+        Testing:
+        State:
+        Starter files:
+    validations:
+      required: true
+  - type: textarea
+    id: generated_files
+    attributes:
+      label: Expected generated files
+      description: Which files should exist or be modified for the recipe to be useful?
+      placeholder: |
+        - package.json
+        - README.md
+        - vite.config.ts
+        - src/main.tsx
+        - src/routes/root.tsx
+    validations:
+      required: true
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Requested tier
+      description: Community is the default for new external recipes.
+      options:
+        - community
+        - experimental
+        - recommended
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Boundaries
+      options:
+        - label: This request can be implemented declaratively without generator hooks.
+          required: true
+        - label: This request does not need network fetches during user generation.
+          required: true
+        - label: Custom dependencies, if any, can be package.json-only extras.
+          required: false
+        - label: I can explain why this should not be only a custom dependency.
+          required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Existing alternatives
+      description: What do developers currently use instead, and what setup still remains manual?
+      placeholder: "Vite template + manual Tailwind/shadcn/router setup..."
+    validations:
+      required: false

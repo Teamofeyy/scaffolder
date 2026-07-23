@@ -1,0 +1,44 @@
+{
+  "$schema": "../schemas/block.schema.json",
+  "id": "shadcn",
+  "name": "shadcn/ui",
+  "description": "Adds shadcn/ui project configuration, aliases, utilities, and starter component wiring.",
+  "category": "integration",
+  "status": "stable",
+  "requires": {
+    "baseTemplates": ["vite-react-ts"],
+    "blocks": ["tailwind-vite"],
+    "capabilities": ["framework:react", "styling:tailwind"]
+  },
+  "conflicts": {
+    "blocks": [],
+    "capabilities": []
+  },
+  "provides": {
+    "capabilities": ["ui:shadcn", "alias:@/*"]
+  },
+  "filesTouched": ["package.json", "tsconfig.json", "tsconfig.app.json", "components.json", "src/lib/utils.ts", "src/index.css"],
+  "operations": [
+    {
+      "type": "package-json-merge",
+      "target": "package.json",
+      "description": "Add shadcn/ui support dependencies."
+    },
+    {
+      "type": "tsconfig-merge",
+      "target": "tsconfig.json",
+      "description": "Add the @/* path alias required by shadcn/ui."
+    },
+    {
+      "type": "components-json-merge",
+      "target": "components.json",
+      "description": "Create or merge shadcn/ui component registry configuration."
+    },
+    {
+      "type": "file-template",
+      "target": "src/lib/utils.ts",
+      "description": "Add the shared cn utility.",
+      "template": "shadcn/utils.ts"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+name: Technical feedback
+description: Review recipe format, generated project quality, verification, or template update flow.
+title: "Technical feedback: "
+labels:
+  - feedback
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This project is looking for technical review of the recipe model and
+        generated project quality, not marketing feedback.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Recipe format
+        - Generated project quality
+        - Workbench preview UX
+        - Verification and CI
+        - Template update pipeline
+        - Contributor flow
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Feedback
+      description: What is wrong, risky, unclear, or missing?
+      placeholder: "The current recipe format makes X hard because..."
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or example
+      description: Link a generated file, manifest, command output, competing workflow, or concrete setup scenario.
+      placeholder: "Recipe id, option selection, generated file path, command output..."
+    validations:
+      required: false
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested change
+      description: What would you change?
+      placeholder: "I would change..."
+    validations:
+      required: false

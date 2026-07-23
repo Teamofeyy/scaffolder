@@ -79,6 +79,20 @@ cannot fetch unpublished submodule commits.
 - Update support and compatibility documents when behavior changes.
 - Keep unrelated refactors out of the pull request.
 
+## Recipe contributions
+
+Scaffolder is moving toward a recipe-first model. New recipe work should follow
+the documented contracts:
+
+- [Recipes](docs/recipes.md)
+- [Recipe authoring](docs/recipe-authoring.md)
+- [Recipe review](docs/recipe-review.md)
+- [Template updates](docs/template-updates.md)
+
+Use `.github/PULL_REQUEST_TEMPLATE/recipe.md` for recipe or block changes. A
+recipe should be accepted as `community` only after baseline validation and
+should become `recommended` only after maintainer endorsement.
+
 ## Commit messages
 
 Use concise Conventional Commit-style messages:

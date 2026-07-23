@@ -206,7 +206,8 @@ fn is_safe_dependency_spec(value: &str) -> bool {
         && !trimmed.contains("..")
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export)]
 pub struct ProjectTreeNode {
     pub name: String,
     #[serde(rename = "type")]
@@ -276,7 +277,8 @@ pub struct VerifiedCombination {
     pub build: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export)]
 pub struct PreviewFile {
     pub path: String,
     pub language: String,

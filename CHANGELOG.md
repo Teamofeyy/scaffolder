@@ -9,6 +9,43 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- Phase 7 public feedback launch materials: polished README messaging,
+  architecture note, GitHub recipe request and technical feedback issue
+  templates, and a recipe workbench screenshot asset.
+- Templates repository setup guide documenting the sibling
+  `Teamofeyy/scaffolder-templates` repository, submodule consumption, push
+  flow, and verification steps.
+- Phase 6 template update pipeline tooling with exact promoted snapshot
+  metadata, template submodule commit/hash verification, safe diff
+  classification, affected recipe verification commands, template update PR
+  planning, and documentation for candidate, verified, and promoted snapshot
+  states.
+- Phase 5 recipe verification pipeline: `pnpm verify:recipes` now combines
+  strict manifest validation with API-backed preview/generate checks,
+  generated ZIP extraction, forbidden script checks, dependency review,
+  install/build/test execution, Markdown/JSON reports, and CI report artifacts
+  for the recipe matrix.
+- Recipe-first workbench UI as the primary frontend flow, with a catalog screen,
+  Recommended and Community tabs, experimental filtering, recipe cards with
+  verification metadata, a three-panel recipe workspace, clickable file tree,
+  curated/all files mode, preview file viewer, summary panel, and recipe ZIP
+  generation through the recipe API.
+- Stable recipe-first API response and error contract: recipe preview now
+  includes full and curated trees, selected file contents, dependency lists,
+  commands, support status, verification metadata, template snapshot, warnings,
+  and typed JSON errors for invalid recipe ids, invalid options, incompatible
+  blocks, invalid custom dependencies, missing templates, and generation
+  failures. Generated TypeScript bindings now cover recipe API types.
+- Recipe engine MVP with `GET /recipes`, `GET /recipes/{id}`,
+  `POST /recipes/{id}/preview`, and `POST /recipes/{id}/generate` endpoints
+  that materialize pinned base templates, compose blocks, apply structured
+  operations, render recipe file templates, and generate ZIP archives.
+- Recipe schema MVP with base-template, block, and recipe manifests under
+  `recipes/`, plus `pnpm verify:recipes` for strict manifest and compatibility
+  validation.
+- Phase 0 recipe-first product documentation covering recipes, recipe
+  authoring, recipe review, template update policy, and the recipe pull request
+  checklist.
 - Backend-driven support statuses for features and framework cards using
   `supported`, `experimental`, and `unavailable` states.
 - Stable project presets from `GET /presets` for React, Vue, Next.js, and
@@ -44,6 +81,12 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
   backend project configuration types instead of duplicating that contract.
 - Preview requests are debounced more conservatively and cache identical
   configuration previews in memory.
+- Promoted `react-router-app` to a recommended active MVP recipe and moved the
+  current recipe blocks to stable after verification. `react-vite-app` is now
+  an active community recipe for feedback.
+- The templates submodule now points at the sibling
+  `Teamofeyy/scaffolder-templates` repository and the promoted base-template
+  manifest pins that repository's exact commit.
 - Caddy now routes requests by the forwarded `Host` header on port 80 so it can
   run behind an external reverse proxy that connects by IP.
 - The stable matrix verification script now also fetches supported presets from

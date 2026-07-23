@@ -4,30 +4,30 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.975 0.01 155);
-  --foreground: oklch(0.245 0.03 155);
+  --background: oklch(0.978 0.006 248);
+  --foreground: oklch(0.235 0.018 255);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.245 0.03 155);
+  --card-foreground: oklch(0.235 0.018 255);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.245 0.03 155);
-  --primary: oklch(0.5 0.145 145);
-  --primary-foreground: oklch(0.985 0.01 145);
-  --secondary: oklch(0.925 0.03 155);
-  --secondary-foreground: oklch(0.305 0.06 150);
-  --muted: oklch(0.95 0.012 155);
-  --muted-foreground: oklch(0.51 0.03 155);
-  --accent: oklch(0.91 0.04 155);
-  --accent-foreground: oklch(0.245 0.03 155);
+  --popover-foreground: oklch(0.235 0.018 255);
+  --primary: oklch(0.52 0.135 250);
+  --primary-foreground: oklch(0.985 0.006 250);
+  --secondary: oklch(0.925 0.018 220);
+  --secondary-foreground: oklch(0.295 0.035 255);
+  --muted: oklch(0.948 0.01 230);
+  --muted-foreground: oklch(0.5 0.02 250);
+  --accent: oklch(0.915 0.026 205);
+  --accent-foreground: oklch(0.235 0.018 255);
   --destructive: oklch(0.6861 0.2061 14.9941);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.885 0.02 155);
-  --input: oklch(0.885 0.02 155);
-  --ring: oklch(0.5 0.145 145);
-  --chart-1: oklch(0.5 0.145 145);
-  --chart-2: oklch(0.645 0.12 185);
-  --chart-3: oklch(0.59 0.11 75);
-  --chart-4: oklch(0.56 0.12 230);
-  --chart-5: oklch(0.61 0.12 25);
+  --border: oklch(0.88 0.014 235);
+  --input: oklch(0.88 0.014 235);
+  --ring: oklch(0.52 0.135 250);
+  --chart-1: oklch(0.52 0.135 250);
+  --chart-2: oklch(0.61 0.115 185);
+  --chart-3: oklch(0.61 0.125 70);
+  --chart-4: oklch(0.59 0.125 330);
+  --chart-5: oklch(0.625 0.13 25);
   --radius: 0.5rem;
   --sidebar: oklch(0.958 0.0133 286.1454);
   --sidebar-foreground: oklch(0.3015 0.0572 282.4176);
@@ -37,8 +37,10 @@
   --sidebar-accent-foreground: oklch(0.3015 0.0572 282.4176);
   --sidebar-border: oklch(0.9115 0.0216 285.9625);
   --sidebar-ring: oklch(0.5417 0.179 288.0332);
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   --font-serif: 'Source Serif 4', 'Source Serif 4 Fallback';
   --shadow-x: 0px;
   --shadow-y: 1px;
@@ -49,29 +51,29 @@
 }
 
 .dark {
-  --background: oklch(0.15 0.018 155);
-  --foreground: oklch(0.92 0.02 155);
-  --card: oklch(0.205 0.022 155);
-  --card-foreground: oklch(0.92 0.02 155);
-  --popover: oklch(0.205 0.022 155);
-  --popover-foreground: oklch(0.92 0.02 155);
-  --primary: oklch(0.715 0.16 145);
-  --primary-foreground: oklch(0.125 0.02 155);
-  --secondary: oklch(0.275 0.035 155);
-  --secondary-foreground: oklch(0.86 0.045 145);
-  --muted: oklch(0.255 0.025 155);
-  --muted-foreground: oklch(0.71 0.03 155);
-  --accent: oklch(0.315 0.055 155);
-  --accent-foreground: oklch(0.93 0.02 155);
+  --background: oklch(0.155 0.016 255);
+  --foreground: oklch(0.92 0.012 245);
+  --card: oklch(0.205 0.018 255);
+  --card-foreground: oklch(0.92 0.012 245);
+  --popover: oklch(0.205 0.018 255);
+  --popover-foreground: oklch(0.92 0.012 245);
+  --primary: oklch(0.705 0.13 250);
+  --primary-foreground: oklch(0.125 0.018 255);
+  --secondary: oklch(0.275 0.026 235);
+  --secondary-foreground: oklch(0.86 0.02 230);
+  --muted: oklch(0.255 0.02 250);
+  --muted-foreground: oklch(0.71 0.022 245);
+  --accent: oklch(0.315 0.04 215);
+  --accent-foreground: oklch(0.93 0.012 245);
   --destructive: oklch(0.6861 0.2061 14.9941);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.33 0.035 155);
-  --input: oklch(0.33 0.035 155);
-  --ring: oklch(0.715 0.16 145);
-  --chart-1: oklch(0.715 0.16 145);
+  --border: oklch(0.33 0.026 245);
+  --input: oklch(0.33 0.026 245);
+  --ring: oklch(0.705 0.13 250);
+  --chart-1: oklch(0.705 0.13 250);
   --chart-2: oklch(0.68 0.11 190);
   --chart-3: oklch(0.74 0.13 75);
-  --chart-4: oklch(0.66 0.125 230);
+  --chart-4: oklch(0.675 0.125 330);
   --chart-5: oklch(0.69 0.13 25);
   --sidebar: oklch(0.2284 0.0384 282.9324);
   --sidebar-foreground: oklch(0.9185 0.0257 285.8834);
@@ -90,8 +92,10 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -202,68 +206,11 @@
     position: relative;
     isolation: isolate;
     overflow-x: hidden;
-    background:
-      radial-gradient(
-        circle at 20% 0%,
-        color-mix(in srgb, var(--primary) 18%, transparent) 0,
-        transparent 28rem
-      ),
-      radial-gradient(
-        circle at 82% 12%,
-        color-mix(in srgb, var(--chart-2) 14%, transparent) 0,
-        transparent 24rem
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--background) 88%, black 12%),
-        var(--background)
-      );
-  }
-
-  .app-shell::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: -2;
-    pointer-events: none;
-    background-image:
-      linear-gradient(
-        color-mix(in srgb, var(--foreground) 8%, transparent) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--foreground) 8%, transparent) 1px,
-        transparent 1px
-      );
-    background-size: 44px 44px;
-    mask-image: linear-gradient(
-      to bottom,
-      black 0%,
-      black 58%,
-      transparent 100%
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--muted) 38%, var(--background)),
+      var(--background) 18rem
     );
-  }
-
-  .app-shell::after {
-    content: 'npm create vite@latest  pnpm create vite';
-    position: fixed;
-    top: 4.7rem;
-    left: -4rem;
-    z-index: -1;
-    width: 120vw;
-    transform: rotate(-4deg);
-    border-block: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
-    background: color-mix(in srgb, var(--primary) 9%, transparent);
-    color: color-mix(in srgb, var(--primary) 48%, transparent);
-    font-family: var(--font-mono);
-    font-size: clamp(1rem, 2.6vw, 2.6rem);
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0;
-    padding: 0.55rem 0;
-    white-space: nowrap;
-    pointer-events: none;
   }
 
   .terminal-hero {
