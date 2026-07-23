@@ -1,6 +1,6 @@
 FROM rust:1.88-slim-bookworm AS builder
 
-WORKDIR /app
+WORKDIR /app/apps/api
 
 # Build dependencies for common Rust crates and TLS support.
 RUN apt-get update \
@@ -8,13 +8,14 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy workspace manifests first to improve layer caching.
-COPY Cargo.toml Cargo.lock ./
-COPY api/Cargo.toml api/Cargo.toml
+COPY apps/api/Cargo.toml apps/api/Cargo.lock ./
+COPY apps/api/api/Cargo.toml api/Cargo.toml
 
 # Copy sources and build the real binary.
-COPY api/dependency-presets.json api/dependency-presets.json
-COPY api/verification-matrix.json api/verification-matrix.json
-COPY api/src api/src
+COPY apps/api/api/dependency-presets.json api/dependency-presets.json
+COPY apps/api/api/verification-matrix.json api/verification-matrix.json
+COPY apps/api/api/src api/src
+COPY recipes /app/recipes
 RUN cargo build --release --locked --manifest-path api/Cargo.toml \
     && test "$(stat -c%s target/release/scaf-api)" -gt 1000000 \
     && cp target/release/scaf-api /scaf-api
@@ -29,7 +30,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /scaf-api /usr/local/bin/scaf-api
-COPY templates templates
+COPY apps/api/templates templates
 RUN test -d templates/react-ts \
     && test -d templates/vue-ts \
     && test -d templates/nextjs \

@@ -87,6 +87,9 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - The templates submodule now points at the sibling
   `Teamofeyy/scaffolder-templates` repository and the promoted base-template
   manifest pins that repository's exact commit.
+- Backend Docker builds now use the repository root as build context and copy
+  recipe manifests/templates before Rust compilation so compile-time recipe
+  includes are available in CI and production images.
 - Caddy now routes requests by the forwarded `Host` header on port 80 so it can
   run behind an external reverse proxy that connects by IP.
 - The stable matrix verification script now also fetches supported presets from

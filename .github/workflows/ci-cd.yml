@@ -177,7 +177,7 @@ jobs:
       - name: Build backend image
         uses: docker/build-push-action@v7
         with:
-          context: ./apps/api
+          context: .
           file: ./apps/api/Dockerfile
           load: true
           tags: |

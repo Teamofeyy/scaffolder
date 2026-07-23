@@ -1,6 +1,8 @@
 .git
 .github
+.agents
 .turbo
+artifacts
 node_modules
 **/node_modules
 **/.next
