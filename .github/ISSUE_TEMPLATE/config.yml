@@ -1,0 +1,9 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Recipe authoring guide
+    url: https://github.com/Teamofeyy/scaffolder/blob/main/docs/recipe-authoring.md
+    about: Read this before implementing a new recipe or block.
+  - name: Recipe review policy
+    url: https://github.com/Teamofeyy/scaffolder/blob/main/docs/recipe-review.md
+    about: Review the acceptance and promotion checklist for recipes.
+

@@ -3,8 +3,8 @@
   "id": "react-vite-app",
   "name": "React Vite App",
   "description": "Vite, React, TypeScript, and Tailwind CSS baseline with optional shadcn/ui, testing, and state management.",
-  "tier": "experimental",
-  "status": "draft",
+  "tier": "community",
+  "status": "active",
   "baseTemplate": "vite-react-ts",
   "blocks": ["tailwind-vite"],
   "options": {

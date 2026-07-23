@@ -4,7 +4,7 @@
   "name": "shadcn/ui",
   "description": "Adds shadcn/ui project configuration, aliases, utilities, and starter component wiring.",
   "category": "integration",
-  "status": "draft",
+  "status": "stable",
   "requires": {
     "baseTemplates": ["vite-react-ts"],
     "blocks": ["tailwind-vite"],

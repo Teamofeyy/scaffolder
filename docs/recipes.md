@@ -1,12 +1,12 @@
 # Recipes
 
-Recipes are the future product model for Scaffolder. A recipe is a curated,
-verified frontend starting point, not an arbitrary cross-product of framework,
-routing, styling, state, and testing options.
+Recipes are the product model for Scaffolder. A recipe is a curated, verified
+frontend starting point, not an arbitrary cross-product of framework, routing,
+styling, state, and testing options.
 
-The current web UI still uses the legacy `ProjectConfig` model. The backend
-also exposes recipe-first preview and generation endpoints backed by the
-manifests in `recipes/`.
+The current web UI uses recipe-first preview and generation endpoints backed by
+the manifests in `recipes/`. Legacy `ProjectConfig` endpoints remain
+temporarily for compatibility, but they are not the primary product path.
 
 ## Goals
 
@@ -260,8 +260,8 @@ The current `ProjectConfig` shape is legacy:
 project_name + framework + routing + styling + linting + state + testing
 ```
 
-It remains useful while the recipe engine is built, but it should not remain
-the central product model. Future API and UI work should move toward:
+It remains temporarily available for compatibility, but it is no longer the
+central product model. New API and UI work should use:
 
 ```json
 {

@@ -5,10 +5,11 @@ archives from curated, verified recipes instead of asking developers to rebuild
 the same Vite, React, Tailwind CSS, shadcn/ui, routing, testing, and project
 structure setup by hand.
 
-The current web UI is recipe-first: choose a recipe from the catalog, configure
-the knobs that recipe explicitly supports, inspect the generated files, and
-download a ZIP. Legacy configurator endpoints remain temporarily while the
-frontend migrates fully to recipes.
+The MVP focuses on one clear pain: starting a React project that already has
+the boring integration work done. Choose a recipe, configure only the options
+that recipe supports, inspect the real generated files, and download a ZIP.
+
+![Scaffolder recipe workspace](apps/web/public/workbench-screenshot.png)
 
 ## Project policies
 
@@ -21,10 +22,11 @@ frontend migrates fully to recipes.
 - [Supported combinations](SUPPORTED_COMBINATIONS.md)
 - [Template compatibility policy](TEMPLATE_COMPATIBILITY.md)
 - [Versioning and migration policy](VERSIONING.md)
+- [Architecture note](docs/architecture.md)
 
 ## Product direction
 
-Scaffolder is moving toward a recipe catalog:
+Scaffolder is a recipe catalog:
 
 - **Recipes** describe useful starting points such as a React Router app or a
   Vite React app.
@@ -37,13 +39,27 @@ Scaffolder is moving toward a recipe catalog:
 - **Custom dependencies** are allowed as package.json-only extras, but they are
   outside the verified recipe guarantee.
 
-Read the Phase 0 design documents:
+Read the recipe design documents:
 
 - [Recipes](docs/recipes.md)
 - [Recipe authoring](docs/recipe-authoring.md)
 - [Recipe review](docs/recipe-review.md)
 - [Recipe verification](docs/recipe-verification.md)
 - [Template updates](docs/template-updates.md)
+
+## Feedback wanted
+
+This project is ready for technical review, not broad promotion. Useful
+feedback is:
+
+- whether the recipe format is strict enough for community contributions;
+- whether `react-router-app` produces a project a developer would keep;
+- whether the preview shows the right files before ZIP generation;
+- which recipe request should come next and why.
+
+Open a recipe request or technical feedback issue using the GitHub issue
+templates. The open-source core does not add telemetry; promotion decisions are
+based on verification, review, and maintainer judgment.
 
 Verify recipe manifests and generated projects:
 
@@ -72,9 +88,6 @@ pnpm verify:recipes:manifests
 - Backend-owned presets for stable React, Vue, and Next.js profiles.
 - Backend-driven support states: `supported`, `experimental`, and
   `unavailable`.
-- Frontend template selection for React, Vue, Svelte, Solid, Preact, Nuxt, and
-  Angular templates.
-- Routing, styling, linting, state-management, and testing options.
 - npm registry package search.
 - Separate `dependencies` and `devDependencies` additions.
 - Detailed preview for the generated tree, `package.json`, README, entry
@@ -125,18 +138,18 @@ http://localhost:3000
 
 ## Current usage
 
-The current UI is still the legacy configurator:
+The primary UI is the recipe workbench:
 
-1. Enter a project name, for example `my-app`.
-2. Choose a preset or open manual configuration.
-3. Choose framework, routing, styling, state management, and testing.
-4. Search npm packages if you need additional libraries.
-5. Add packages to `dependencies` or `devDependencies`.
-6. Inspect the generated preview.
-7. Generate the project ZIP.
+1. Choose `React Router App` from the Recommended catalog.
+2. Enter a project name, for example `my-react-app`.
+3. Configure recipe options such as UI, testing, or state management.
+4. Add custom dependencies only when you need package.json extras.
+5. Inspect `package.json`, `README.md`, route files, and config files in the
+   file tree.
+6. Generate the project ZIP.
 
-The generated archive contains a `package.json`, README, selected dependencies,
-and template files for the chosen stack.
+Preview and ZIP generation use the same recipe engine, so the workbench shows
+the actual files that will be archived.
 
 ## API contract
 
@@ -262,9 +275,16 @@ the UI hides it. The recipe-first MVP keeps AI outside the core flow.
 - `apps/api/api` - Rust/Axum backend.
 - `apps/api/templates` - project templates, currently connected as a Git
   submodule.
+- `recipes` - declarative base-template, block, recipe, and file-template
+  manifests.
 - `apps/api/api/dependency-presets.json` - dependencies added by selected
   feature options.
 - `scripts/load-test.mjs` - dependency-free load test script.
+- `scripts/verify-recipes.mjs` - strict recipe and block manifest validation.
+- `scripts/verify-recipe-projects.mjs` - API-backed generate/install/build
+  verification.
+- `scripts/template-update.mjs` - promoted template snapshot verification and
+  candidate update classification.
 
 ## Before committing
 

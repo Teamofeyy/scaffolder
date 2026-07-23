@@ -22,14 +22,19 @@ Weak examples:
 
 ## Recipe contribution flow
 
-1. Check existing recipes and blocks.
-2. Prefer composing existing blocks before adding new ones.
-3. Add a recipe manifest in `recipes/catalog/`.
-4. Add only the blocks, templates, and structured operations the recipe needs.
-5. Keep custom dependencies out of the recipe unless they are part of the
+1. Open a recipe request issue if the idea needs discussion before
+   implementation.
+2. Check existing recipes and blocks.
+3. Prefer composing existing blocks before adding new ones.
+4. Add a recipe manifest in `recipes/catalog/`.
+5. Add only the blocks, templates, and structured operations the recipe needs.
+6. Keep custom dependencies out of the recipe unless they are part of the
    verified baseline.
-6. Run recipe verification.
-7. Fill out the recipe pull request checklist.
+7. Run recipe verification.
+8. Fill out the recipe pull request checklist.
+
+Use the technical feedback issue template for generated project quality,
+verification, or workbench preview concerns that are not yet recipe requests.
 
 ## Recipe requirements
 

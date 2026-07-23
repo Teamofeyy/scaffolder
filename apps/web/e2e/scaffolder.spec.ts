@@ -34,8 +34,8 @@ const recipeCatalog = [
     id: "react-router-app",
     name: "React Router App",
     description: "Vite, React, TypeScript, Tailwind CSS, and React Router baseline.",
-    tier: "experimental",
-    status: "draft",
+    tier: "recommended",
+    status: "active",
     baseTemplate: "vite-react-ts",
     options: {
       ui: {
@@ -149,13 +149,13 @@ const previewResponse = {
   selectedBlocks: ["tailwind-vite", "react-router"],
   customDependencies: [],
   customDevDependencies: [],
-  recipeTier: "experimental",
-  recipeStatus: "draft",
-  supportStatus: "experimental",
+  recipeTier: "recommended",
+  recipeStatus: "active",
+  supportStatus: "supported",
   baseTemplate: "vite-react-ts",
   templateSnapshot: "apps/api/templates/template-react-ts",
   verification: { generate: true, install: true, build: true, test: "optional" },
-  warnings: ["This recipe is experimental."],
+  warnings: [],
 }
 
 test.beforeEach(async ({ page }) => {
@@ -211,7 +211,6 @@ test("switches locale through the header control", async ({ page }, testInfo) =>
 test("opens a recipe, previews clickable files, and downloads a generated ZIP", async ({ page }) => {
   await page.goto("/en")
 
-  await page.getByRole("tab", { name: /community/i }).click()
   await page.getByRole("button", { name: "Open", exact: true }).click()
   await page.getByLabel("Project name").fill("demo-app")
 

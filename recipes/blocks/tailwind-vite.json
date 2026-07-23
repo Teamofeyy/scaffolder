@@ -4,7 +4,7 @@
   "name": "Tailwind CSS for Vite",
   "description": "Configures Tailwind CSS for a Vite-based TypeScript project.",
   "category": "integration",
-  "status": "draft",
+  "status": "stable",
   "requires": {
     "baseTemplates": ["vite-react-ts"],
     "blocks": [],

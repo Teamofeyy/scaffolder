@@ -3,8 +3,8 @@
   "id": "react-router-app",
   "name": "React Router App",
   "description": "Vite, React, TypeScript, Tailwind CSS, and React Router baseline with optional shadcn/ui, testing, and state management.",
-  "tier": "experimental",
-  "status": "draft",
+  "tier": "recommended",
+  "status": "active",
   "baseTemplate": "vite-react-ts",
   "blocks": ["tailwind-vite", "react-router"],
   "options": {

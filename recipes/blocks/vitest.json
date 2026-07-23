@@ -4,7 +4,7 @@
   "name": "Vitest",
   "description": "Adds Vitest dependencies, scripts, and a starter component test.",
   "category": "integration",
-  "status": "draft",
+  "status": "stable",
   "requires": {
     "baseTemplates": ["vite-react-ts"],
     "blocks": [],

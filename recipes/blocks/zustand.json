@@ -4,7 +4,7 @@
   "name": "Zustand",
   "description": "Adds Zustand and a minimal store module.",
   "category": "integration",
-  "status": "draft",
+  "status": "stable",
   "requires": {
     "baseTemplates": ["vite-react-ts"],
     "blocks": [],
