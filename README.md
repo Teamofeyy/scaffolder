@@ -23,6 +23,7 @@ that recipe supports, inspect the real generated files, and download a ZIP.
 - [Template compatibility policy](TEMPLATE_COMPATIBILITY.md)
 - [Versioning and migration policy](VERSIONING.md)
 - [Architecture note](docs/architecture.md)
+- [Templates repository setup](docs/templates-repository.md)
 
 ## Product direction
 

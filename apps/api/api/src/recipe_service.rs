@@ -1539,7 +1539,7 @@ mod tests {
         .expect("recipe preview should generate");
 
         assert_eq!(response.recipe_id, "react-router-app");
-        assert_eq!(response.support_status, "experimental");
+        assert_eq!(response.support_status, "supported");
         assert!(!response.tree.children.is_empty());
         assert_eq!(response.curated_tree.node_type, "folder");
         assert!(

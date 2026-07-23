@@ -12,6 +12,9 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Phase 7 public feedback launch materials: polished README messaging,
   architecture note, GitHub recipe request and technical feedback issue
   templates, and a recipe workbench screenshot asset.
+- Templates repository setup guide documenting the sibling
+  `Teamofeyy/scaffolder-templates` repository, submodule consumption, push
+  flow, and verification steps.
 - Phase 6 template update pipeline tooling with exact promoted snapshot
   metadata, template submodule commit/hash verification, safe diff
   classification, affected recipe verification commands, template update PR
@@ -69,6 +72,9 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Promoted `react-router-app` to a recommended active MVP recipe and moved the
   current recipe blocks to stable after verification. `react-vite-app` is now
   an active community recipe for feedback.
+- The templates submodule now points at the sibling
+  `Teamofeyy/scaffolder-templates` repository and the promoted base-template
+  manifest pins that repository's exact commit.
 - Caddy now routes requests by the forwarded `Host` header on port 80 so it can
   run behind an external reverse proxy that connects by IP.
 - The stable matrix verification script now also fetches supported presets from
