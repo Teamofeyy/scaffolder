@@ -51,6 +51,12 @@ Verify recipe manifests and generated projects:
 pnpm verify:recipes
 ```
 
+Verify pinned promoted template snapshots:
+
+```bash
+pnpm verify:templates
+```
+
 For fast manifest-only feedback while authoring:
 
 ```bash

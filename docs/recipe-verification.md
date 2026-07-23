@@ -13,6 +13,10 @@ pnpm verify:recipes
 This command runs strict manifest validation first, then verifies generated
 projects through the recipe-first API pipeline.
 
+It also verifies promoted template snapshot pins through `pnpm
+verify:templates`, because recipes are only trustworthy when their base
+templates are deterministic local snapshots.
+
 Manifest-only validation remains available for quick authoring feedback:
 
 ```bash

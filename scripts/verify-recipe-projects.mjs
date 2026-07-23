@@ -586,8 +586,9 @@ function splitCsv(value) {
 
 function parseArgs(values) {
   const parsed = {}
-  for (let index = 0; index < values.length; index += 1) {
-    const arg = values[index]
+  const normalizedValues = values.filter((value) => value !== '--')
+  for (let index = 0; index < normalizedValues.length; index += 1) {
+    const arg = normalizedValues[index]
     if (!arg.startsWith('--')) {
       throw new Error(`Unexpected argument: ${arg}`)
     }
@@ -597,7 +598,7 @@ function parseArgs(values) {
       assignArg(parsed, key, inlineValue)
       continue
     }
-    const next = values[index + 1]
+    const next = normalizedValues[index + 1]
     if (!next || next.startsWith('--')) {
       assignArg(parsed, key, true)
       continue

@@ -8,8 +8,15 @@
   "source": {
     "kind": "submodule",
     "repository": "https://github.com/Teamofeyy/templates.git",
-    "ref": "pinned-by-scaffolder-submodule",
+    "ref": "e33ffa0401e8d2f000e9a3cb2ad36a852a1821e5",
     "path": "react-ts"
+  },
+  "snapshot": {
+    "repository": "https://github.com/Teamofeyy/templates.git",
+    "commit": "e33ffa0401e8d2f000e9a3cb2ad36a852a1821e5",
+    "path": "react-ts",
+    "hash": "sha256:39386728ee287ad95102358a076251840ffe84334260e01c4052f7f36e5ea2c0",
+    "promotedAt": "2026-07-23"
   },
   "provides": {
     "capabilities": ["framework:react", "language:typescript", "bundler:vite"]

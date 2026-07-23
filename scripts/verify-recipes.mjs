@@ -95,12 +95,12 @@ async function validateBaseTemplate(manifest) {
   const context = manifest.__file
   requireKeys(
     manifest,
-    ['$schema', 'id', 'name', 'description', 'status', 'snapshotPath', 'source', 'provides'],
+    ['$schema', 'id', 'name', 'description', 'status', 'snapshotPath', 'source', 'snapshot', 'provides'],
     context,
   )
   exactKeys(
     manifest,
-    ['$schema', 'id', 'name', 'description', 'status', 'snapshotPath', 'source', 'provides', '__file'],
+    ['$schema', 'id', 'name', 'description', 'status', 'snapshotPath', 'source', 'snapshot', 'provides', '__file'],
     context,
   )
 
@@ -116,7 +116,11 @@ async function validateBaseTemplate(manifest) {
   requireString(manifest.source?.repository, context, 'source.repository')
   requireString(manifest.source?.ref, context, 'source.ref')
   requireString(manifest.source?.path, context, 'source.path')
+  if (manifest.source?.kind === 'submodule' && !isGitSha(manifest.source?.ref)) {
+    fail(context, 'source.ref must be the pinned templates submodule commit')
+  }
 
+  validateSnapshot(manifest, context)
   validateCapabilitiesObject(manifest.provides, context, 'provides')
 
   if (typeof manifest.snapshotPath === 'string') {
@@ -245,6 +249,11 @@ async function validateRecipe(manifest) {
   requireSlug(manifest.baseTemplate, context, 'baseTemplate')
   if (!baseTemplateById.has(manifest.baseTemplate)) {
     fail(context, `references unknown base template "${manifest.baseTemplate}"`)
+  } else if (manifest.tier !== 'deprecated' && manifest.status !== 'deprecated') {
+    const baseTemplate = baseTemplateById.get(manifest.baseTemplate)
+    if (baseTemplate.status !== 'promoted') {
+      fail(context, `runtime recipes must use promoted base templates, got "${baseTemplate.status}"`)
+    }
   }
 
   requireStringArray(manifest.blocks, context, 'blocks')
@@ -329,6 +338,32 @@ function validateCustomDependencies(customDependencies, context) {
     fail(context, 'customDependencies.allow must be a boolean')
   }
   requireEnum(customDependencies?.policy, ['package-json-only'], context, 'customDependencies.policy')
+}
+
+function validateSnapshot(manifest, context) {
+  exactObjectKeys(
+    manifest.snapshot,
+    ['repository', 'commit', 'path', 'hash', 'promotedAt'],
+    context,
+    'snapshot',
+  )
+  requireString(manifest.snapshot?.repository, context, 'snapshot.repository')
+  requireString(manifest.snapshot?.path, context, 'snapshot.path')
+  if (!isGitSha(manifest.snapshot?.commit)) {
+    fail(context, 'snapshot.commit must be a 40-character git SHA')
+  }
+  if (!/^sha256:[0-9a-f]{64}$/.test(manifest.snapshot?.hash ?? '')) {
+    fail(context, 'snapshot.hash must be sha256:<64 hex chars>')
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(manifest.snapshot?.promotedAt ?? '')) {
+    fail(context, 'snapshot.promotedAt must be YYYY-MM-DD')
+  }
+  if (manifest.source?.kind === 'submodule' && manifest.source?.ref !== manifest.snapshot?.commit) {
+    fail(context, 'source.ref must match snapshot.commit for submodule snapshots')
+  }
+  if (typeof manifest.snapshotPath === 'string' && manifest.snapshot?.path !== path.basename(manifest.snapshotPath)) {
+    fail(context, 'snapshot.path must match snapshotPath directory name')
+  }
 }
 
 function validateVerification(verification, context) {
@@ -580,6 +615,10 @@ function isObject(value) {
 
 function isSlug(value) {
   return typeof value === 'string' && /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(value)
+}
+
+function isGitSha(value) {
+  return typeof value === 'string' && /^[0-9a-f]{40}$/.test(value)
 }
 
 function fail(context, message) {

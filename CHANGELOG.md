@@ -9,6 +9,11 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- Phase 6 template update pipeline tooling with exact promoted snapshot
+  metadata, template submodule commit/hash verification, safe diff
+  classification, affected recipe verification commands, template update PR
+  planning, and documentation for candidate, verified, and promoted snapshot
+  states.
 - Phase 5 recipe verification pipeline: `pnpm verify:recipes` now combines
   strict manifest validation with API-backed preview/generate checks,
   generated ZIP extraction, forbidden script checks, dependency review,
