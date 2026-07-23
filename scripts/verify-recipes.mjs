@@ -177,7 +177,7 @@ async function validateBlock(manifest) {
   validateConflicts(manifest.conflicts, context)
   validateCapabilitiesObject(manifest.provides, context, 'provides')
   requireStringArray(manifest.filesTouched, context, 'filesTouched')
-  validateOperations(manifest.operations, manifest.filesTouched, context)
+  await validateOperations(manifest.operations, manifest.filesTouched, context)
 
   for (const baseTemplateId of manifest.requires?.baseTemplates ?? []) {
     if (!baseTemplateById.has(baseTemplateId)) {
@@ -428,7 +428,7 @@ function validateCapabilitiesObject(value, context, field) {
   requireStringArray(value?.capabilities, context, `${field}.capabilities`)
 }
 
-function validateOperations(operations, filesTouched, context) {
+async function validateOperations(operations, filesTouched, context) {
   if (!Array.isArray(operations)) {
     fail(context, 'operations must be an array')
     return
@@ -458,6 +458,14 @@ function validateOperations(operations, filesTouched, context) {
     }
     if (operation?.type === 'file-template' && !operation.template) {
       fail(operationContext, 'file-template operations must declare template')
+    }
+    if (operation?.template !== undefined) {
+      const templatePath = path.join(recipeRoot, 'templates', operation.template)
+      try {
+        await access(templatePath)
+      } catch {
+        fail(operationContext, `template does not exist: ${operation.template}`)
+      }
     }
   }
 }

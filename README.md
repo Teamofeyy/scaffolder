@@ -5,11 +5,10 @@ archives from curated, verified recipes instead of asking developers to rebuild
 the same Vite, React, Tailwind CSS, shadcn/ui, routing, testing, and project
 structure setup by hand.
 
-The current 1.1.x implementation still exposes the legacy
-framework/routing/styling configurator. The next product direction is
-recipe-first: choose a recipe, configure the knobs that recipe explicitly
-supports, inspect the generated files, and download a ZIP that was verified by
-the release pipeline.
+The current web UI still exposes the legacy framework/routing/styling
+configurator. The backend now also exposes recipe-first endpoints: choose a
+recipe, configure the knobs that recipe explicitly supports, inspect the
+generated files, and download a ZIP.
 
 ## Project policies
 
@@ -126,6 +125,10 @@ and template files for the chosen stack.
 
 Stable current endpoints:
 
+- `GET /recipes` - recipe catalog metadata.
+- `GET /recipes/{id}` - recipe manifest details.
+- `POST /recipes/{id}/preview` - real materialized recipe project preview.
+- `POST /recipes/{id}/generate` - recipe ZIP generation.
 - `GET /presets` - backend-owned preset definitions.
 - `GET /verification-matrix` - stable generation/install/build matrix.
 - `POST /preview/details` - deterministic tree, key files, dependencies,

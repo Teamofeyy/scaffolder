@@ -4,9 +4,9 @@ Recipes are the future product model for Scaffolder. A recipe is a curated,
 verified frontend starting point, not an arbitrary cross-product of framework,
 routing, styling, state, and testing options.
 
-The current 1.1.x product still uses the legacy `ProjectConfig` model at
-runtime. The recipe manifests in `recipes/` define the target contract for the
-recipe-first rewrite and are validated by `pnpm verify:recipes`.
+The current web UI still uses the legacy `ProjectConfig` model. The backend
+also exposes recipe-first preview and generation endpoints backed by the
+manifests in `recipes/`.
 
 ## Goals
 
@@ -109,6 +109,30 @@ Validate manifests:
 
 ```bash
 pnpm verify:recipes
+```
+
+## Runtime endpoints
+
+The backend recipe engine exposes:
+
+```text
+GET /recipes
+GET /recipes/{id}
+POST /recipes/{id}/preview
+POST /recipes/{id}/generate
+```
+
+Recipe preview and generation share the same materialization pipeline:
+
+```text
+recipe request
+  -> resolve recipe/options/blocks
+  -> copy pinned base template
+  -> apply structured package.json operations
+  -> apply structured tsconfig/components.json operations
+  -> render file templates
+  -> merge custom dependencies into package.json only
+  -> return preview or ZIP
 ```
 
 ## Trust tiers

@@ -17,12 +17,24 @@
   "provides": {
     "capabilities": ["routing:react-router"]
   },
-  "filesTouched": ["package.json", "src/main.tsx", "src/routes/root.tsx", "src/routes/home.tsx"],
+  "filesTouched": ["package.json", "src/main.tsx", "src/App.tsx", "src/routes/root.tsx", "src/routes/home.tsx"],
   "operations": [
     {
       "type": "package-json-merge",
       "target": "package.json",
       "description": "Add React Router dependency."
+    },
+    {
+      "type": "file-template",
+      "target": "src/main.tsx",
+      "description": "Render the React entrypoint for the routed app.",
+      "template": "react-router/main.tsx"
+    },
+    {
+      "type": "file-template",
+      "target": "src/App.tsx",
+      "description": "Render the route table.",
+      "template": "react-router/App.tsx"
     },
     {
       "type": "file-template",

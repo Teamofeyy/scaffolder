@@ -25,9 +25,10 @@
       "description": "Add Tailwind CSS dependencies and scripts where needed."
     },
     {
-      "type": "css-append",
+      "type": "file-template",
       "target": "src/index.css",
-      "description": "Add Tailwind CSS imports."
+      "description": "Replace starter CSS with Tailwind CSS imports and baseline styles.",
+      "template": "tailwind/index.css"
     },
     {
       "type": "file-template",

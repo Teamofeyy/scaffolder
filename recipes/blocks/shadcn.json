@@ -17,7 +17,7 @@
   "provides": {
     "capabilities": ["ui:shadcn", "alias:@/*"]
   },
-  "filesTouched": ["package.json", "tsconfig.json", "components.json", "src/lib/utils.ts", "src/index.css"],
+  "filesTouched": ["package.json", "tsconfig.json", "tsconfig.app.json", "components.json", "src/lib/utils.ts", "src/index.css"],
   "operations": [
     {
       "type": "package-json-merge",

@@ -9,6 +9,10 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- Recipe engine MVP with `GET /recipes`, `GET /recipes/{id}`,
+  `POST /recipes/{id}/preview`, and `POST /recipes/{id}/generate` endpoints
+  that materialize pinned base templates, compose blocks, apply structured
+  operations, render recipe file templates, and generate ZIP archives.
 - Recipe schema MVP with base-template, block, and recipe manifests under
   `recipes/`, plus `pnpm verify:recipes` for strict manifest and compatibility
   validation.
