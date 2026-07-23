@@ -1,38 +1,16 @@
-import type { Dictionary } from "@/lib/i18n/dictionaries"
+import type { Dictionary } from '@/lib/i18n/dictionaries'
+import type { Framework } from '../../api/api/bindings/Framework'
+import type { Linting } from '../../api/api/bindings/Linting'
+import type { Routing } from '../../api/api/bindings/Routing'
+import type { StateManagement } from '../../api/api/bindings/StateManagement'
+import type { Styling } from '../../api/api/bindings/Styling'
+import type { Testing } from '../../api/api/bindings/Testing'
 
-export type Framework =
-  | "react"
-  | "nextjs"
-  | "angular-ts"
-  | "ember-ts"
-  | "lit-ts"
-  | "marko-ts"
-  | "nuxt-ts"
-  | "preact-ts"
-  | "preact-ts-official"
-  | "qwik-ts"
-  | "react-ts"
-  | "solid-ts"
-  | "svelte-ts"
-  | "vue-ts"
-  | "vue"
-export type Routing =
-  | "app-router"
-  | "pages-router"
-  | "react-router"
-  | "react-router-data"
-  | "vue-router"
-  | "none"
-
-export type Styling = "tailwind" | "css-modules" | "styled-components"
-export type Linting = "eslint" | "biome" | "none"
-export type StateManagement = "none" | "zustand" | "redux" | "jotai"
-export type Testing = "none" | "vitest" | "playwright"
+export type { Framework, Linting, Routing, StateManagement, Styling, Testing }
 
 export interface ProjectConfig {
   projectName: string
   framework: Framework
-  typescript: boolean
   styling: Styling
   linting: Linting
   stateManagement: StateManagement
@@ -46,7 +24,7 @@ export interface ProjectConfig {
    FILE SYSTEM TYPES (исправлено и строго типизировано)
 ---------------------------------------------------- */
 
-export type FileType = "file" | "folder"
+export type FileType = 'file' | 'folder'
 
 export interface FileBase {
   name: string
@@ -54,12 +32,12 @@ export interface FileBase {
 }
 
 export interface FileFile extends FileBase {
-  type: "file"
+  type: 'file'
   children?: undefined
 }
 
 export interface FileFolder extends FileBase {
-  type: "folder"
+  type: 'folder'
   children: FileNode[]
 }
 
@@ -71,10 +49,13 @@ export type FileStructure = FileNode
 // --------------------------------------
 // Helpers
 // --------------------------------------
-export const file = (name: string): FileFile => ({ name, type: "file" })
-export const folder = (name: string, children: FileNode[] = []): FileFolder => ({
+export const file = (name: string): FileFile => ({ name, type: 'file' })
+export const folder = (
+  name: string,
+  children: FileNode[] = [],
+): FileFolder => ({
   name,
-  type: "folder",
+  type: 'folder',
   children,
 })
 
@@ -88,18 +69,18 @@ export type ConfigValue = ProjectConfig[ConfigKey]
 export interface ConfigurationPanelProps {
   config: ProjectConfig
   setConfig: (config: ProjectConfig) => void
-  dictionary: Dictionary["configuration"]
+  dictionary: Dictionary['configuration']
 }
 
 export interface PreviewPanelProps {
   config: ProjectConfig
-  dictionary: Dictionary["preview"]
+  dictionary: Dictionary['preview']
 }
 
 export interface GenerateButtonProps {
   config: ProjectConfig
-  dictionary: Dictionary["generate"]
-  errors: Dictionary["errors"]
+  dictionary: Dictionary['generate']
+  errors: Dictionary['errors']
 }
 
 // --------------------------------------
@@ -109,44 +90,41 @@ type BlockFactory = () => FileNode[]
 
 export const frameworkBlocks: Partial<Record<Framework, BlockFactory>> = {
   react: () => [
-    folder("public", [file("vite.svg")]),
+    folder('public', [file('vite.svg')]),
 
-    folder("src", [
-      folder("assets", [file("react.svg")]),
-      file("App.css"),
-      file("App.tsx"),
-      file("index.css"),
-      file("main.tsx"),
+    folder('src', [
+      folder('assets', [file('react.svg')]),
+      file('App.css'),
+      file('App.tsx'),
+      file('index.css'),
+      file('main.tsx'),
     ]),
 
-    file("vite.config.ts"),
-    file("index.html"),
+    file('vite.config.ts'),
+    file('index.html'),
   ],
 
   vue: () => [
-    folder("public", []),
+    folder('public', []),
 
-    folder("src", [
-      folder("assets", []),
-      file("main.ts"),
-      file("App.vue"),
-      file("style.css"),
+    folder('src', [
+      folder('assets', []),
+      file('main.ts'),
+      file('App.vue'),
+      file('style.css'),
     ]),
 
-    file("vite.config.ts"),
-    file("index.html"),
+    file('vite.config.ts'),
+    file('index.html'),
   ],
 
   nextjs: () => [
-    folder("public", []),
+    folder('public', []),
 
     // Next.js всегда на верхнем уровне, НЕ в src
-    folder("app", [
-      file("layout.tsx"),
-      file("page.tsx"),
-    ]),
+    folder('app', [file('layout.tsx'), file('page.tsx')]),
 
-    file("next.config.js"),
+    file('next.config.js'),
   ],
 }
 
@@ -155,46 +133,37 @@ export const frameworkBlocks: Partial<Record<Framework, BlockFactory>> = {
 // --------------------------------------
 export const routingBlocks: Partial<Record<Routing, BlockFactory>> = {
   // --- React Router ---
-  "react-router": () => [
-    folder("src", [
-      folder("routes", [file("index.tsx")]),
-      folder("pages", [file("Home.tsx"), file("About.tsx")]),
+  'react-router': () => [
+    folder('src', [
+      folder('routes', [file('index.tsx')]),
+      folder('pages', [file('Home.tsx'), file('About.tsx')]),
     ]),
   ],
 
-  "react-router-data": () => [
-    folder("src", [
-      folder("routes", [
-        file("loader.ts"),
-        file("index.tsx"),
-      ]),
-      folder("pages", [file("Home.tsx"), file("About.tsx")]),
+  'react-router-data': () => [
+    folder('src', [
+      folder('routes', [file('loader.ts'), file('index.tsx')]),
+      folder('pages', [file('Home.tsx'), file('About.tsx')]),
     ]),
   ],
 
   none: () => [],
 
   // --- Next.js App Router ---
-  "app-router": () => [
-    folder("app", [
-      file("page.tsx"),
-      folder("about", [file("page.tsx")]),
-    ]),
+  'app-router': () => [
+    folder('app', [file('page.tsx'), folder('about', [file('page.tsx')])]),
   ],
 
   // --- Next.js Pages Router ---
-  "pages-router": () => [
-    folder("pages", [
-      file("index.tsx"),
-      file("about.tsx"),
-    ]),
+  'pages-router': () => [
+    folder('pages', [file('index.tsx'), file('about.tsx')]),
   ],
 
   // --- Vue ---
-  "vue-router": () => [
-    folder("src", [
-      folder("router", [file("index.ts")]),
-      folder("pages", [file("Home.vue"), file("About.vue")]),
+  'vue-router': () => [
+    folder('src', [
+      folder('router', [file('index.ts')]),
+      folder('pages', [file('Home.vue'), file('About.vue')]),
     ]),
   ],
 }
@@ -204,8 +173,8 @@ export const routingBlocks: Partial<Record<Routing, BlockFactory>> = {
 // --------------------------------------
 export const stylingBlocks: Partial<Record<Styling, BlockFactory>> = {
   tailwind: () => [],
-  "css-modules": () => [],
-  "styled-components": () => [],
+  'css-modules': () => [],
+  'styled-components': () => [],
 }
 
 // --------------------------------------
@@ -214,41 +183,21 @@ export const stylingBlocks: Partial<Record<Styling, BlockFactory>> = {
 export const stateBlocks: Record<StateManagement, BlockFactory> = {
   none: () => [],
 
-  zustand: () => [
-    folder("src", [
-      folder("store", [file("useStore.ts")]),
-    ]),
-  ],
+  zustand: () => [folder('src', [folder('store', [file('useStore.ts')])])],
 
-  redux: () => [
-    folder("src", [
-      folder("store", [file("store.ts")]),
-    ]),
-  ],
+  redux: () => [folder('src', [folder('store', [file('store.ts')])])],
 
-  jotai: () => [
-    folder("src", [
-      folder("state", [file("atoms.ts")]),
-    ]),
-  ],
+  jotai: () => [folder('src', [folder('state', [file('atoms.ts')])])],
 }
 
 // --------------------------------------
 // SHARED BLOCKS
 // --------------------------------------
 export const sharedBlocks = {
-  base: () => [
-    file(".gitignore"),
-    file("README.md"),
-    file("package.json"),
-  ],
+  base: () => [file('.gitignore'), file('README.md'), file('package.json')],
 
-  linting: () => [
-    file("eslint.config.js"),
-    file(".prettierrc"),
-  ],
+  linting: () => [file('eslint.config.js'), file('.prettierrc')],
 }
-
 
 function mergeChildren(a: FileNode[], b: FileNode[]): FileNode[] {
   const map = new Map<string, FileNode>()
@@ -257,22 +206,30 @@ function mergeChildren(a: FileNode[], b: FileNode[]): FileNode[] {
     const key = node.name
     if (!map.has(key)) {
       // shallow clone to avoid mutation of original blocks
-      map.set(key, node.type === "folder" ? { ...node, children: [...node.children!] } : { ...node })
+      map.set(
+        key,
+        node.type === 'folder'
+          ? { ...node, children: [...node.children!] }
+          : { ...node },
+      )
       return
     }
 
     const existing = map.get(key)!
     // both folders -> merge children
-    if (existing.type === "folder" && node.type === "folder") {
-      existing.children = mergeChildren(existing.children ?? [], node.children ?? [])
+    if (existing.type === 'folder' && node.type === 'folder') {
+      existing.children = mergeChildren(
+        existing.children ?? [],
+        node.children ?? [],
+      )
       return
     }
 
     // existing folder + incoming file -> keep folder
-    if (existing.type === "folder" && node.type === "file") return
+    if (existing.type === 'folder' && node.type === 'file') return
 
     // existing file + incoming folder -> replace file with folder (folder wins)
-    if (existing.type === "file" && node.type === "folder") {
+    if (existing.type === 'file' && node.type === 'folder') {
       map.set(key, { ...node, children: [...(node.children ?? [])] })
       return
     }
@@ -314,5 +271,5 @@ export function generateProjectStructure(config: ProjectConfig): FileStructure {
   const merged = mergeChildren([], allChildren)
 
   // Возвращаем корень проекта с корректными вложениями
-  return folder(config.projectName || "my-project", merged)
+  return folder(config.projectName || 'my-project', merged)
 }

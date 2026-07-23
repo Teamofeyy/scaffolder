@@ -16,7 +16,7 @@ pub struct GeneratedArchive {
     pub bytes: Vec<u8>,
 }
 
-pub async fn generate_project(config: ProjectConfig) -> Result<GeneratedArchive> {
+pub fn generate_project(config: ProjectConfig) -> Result<GeneratedArchive> {
     let project_dir_name = sanitize_project_dir_name(&config.project_name);
     let (workspace, _project_root) = materialize_project(&config)?;
 

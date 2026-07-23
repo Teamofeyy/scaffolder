@@ -52,5 +52,12 @@ AI recommendations are disabled unless both `AI_PROXY_URL` and
 `AI_PROXY_SECRET` are configured. The frontend uses `/capabilities` to hide the
 AI assistant when the backend reports that AI is unavailable.
 
-Operational metrics are exposed at `/metrics` and include generation totals,
-generation failures, total generation latency, and HTTP error counts.
+Operational metrics and Swagger UI are disabled by default. Enable them only on
+trusted internal backend surfaces with `SCAFFOLDER_ENABLE_METRICS=true` or
+`SCAFFOLDER_ENABLE_SWAGGER=true`; the production Caddy configuration blocks
+`/api/metrics`, `/api/api-docs`, and `/api/swagger-ui*` from public routing.
+
+Project generation and preview requests have bounded JSON body size,
+application-level concurrency limits, and request timeouts. Backend validation
+rejects malformed project names, unsafe dependency specs, excessive dependency
+lists, and unavailable templates before filesystem materialization.

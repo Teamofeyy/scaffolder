@@ -1,7 +1,7 @@
-import { notFound } from "next/navigation"
-import { isLocale } from "@/lib/i18n/config"
-import { getDictionary } from "@/lib/i18n/dictionaries"
-import { ScaffolderPage } from "../ui/scaffolder-page"
+import { notFound } from 'next/navigation'
+import { isLocale } from '@/lib/i18n/config'
+import { getDictionary } from '@/lib/i18n/dictionaries'
+import { ScaffolderPage } from '../ui/scaffolder-page'
 
 export default async function Page({
   params,

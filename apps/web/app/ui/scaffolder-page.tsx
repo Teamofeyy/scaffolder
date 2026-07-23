@@ -1,16 +1,16 @@
-"use client"
+'use client'
 
-import { useEffect, useState } from "react"
-import { Boxes, Terminal } from "lucide-react"
-import { Header } from "./header"
-import { ConfigurationPanel } from "./configuration-panel"
-import { PreviewPanel } from "./preview-panel"
-import { GenerateButton } from "./generate-button"
-import { AiSidebar } from "./ai-sidebar"
-import { getCapabilities } from "@/lib/api"
-import type { Dictionary } from "@/lib/i18n/dictionaries"
-import type { Locale } from "@/lib/i18n/config"
-import type { ProjectConfig } from "@/types/project-config"
+import { useEffect, useState } from 'react'
+import { Boxes, Terminal } from 'lucide-react'
+import { Header } from './header'
+import { ConfigurationPanel } from './configuration-panel'
+import { PreviewPanel } from './preview-panel'
+import { GenerateButton } from './generate-button'
+import { AiSidebar } from './ai-sidebar'
+import { getCapabilities } from '@/lib/api'
+import type { Dictionary } from '@/lib/i18n/dictionaries'
+import type { Locale } from '@/lib/i18n/config'
+import type { ProjectConfig } from '@/types/project-config'
 
 interface ScaffolderPageProps {
   locale: Locale
@@ -20,16 +20,15 @@ interface ScaffolderPageProps {
 export function ScaffolderPage({ locale, dictionary }: ScaffolderPageProps) {
   const [aiAvailable, setAiAvailable] = useState(false)
   const [config, setConfig] = useState<ProjectConfig>({
-    projectName: "",
-    framework: "react",
-    typescript: true,
-    styling: "tailwind",
-    linting: "eslint",
-    stateManagement: "none",
-    routing: "react-router",
+    projectName: '',
+    framework: 'react',
+    styling: 'tailwind',
+    linting: 'eslint',
+    stateManagement: 'none',
+    routing: 'react-router',
     dependencies: [],
     devDependencies: [],
-    testing: "none",
+    testing: 'none',
   })
 
   useEffect(() => {
@@ -73,9 +72,24 @@ export function ScaffolderPage({ locale, dictionary }: ScaffolderPageProps) {
               scaffold.config
             </div>
             <div className="space-y-2 p-4 font-mono text-sm">
-              <p><span className="text-primary">{dictionary.terminal.framework}</span> = react</p>
-              <p><span className="text-primary">{dictionary.terminal.style}</span> = tailwind</p>
-              <p><span className="text-primary">{dictionary.terminal.dependencies}</span> = npm registry</p>
+              <p>
+                <span className="text-primary">
+                  {dictionary.terminal.framework}
+                </span>{' '}
+                = react
+              </p>
+              <p>
+                <span className="text-primary">
+                  {dictionary.terminal.style}
+                </span>{' '}
+                = tailwind
+              </p>
+              <p>
+                <span className="text-primary">
+                  {dictionary.terminal.dependencies}
+                </span>{' '}
+                = npm registry
+              </p>
               <p className="text-primary">{dictionary.terminal.ready}</p>
             </div>
           </div>

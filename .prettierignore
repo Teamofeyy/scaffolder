@@ -1,0 +1,11 @@
+.next
+.turbo
+coverage
+dist
+node_modules
+target
+
+apps/api/api/bindings
+apps/api/templates
+pnpm-lock.yaml
+*.tsbuildinfo

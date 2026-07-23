@@ -91,7 +91,7 @@ Stable endpoints:
 - `POST /preview` - backward-compatible file-tree preview.
 - `POST /generate` - ZIP generation.
 - `GET /features` - feature metadata with support status.
-- `GET /capabilities`, `/ready`, `/live`, `/metrics` - runtime status.
+- `GET /capabilities`, `/ready`, `/live` - runtime status.
 
 Installer or package-manager selection is not part of the API.
 
@@ -178,7 +178,16 @@ Backend endpoints:
 - `/presets` - stable preset definitions.
 - `/verification-matrix` - verified stable combinations.
 - `/preview/details` - deterministic detailed preview.
-- `/metrics` - Prometheus-compatible generation and error counters.
+
+Administrative endpoints are disabled by default. Set
+`SCAFFOLDER_ENABLE_METRICS=true` to expose backend-local `/metrics`, or
+`SCAFFOLDER_ENABLE_SWAGGER=true` to expose backend-local `/swagger-ui` and
+`/api-docs`. The production Caddy config does not publish these paths through
+`/api/*`.
+
+Set `CORS_ALLOWED_ORIGINS` to a comma-separated list when the API is called
+directly from browsers outside the same frontend origin. The default allowlist
+is `http://127.0.0.1:3000,http://localhost:3000`.
 
 AI recommendations are optional. Set `AI_PROXY_URL` and `AI_PROXY_SECRET` in the production environment to expose the AI assistant in the frontend; otherwise the UI hides it.
 

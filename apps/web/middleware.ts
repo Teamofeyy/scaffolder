@@ -1,15 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
-import {
-  defaultLocale,
-  isLocale,
-  type Locale,
-} from "@/lib/i18n/config"
+import { NextRequest, NextResponse } from 'next/server'
+import { defaultLocale, isLocale, type Locale } from '@/lib/i18n/config'
 
-const LOCALE_COOKIE = "NEXT_LOCALE"
+const LOCALE_COOKIE = 'NEXT_LOCALE'
 const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 
 function pathnameLocale(pathname: string): Locale | null {
-  const locale = pathname.split("/")[1]
+  const locale = pathname.split('/')[1]
   return locale && isLocale(locale) ? locale : null
 }
 
@@ -21,12 +17,12 @@ function preferredLocale(request: NextRequest): Locale {
   }
 
   const acceptedLanguages = request.headers
-    .get("accept-language")
-    ?.split(",")
+    .get('accept-language')
+    ?.split(',')
     .map((entry, index) => {
-      const [languageRange, ...parameters] = entry.trim().split(";")
+      const [languageRange, ...parameters] = entry.trim().split(';')
       const qualityParameter = parameters.find((parameter) =>
-        parameter.trim().startsWith("q="),
+        parameter.trim().startsWith('q='),
       )
       const quality = qualityParameter
         ? Number.parseFloat(qualityParameter.trim().slice(2))
@@ -39,10 +35,12 @@ function preferredLocale(request: NextRequest): Locale {
       }
     })
     .filter(({ quality }) => quality > 0)
-    .sort((left, right) => right.quality - left.quality || left.index - right.index)
+    .sort(
+      (left, right) => right.quality - left.quality || left.index - right.index,
+    )
 
   for (const acceptedLanguage of acceptedLanguages ?? []) {
-    const baseLanguage = acceptedLanguage.language.split("-")[0]
+    const baseLanguage = acceptedLanguage.language.split('-')[0]
 
     if (isLocale(baseLanguage)) {
       return baseLanguage
@@ -55,8 +53,8 @@ function preferredLocale(request: NextRequest): Locale {
 function rememberLocale(response: NextResponse, locale: Locale) {
   response.cookies.set(LOCALE_COOKIE, locale, {
     maxAge: LOCALE_COOKIE_MAX_AGE,
-    path: "/",
-    sameSite: "lax",
+    path: '/',
+    sameSite: 'lax',
     httpOnly: true,
   })
 
@@ -78,5 +76,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
 }

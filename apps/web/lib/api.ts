@@ -10,18 +10,11 @@ import {
 } from '@/types/project-config'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
 import type { Locale } from '@/lib/i18n/config'
+import type { ProjectConfig as BackendProjectConfig } from '../../api/api/bindings/ProjectConfig'
+import type { SupportStatus } from '../../api/api/bindings/SupportStatus'
 
-export interface BackendProjectConfig {
-  project_name: string
-  framework: string
-  styling: string
-  linting?: 'eslint' | 'biome' | 'none'
-  state_management: string
-  routing: string
-  dependencies: string[]
-  dev_dependencies: string[]
-  testing: string
-}
+type BackendPresetConfig = Omit<BackendProjectConfig, 'project_name'>
+export type { SupportStatus }
 
 export interface BuildResponse {
   success: boolean
@@ -33,8 +26,6 @@ export interface ProjectTreeNode {
   type: 'file' | 'folder'
   children?: ProjectTreeNode[]
 }
-
-export type SupportStatus = 'supported' | 'experimental' | 'unavailable'
 
 export interface FeatureResponse {
   name: string
@@ -51,7 +42,7 @@ export interface ProjectPreset {
   label: string
   description: string
   status: SupportStatus
-  config: Omit<BackendProjectConfig, 'project_name'>
+  config: BackendPresetConfig
 }
 
 export interface VerifiedCombination {
@@ -127,7 +118,9 @@ const AGENT_URL = '/api'
 /**
  * Маппинг значений фронтенда в значения бэкенда
  */
-export function mapConfigToBackend(config: ProjectConfig): BackendProjectConfig {
+export function mapConfigToBackend(
+  config: ProjectConfig,
+): BackendProjectConfig {
   return {
     project_name: config.projectName,
     framework: config.framework,
@@ -144,9 +137,12 @@ export function mapConfigToBackend(config: ProjectConfig): BackendProjectConfig 
 /**
  * Валидация конфигурации перед отправкой
  */
-type ErrorDictionary = Dictionary["errors"]
+type ErrorDictionary = Dictionary['errors']
 
-function formatMessage(template: string, values: Record<string, string | number>) {
+function formatMessage(
+  template: string,
+  values: Record<string, string | number>,
+) {
   return Object.entries(values).reduce(
     (message, [key, value]) => message.replace(`{${key}}`, String(value)),
     template,
@@ -215,23 +211,30 @@ export async function buildProject(
             throw new Error(errorData.error || errors.build)
           } catch {
             // Если не JSON, значит это неожиданный формат
-            throw new Error(formatMessage(errors.server, {
-              status: error.response.status,
-              statusText: error.response.statusText,
-            }))
+            throw new Error(
+              formatMessage(errors.server, {
+                status: error.response.status,
+                statusText: error.response.statusText,
+              }),
+            )
           }
         }
 
         // Если не Blob, пытаемся прочитать как JSON
-        if (typeof error.response.data === 'object' && error.response.data !== null) {
+        if (
+          typeof error.response.data === 'object' &&
+          error.response.data !== null
+        ) {
           const errorData = error.response.data as { error?: string }
           throw new Error(errorData.error || errors.build)
         }
 
-        throw new Error(formatMessage(errors.server, {
-          status: error.response.status,
-          statusText: error.response.statusText,
-        }))
+        throw new Error(
+          formatMessage(errors.server, {
+            status: error.response.status,
+            statusText: error.response.statusText,
+          }),
+        )
       }
 
       // Обработка сетевых ошибок
@@ -245,7 +248,9 @@ export async function buildProject(
   }
 }
 
-export async function previewProject(config: ProjectConfig): Promise<ProjectTreeNode> {
+export async function previewProject(
+  config: ProjectConfig,
+): Promise<ProjectTreeNode> {
   const backendConfig = mapConfigToBackend({
     ...config,
     projectName: config.projectName.trim() || 'my-project',
@@ -258,15 +263,21 @@ export async function previewProject(config: ProjectConfig): Promise<ProjectTree
   return response.data
 }
 
-export async function previewProjectDetails(config: ProjectConfig): Promise<PreviewDetails> {
+export async function previewProjectDetails(
+  config: ProjectConfig,
+): Promise<PreviewDetails> {
   const backendConfig = mapConfigToBackend({
     ...config,
     projectName: config.projectName.trim() || 'my-project',
   })
 
-  const response = await axios.post(`${AGENT_URL}/preview/details`, backendConfig, {
-    timeout: 30000,
-  })
+  const response = await axios.post(
+    `${AGENT_URL}/preview/details`,
+    backendConfig,
+    {
+      timeout: 30000,
+    },
+  )
 
   return response.data
 }
@@ -295,14 +306,19 @@ export async function getVerificationMatrix(): Promise<VerificationMatrix> {
   return response.data
 }
 
-export async function searchDependencies(query: string): Promise<DependencySearchResult[]> {
+export async function searchDependencies(
+  query: string,
+): Promise<DependencySearchResult[]> {
   const params = new URLSearchParams({
     q: query,
     limit: '10',
   })
-  const response = await axios.get(`${AGENT_URL}/dependencies/search?${params.toString()}`, {
-    timeout: 10000,
-  })
+  const response = await axios.get(
+    `${AGENT_URL}/dependencies/search?${params.toString()}`,
+    {
+      timeout: 10000,
+    },
+  )
 
   return response.data
 }
@@ -326,14 +342,18 @@ export async function recommendProjectConfig(
     projectName: config.projectName.trim() || 'my-project',
   })
 
-  const response = await axios.post(`${AGENT_URL}/ai/recommend`, {
-    sessionId,
-    message,
-    locale,
-    currentConfig,
-  }, {
-    timeout: 35000,
-  })
+  const response = await axios.post(
+    `${AGENT_URL}/ai/recommend`,
+    {
+      sessionId,
+      message,
+      locale,
+      currentConfig,
+    },
+    {
+      timeout: 35000,
+    },
+  )
 
   return response.data
 }

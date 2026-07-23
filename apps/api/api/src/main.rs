@@ -9,17 +9,23 @@ use crate::{
 use axum::{
     Json, Router,
     body::Body,
+    extract::DefaultBodyLimit,
     extract::Query,
-    http::{Request, Response, StatusCode, header},
+    http::{HeaderValue, Method, Request, Response, StatusCode, header},
     response::IntoResponse,
     routing::{get, post},
 };
 use color_eyre::Result;
 use serde::Deserialize;
 use serde::Serialize;
-use std::time::Instant;
+use serde_json::json;
+use std::{
+    sync::{Arc, OnceLock},
+    time::{Duration, Instant},
+};
+use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 use tower_http::{
-    cors::{Any, CorsLayer},
+    cors::{AllowOrigin, CorsLayer},
     trace::{DefaultOnFailure, TraceLayer},
 };
 use tracing::Level;
@@ -28,6 +34,12 @@ use tracing_subscriber::EnvFilter;
 use utoipa::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_swagger_ui::SwaggerUi;
+
+const REQUEST_BODY_LIMIT_BYTES: usize = 64 * 1024;
+const GENERATE_CONCURRENCY_LIMIT: usize = 2;
+const PREVIEW_CONCURRENCY_LIMIT: usize = 4;
+const GENERATE_TIMEOUT: Duration = Duration::from_secs(30);
+const PREVIEW_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub mod ai_proxy;
 pub mod archive;
@@ -84,8 +96,8 @@ async fn main() -> Result<()> {
 
     info!(
         address = %local_addr,
-        swagger_path = "/swagger-ui",
-        metrics_path = "/metrics",
+        swagger_path = if swagger_enabled() { "/swagger-ui" } else { "disabled" },
+        metrics_path = if metrics_enabled() { "/metrics" } else { "disabled" },
         ai_recommendations = ai_proxy_configured(),
         template_dir = %template_engine::template_root().display(),
         "Backend server starting"
@@ -108,7 +120,6 @@ fn app() -> Router {
         .routes(utoipa_axum::routes!(liveness_check))
         .routes(utoipa_axum::routes!(readiness_check))
         .routes(utoipa_axum::routes!(capabilities))
-        .routes(utoipa_axum::routes!(metrics_endpoint))
         .routes(utoipa_axum::routes!(generate))
         .routes(utoipa_axum::routes!(features))
         .routes(utoipa_axum::routes!(presets))
@@ -116,14 +127,7 @@ fn app() -> Router {
         .routes(utoipa_axum::routes!(preview_details))
         .split_for_parts();
 
-    // создаём Cors слой
-    let cors = CorsLayer::new()
-        .allow_origin(Any) // разрешает запросы с любого домена (для dev)
-        .allow_methods(Any) // разрешает любые HTTP методы
-        .allow_headers(Any); // разрешает любые заголовки
-
-    router
-        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs", api_doc))
+    let mut router = router
         .route("/preview", post(preview))
         .route("/dependencies/search", get(search_dependencies))
         .route("/ai/recommend", post(ai_proxy::recommend))
@@ -150,7 +154,18 @@ fn app() -> Router {
                 )
                 .on_failure(DefaultOnFailure::new().level(Level::ERROR)),
         )
-        .layer(cors) // подключаем CORS
+        .layer(DefaultBodyLimit::max(REQUEST_BODY_LIMIT_BYTES))
+        .layer(cors_layer());
+
+    if metrics_enabled() {
+        router = router.route("/metrics", get(metrics_endpoint));
+    }
+
+    if swagger_enabled() {
+        router = router.merge(SwaggerUi::new("/swagger-ui").url("/api-docs", api_doc));
+    }
+
+    router
 }
 
 #[utoipa::path(get, path = "/health", responses())]
@@ -214,6 +229,15 @@ async fn metrics_endpoint() -> impl IntoResponse {
 )]
 async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
     let request_id = request_id();
+    if let Err(err) = req.validate_for_generation() {
+        metrics::record_generate(Duration::ZERO, false);
+        return json_error_response(StatusCode::BAD_REQUEST, err.to_string());
+    }
+
+    let Some(permit) = acquire_permit(generation_semaphore()) else {
+        return too_many_requests_response();
+    };
+
     info!(
         request_id = %request_id,
         project_name = %req.project_name,
@@ -227,8 +251,17 @@ async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
         "Project generation requested"
     );
     let started_at = Instant::now();
-    match generate_project(req).await {
-        Ok(archive) => {
+    let generation = tokio::time::timeout(
+        GENERATE_TIMEOUT,
+        tokio::task::spawn_blocking(move || {
+            let _permit = permit;
+            generate_project(req)
+        }),
+    )
+    .await;
+
+    match generation {
+        Ok(Ok(Ok(archive))) => {
             metrics::record_generate(started_at.elapsed(), true);
             info!(
                 request_id = %request_id,
@@ -237,16 +270,9 @@ async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
                 latency_ms = started_at.elapsed().as_millis(),
                 "Project archive generated"
             );
-            Response::builder()
-                .header(header::CONTENT_TYPE, "application/zip")
-                .header(
-                    header::CONTENT_DISPOSITION,
-                    format!("attachment; filename=\"{}\"", archive.file_name),
-                )
-                .body(Body::from(archive.bytes))
-                .unwrap()
+            zip_response(archive.file_name, archive.bytes)
         }
-        Err(err) => {
+        Ok(Ok(Err(err))) => {
             metrics::record_generate(started_at.elapsed(), false);
             error!(
                 request_id = %request_id,
@@ -254,16 +280,69 @@ async fn generate(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
                 latency_ms = started_at.elapsed().as_millis(),
                 "Failed to generate project archive"
             );
-            Response::builder()
-                .status(500)
-                .body(Body::from("Internal Server Error"))
-                .unwrap()
+            json_error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal Server Error".to_owned(),
+            )
+        }
+        Ok(Err(err)) => {
+            metrics::record_generate(started_at.elapsed(), false);
+            error!(
+                request_id = %request_id,
+                error = ?err,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Project generation task failed"
+            );
+            json_error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal Server Error".to_owned(),
+            )
+        }
+        Err(_) => {
+            metrics::record_generate(started_at.elapsed(), false);
+            error!(
+                request_id = %request_id,
+                timeout_ms = GENERATE_TIMEOUT.as_millis(),
+                "Project generation timed out"
+            );
+            json_error_response(
+                StatusCode::GATEWAY_TIMEOUT,
+                "Project generation timed out".to_owned(),
+            )
+        }
+    }
+}
+
+fn zip_response(file_name: String, bytes: Vec<u8>) -> Response<Body> {
+    match Response::builder()
+        .header(header::CONTENT_TYPE, "application/zip")
+        .header(
+            header::CONTENT_DISPOSITION,
+            format!("attachment; filename=\"{file_name}\""),
+        )
+        .body(Body::from(bytes))
+    {
+        Ok(archive) => archive,
+        Err(err) => {
+            error!(error = ?err, "Failed to build ZIP response");
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal Server Error".to_owned(),
+            )
         }
     }
 }
 
 async fn preview(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
     let request_id = request_id();
+    if let Err(err) = req.validate_for_generation() {
+        return error_response(StatusCode::BAD_REQUEST, err.to_string());
+    }
+
+    let Some(permit) = acquire_permit(preview_semaphore()) else {
+        return too_many_requests_response();
+    };
+
     info!(
         request_id = %request_id,
         project_name = %req.project_name,
@@ -273,8 +352,17 @@ async fn preview(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
         "Project preview requested"
     );
     let started_at = Instant::now();
-    match preview_project_tree(req) {
-        Ok(tree) => {
+    let preview = tokio::time::timeout(
+        PREVIEW_TIMEOUT,
+        tokio::task::spawn_blocking(move || {
+            let _permit = permit;
+            preview_project_tree(req)
+        }),
+    )
+    .await;
+
+    match preview {
+        Ok(Ok(Ok(tree))) => {
             info!(
                 request_id = %request_id,
                 latency_ms = started_at.elapsed().as_millis(),
@@ -282,15 +370,40 @@ async fn preview(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
             );
             Json(tree).into_response()
         }
-        Err(err) => {
-            metrics::record_http_error();
+        Ok(Ok(Err(err))) => {
             error!(
                 request_id = %request_id,
                 error = ?err,
                 latency_ms = started_at.elapsed().as_millis(),
                 "Failed to preview project structure"
             );
-            (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal Server Error".to_owned(),
+            )
+        }
+        Ok(Err(err)) => {
+            error!(
+                request_id = %request_id,
+                error = ?err,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Project preview task failed"
+            );
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal Server Error".to_owned(),
+            )
+        }
+        Err(_) => {
+            error!(
+                request_id = %request_id,
+                timeout_ms = PREVIEW_TIMEOUT.as_millis(),
+                "Project preview timed out"
+            );
+            error_response(
+                StatusCode::GATEWAY_TIMEOUT,
+                "Project preview timed out".to_owned(),
+            )
         }
     }
 }
@@ -309,6 +422,14 @@ async fn preview(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
 )]
 async fn preview_details(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
     let request_id = request_id();
+    if let Err(err) = req.validate_for_generation() {
+        return error_response(StatusCode::BAD_REQUEST, err.to_string());
+    }
+
+    let Some(permit) = acquire_permit(preview_semaphore()) else {
+        return too_many_requests_response();
+    };
+
     info!(
         request_id = %request_id,
         project_name = %req.project_name,
@@ -318,8 +439,17 @@ async fn preview_details(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
         "Detailed project preview requested"
     );
     let started_at = Instant::now();
-    match preview_project_details(req) {
-        Ok(details) => {
+    let preview = tokio::time::timeout(
+        PREVIEW_TIMEOUT,
+        tokio::task::spawn_blocking(move || {
+            let _permit = permit;
+            preview_project_details(req)
+        }),
+    )
+    .await;
+
+    match preview {
+        Ok(Ok(Ok(details))) => {
             info!(
                 request_id = %request_id,
                 latency_ms = started_at.elapsed().as_millis(),
@@ -327,15 +457,40 @@ async fn preview_details(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
             );
             Json(details).into_response()
         }
-        Err(err) => {
-            metrics::record_http_error();
+        Ok(Ok(Err(err))) => {
             error!(
                 request_id = %request_id,
                 error = ?err,
                 latency_ms = started_at.elapsed().as_millis(),
                 "Failed to generate detailed project preview"
             );
-            (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal Server Error".to_owned(),
+            )
+        }
+        Ok(Err(err)) => {
+            error!(
+                request_id = %request_id,
+                error = ?err,
+                latency_ms = started_at.elapsed().as_millis(),
+                "Detailed project preview task failed"
+            );
+            error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal Server Error".to_owned(),
+            )
+        }
+        Err(_) => {
+            error!(
+                request_id = %request_id,
+                timeout_ms = PREVIEW_TIMEOUT.as_millis(),
+                "Detailed project preview timed out"
+            );
+            error_response(
+                StatusCode::GATEWAY_TIMEOUT,
+                "Project preview timed out".to_owned(),
+            )
         }
     }
 }
@@ -437,6 +592,86 @@ fn ai_proxy_configured() -> bool {
         && std::env::var("AI_PROXY_SECRET")
             .map(|value| !value.trim().is_empty())
             .unwrap_or(false)
+}
+
+fn cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        .allow_origin(AllowOrigin::list(cors_allowed_origins()))
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_headers([header::CONTENT_TYPE])
+}
+
+fn cors_allowed_origins() -> Vec<HeaderValue> {
+    let configured = std::env::var("CORS_ALLOWED_ORIGINS")
+        .unwrap_or_else(|_| "http://127.0.0.1:3000,http://localhost:3000".to_owned());
+
+    let origins = configured
+        .split(',')
+        .filter_map(|origin| {
+            let origin = origin.trim();
+            if origin.is_empty() {
+                None
+            } else {
+                HeaderValue::from_str(origin).ok()
+            }
+        })
+        .collect::<Vec<_>>();
+
+    if origins.is_empty() {
+        vec![
+            HeaderValue::from_static("http://127.0.0.1:3000"),
+            HeaderValue::from_static("http://localhost:3000"),
+        ]
+    } else {
+        origins
+    }
+}
+
+fn generation_semaphore() -> &'static Arc<Semaphore> {
+    static SEMAPHORE: OnceLock<Arc<Semaphore>> = OnceLock::new();
+    SEMAPHORE.get_or_init(|| Arc::new(Semaphore::new(GENERATE_CONCURRENCY_LIMIT)))
+}
+
+fn preview_semaphore() -> &'static Arc<Semaphore> {
+    static SEMAPHORE: OnceLock<Arc<Semaphore>> = OnceLock::new();
+    SEMAPHORE.get_or_init(|| Arc::new(Semaphore::new(PREVIEW_CONCURRENCY_LIMIT)))
+}
+
+fn acquire_permit(semaphore: &'static Arc<Semaphore>) -> Option<OwnedSemaphorePermit> {
+    semaphore.clone().try_acquire_owned().ok()
+}
+
+fn too_many_requests_response() -> Response<Body> {
+    error_response(
+        StatusCode::TOO_MANY_REQUESTS,
+        "Too many requests".to_owned(),
+    )
+}
+
+fn swagger_enabled() -> bool {
+    env_flag("SCAFFOLDER_ENABLE_SWAGGER")
+}
+
+fn metrics_enabled() -> bool {
+    env_flag("SCAFFOLDER_ENABLE_METRICS")
+}
+
+fn env_flag(name: &str) -> bool {
+    std::env::var(name)
+        .map(|value| matches!(value.trim(), "1" | "true" | "TRUE" | "yes" | "YES"))
+        .unwrap_or(false)
+}
+
+fn error_response(status: StatusCode, message: String) -> Response<Body> {
+    if status.is_client_error() || status.is_server_error() {
+        metrics::record_http_error();
+    }
+
+    json_error_response(status, message)
+}
+
+fn json_error_response(status: StatusCode, message: String) -> Response<Body> {
+    (status, Json(json!({ "error": message }))).into_response()
 }
 
 fn request_id() -> String {

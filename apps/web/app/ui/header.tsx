@@ -1,17 +1,17 @@
-"use client"
+'use client'
 
-import Image from "next/image"
-import { usePathname } from "next/navigation"
-import { Github, Moon, Sun } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useTheme } from "next-themes"
-import { useEffect, useState } from "react"
-import type { Dictionary } from "@/lib/i18n/dictionaries"
-import { isLocale, locales, type Locale } from "@/lib/i18n/config"
+import Image from 'next/image'
+import { usePathname } from 'next/navigation'
+import { Github, Moon, Sun } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
+import type { Dictionary } from '@/lib/i18n/dictionaries'
+import { isLocale, locales, type Locale } from '@/lib/i18n/config'
 
 interface HeaderProps {
   locale: Locale
-  dictionary: Dictionary["header"]
+  dictionary: Dictionary['header']
 }
 
 export function Header({ locale, dictionary }: HeaderProps) {
@@ -24,7 +24,7 @@ export function Header({ locale, dictionary }: HeaderProps) {
   }, [])
 
   const localizedPath = (nextLocale: Locale) => {
-    const segments = pathname.split("/").filter(Boolean)
+    const segments = pathname.split('/').filter(Boolean)
 
     if (segments.length === 0) return `/${nextLocale}`
 
@@ -34,7 +34,7 @@ export function Header({ locale, dictionary }: HeaderProps) {
       segments.unshift(nextLocale)
     }
 
-    return `/${segments.join("/")}`
+    return `/${segments.join('/')}`
   }
 
   return (
@@ -43,7 +43,9 @@ export function Header({ locale, dictionary }: HeaderProps) {
         <div className="flex items-center gap-3">
           <Image src="/brand-mark.svg" alt="" width={40} height={40} priority />
           <div>
-            <span className="block text-xl font-bold leading-5">Scaffolder</span>
+            <span className="block text-xl font-bold leading-5">
+              Scaffolder
+            </span>
             <span className="block font-mono text-xs text-muted-foreground">
               {dictionary.subtitle}
             </span>
@@ -58,7 +60,7 @@ export function Header({ locale, dictionary }: HeaderProps) {
             {locales.map((item) => (
               <Button
                 key={item}
-                variant={item === locale ? "secondary" : "ghost"}
+                variant={item === locale ? 'secondary' : 'ghost'}
                 size="sm"
                 className="h-7 min-w-9 px-2 font-mono text-xs uppercase"
                 asChild
@@ -71,15 +73,27 @@ export function Header({ locale, dictionary }: HeaderProps) {
           </div>
 
           <Button variant="ghost" size="icon" asChild>
-            <a href="https://github.com/Teamofeyy/scaffolder" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://github.com/Teamofeyy/scaffolder"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Github className="h-5 w-5" />
               <span className="sr-only">GitHub</span>
             </a>
           </Button>
 
           {mounted && (
-            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
               <span className="sr-only">{dictionary.theme}</span>
             </Button>
           )}

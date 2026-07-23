@@ -3,6 +3,10 @@ use std::{collections::HashMap, path::Path};
 use ts_rs::TS;
 use utoipa::ToSchema;
 
+const MAX_PROJECT_NAME_CHARS: usize = 80;
+const MAX_DEPENDENCIES_PER_BUCKET: usize = 32;
+const MAX_DEPENDENCY_CHARS: usize = 120;
+
 #[derive(TS, Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq, Eq, Hash)]
 #[ts(export)]
 #[serde(rename_all = "kebab-case")]
@@ -110,6 +114,96 @@ pub struct ProjectConfig {
     pub dev_dependencies: Vec<String>,
     #[serde(default)]
     pub testing: Testing,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ProjectConfigValidationError {
+    InvalidProjectName,
+    UnsupportedFramework(Framework),
+    TooManyDependencies(&'static str),
+    InvalidDependency { bucket: &'static str, value: String },
+}
+
+impl std::fmt::Display for ProjectConfigValidationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidProjectName => write!(f, "Invalid project name"),
+            Self::UnsupportedFramework(framework) => {
+                write!(f, "Unsupported framework: {}", framework.as_str())
+            }
+            Self::TooManyDependencies(bucket) => write!(f, "Too many {bucket} dependencies"),
+            Self::InvalidDependency { bucket, value } => {
+                write!(f, "Invalid {bucket} dependency: {value}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for ProjectConfigValidationError {}
+
+impl ProjectConfig {
+    pub fn validate_for_generation(&self) -> Result<(), ProjectConfigValidationError> {
+        validate_project_name(&self.project_name)?;
+
+        if self.framework == Framework::PreactTsOfficial {
+            return Err(ProjectConfigValidationError::UnsupportedFramework(
+                self.framework.clone(),
+            ));
+        }
+
+        validate_dependency_bucket("dependencies", &self.dependencies)?;
+        validate_dependency_bucket("devDependencies", &self.dev_dependencies)?;
+
+        Ok(())
+    }
+}
+
+fn validate_project_name(name: &str) -> Result<(), ProjectConfigValidationError> {
+    let trimmed = name.trim();
+    if trimmed.is_empty() || trimmed.chars().count() > MAX_PROJECT_NAME_CHARS {
+        return Err(ProjectConfigValidationError::InvalidProjectName);
+    }
+
+    if trimmed
+        .chars()
+        .all(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || ch == '-' || ch == '_')
+    {
+        Ok(())
+    } else {
+        Err(ProjectConfigValidationError::InvalidProjectName)
+    }
+}
+
+fn validate_dependency_bucket(
+    bucket: &'static str,
+    dependencies: &[String],
+) -> Result<(), ProjectConfigValidationError> {
+    if dependencies.len() > MAX_DEPENDENCIES_PER_BUCKET {
+        return Err(ProjectConfigValidationError::TooManyDependencies(bucket));
+    }
+
+    for dependency in dependencies {
+        if !is_safe_dependency_spec(dependency) {
+            return Err(ProjectConfigValidationError::InvalidDependency {
+                bucket,
+                value: dependency.clone(),
+            });
+        }
+    }
+
+    Ok(())
+}
+
+fn is_safe_dependency_spec(value: &str) -> bool {
+    let trimmed = value.trim();
+    !trimmed.is_empty()
+        && trimmed.len() <= MAX_DEPENDENCY_CHARS
+        && trimmed == value
+        && trimmed.chars().all(|ch| {
+            ch.is_ascii_alphanumeric() || matches!(ch, '@' | '/' | '-' | '_' | '.' | '^' | '~')
+        })
+        && !trimmed.contains("//")
+        && !trimmed.contains("..")
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -782,6 +876,43 @@ mod support_status_tests {
             dev_dependencies: vec![],
             testing: Testing::None,
         }
+    }
+
+    #[test]
+    fn validates_project_name_before_generation() {
+        let mut config = stable_react_config();
+        config.project_name = "evil\\name".to_owned();
+
+        assert_eq!(
+            config.validate_for_generation(),
+            Err(ProjectConfigValidationError::InvalidProjectName)
+        );
+    }
+
+    #[test]
+    fn rejects_unavailable_framework_before_generation() {
+        let mut config = stable_react_config();
+        config.framework = Framework::PreactTsOfficial;
+
+        assert_eq!(
+            config.validate_for_generation(),
+            Err(ProjectConfigValidationError::UnsupportedFramework(
+                Framework::PreactTsOfficial
+            ))
+        );
+    }
+
+    #[test]
+    fn validates_dependency_specs_before_generation() {
+        let mut config = stable_react_config();
+        config.dependencies = vec!["@scope/pkg@^1.2.3".to_owned()];
+        assert!(config.validate_for_generation().is_ok());
+
+        config.dependencies = vec!["bad package".to_owned()];
+        assert!(matches!(
+            config.validate_for_generation(),
+            Err(ProjectConfigValidationError::InvalidDependency { .. })
+        ));
     }
 
     #[test]
