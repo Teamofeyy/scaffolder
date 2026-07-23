@@ -2,13 +2,16 @@ use crate::{
     generation_service::{generate_project, preview_project_details, preview_project_tree},
     npm_registry::search_dependencies as search_npm_dependencies,
     recipe_service::{
-        RecipeCatalogItem, RecipeManifest, RecipePreviewDetailsResponse, RecipeProjectRequest,
-        generate_recipe_project, preview_recipe_project, recipe_catalog, recipe_details,
-        recipe_error_response,
+        CustomDependenciesPolicy, RecipeApiError, RecipeBlockManifest, RecipeCatalogItem,
+        RecipeErrorCode, RecipeManifest, RecipeOption, RecipeOptionValue,
+        RecipePreviewDetailsResponse, RecipePreviewPolicy, RecipeProjectExtras,
+        RecipeProjectRequest, RecipeVerification, generate_recipe_project, preview_recipe_project,
+        recipe_catalog, recipe_details, recipe_error_response,
     },
     schema::{
-        FeatureResponse, PreviewDetailsResponse, ProjectConfig, ProjectPreset, VerificationMatrix,
-        feature_registry_for_api, project_presets, verification_matrix,
+        FeatureResponse, PreviewDetailsResponse, PreviewFile, ProjectConfig, ProjectPreset,
+        ProjectTreeNode, VerificationMatrix, feature_registry_for_api, project_presets,
+        verification_matrix,
     },
 };
 use axum::{
@@ -66,13 +69,24 @@ pub mod workspace;
     ),
     components(schemas(
         ProjectConfig,
+        ProjectTreeNode,
+        PreviewFile,
         FeatureResponse,
         ProjectPreset,
         VerificationMatrix,
         PreviewDetailsResponse,
         RecipeProjectRequest,
+        RecipeProjectExtras,
+        RecipeApiError,
+        RecipeErrorCode,
         RecipeCatalogItem,
+        RecipeBlockManifest,
         RecipeManifest,
+        RecipeOption,
+        RecipeOptionValue,
+        CustomDependenciesPolicy,
+        RecipeVerification,
+        RecipePreviewPolicy,
         RecipePreviewDetailsResponse
     ))
 )]
@@ -366,7 +380,8 @@ async fn preview_details(Json(req): Json<ProjectConfig>) -> impl IntoResponse {
          description = "Recipe catalog",
          content_type = "application/json",
          body = [RecipeCatalogItem]
-        )
+        ),
+        (status = 500, description = "Recipe catalog unavailable", body = RecipeApiError)
     )
 )]
 async fn recipes() -> impl IntoResponse {
@@ -385,7 +400,8 @@ async fn recipes() -> impl IntoResponse {
          description = "Recipe details",
          content_type = "application/json",
          body = RecipeManifest
-        )
+        ),
+        (status = 404, description = "Recipe id is invalid", body = RecipeApiError)
     )
 )]
 async fn recipe(AxumPath(id): AxumPath<String>) -> impl IntoResponse {
@@ -405,7 +421,12 @@ async fn recipe(AxumPath(id): AxumPath<String>) -> impl IntoResponse {
          description = "Detailed recipe project preview",
          content_type = "application/json",
          body = RecipePreviewDetailsResponse
-        )
+        ),
+        (status = 400, description = "Invalid recipe options or custom dependencies", body = RecipeApiError),
+        (status = 404, description = "Recipe id is invalid", body = RecipeApiError),
+        (status = 409, description = "Recipe block selection is incompatible", body = RecipeApiError),
+        (status = 503, description = "Required template files are unavailable", body = RecipeApiError),
+        (status = 500, description = "Recipe preview failed", body = RecipeApiError)
     )
 )]
 async fn recipe_preview(
@@ -450,7 +471,12 @@ async fn recipe_preview(
     responses(
         (status = 200,
          description = "Recipe ZIP successfully generated",
-         content_type = "application/zip")
+         content_type = "application/zip"),
+        (status = 400, description = "Invalid recipe options or custom dependencies", body = RecipeApiError),
+        (status = 404, description = "Recipe id is invalid", body = RecipeApiError),
+        (status = 409, description = "Recipe block selection is incompatible", body = RecipeApiError),
+        (status = 503, description = "Required template files are unavailable", body = RecipeApiError),
+        (status = 500, description = "Recipe generation failed", body = RecipeApiError)
     )
 )]
 async fn recipe_generate(

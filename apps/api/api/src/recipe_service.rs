@@ -4,16 +4,18 @@ use crate::{
     schema::{PreviewFile, ProjectTreeNode},
     template_engine, workspace,
 };
-use axum::response::IntoResponse;
+use axum::{Json, response::IntoResponse};
 use color_eyre::{Result, eyre::Context};
 use fs_extra::dir::CopyOptions;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
+    fmt,
     path::{Path, PathBuf},
 };
 use tempfile::TempDir;
+use ts_rs::TS;
 use utoipa::ToSchema;
 
 const BASE_TEMPLATE_MANIFESTS: &[&str] = &[include_str!(
@@ -38,7 +40,8 @@ struct BaseTemplateManifest {
     snapshot_path: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipeBlockManifest {
     pub id: String,
@@ -99,7 +102,8 @@ struct BlockOperation {
     template: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipeManifest {
     pub id: String,
@@ -115,7 +119,8 @@ pub struct RecipeManifest {
     pub preview: RecipePreviewPolicy,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipeOption {
     pub label: String,
@@ -124,7 +129,8 @@ pub struct RecipeOption {
     pub values: Vec<RecipeOptionValue>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipeOptionValue {
     pub id: String,
@@ -133,14 +139,16 @@ pub struct RecipeOptionValue {
     pub blocks: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct CustomDependenciesPolicy {
     pub allow: bool,
     pub policy: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipeVerification {
     pub generate: bool,
@@ -149,14 +157,16 @@ pub struct RecipeVerification {
     pub test: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipePreviewPolicy {
     pub curated_files: Vec<String>,
     pub show_all_files: bool,
 }
 
-#[derive(Debug, Clone, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipeCatalogItem {
     pub id: String,
@@ -169,7 +179,8 @@ pub struct RecipeCatalogItem {
     pub verification: RecipeVerification,
 }
 
-#[derive(Debug, Clone, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Deserialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipeProjectRequest {
     pub project_name: String,
@@ -179,7 +190,8 @@ pub struct RecipeProjectRequest {
     pub extras: RecipeProjectExtras,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Default, Deserialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipeProjectExtras {
     #[serde(default)]
@@ -188,12 +200,16 @@ pub struct RecipeProjectExtras {
     pub dev_dependencies: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, TS, ToSchema)]
+#[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct RecipePreviewDetailsResponse {
     pub recipe_id: String,
     pub project_name: String,
     pub tree: ProjectTreeNode,
+    pub curated_tree: ProjectTreeNode,
+    pub selected_files: Vec<PreviewFile>,
+    /// Compatibility alias for the Phase 2 preview response.
     pub files: Vec<PreviewFile>,
     pub dependencies: Vec<String>,
     pub dev_dependencies: Vec<String>,
@@ -203,9 +219,47 @@ pub struct RecipePreviewDetailsResponse {
     pub custom_dev_dependencies: Vec<String>,
     pub recipe_tier: String,
     pub recipe_status: String,
+    pub support_status: String,
     pub base_template: String,
     pub template_snapshot: String,
     pub verification: RecipeVerification,
+    pub warnings: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, TS, ToSchema)]
+#[ts(export)]
+#[serde(rename_all = "kebab-case")]
+pub enum RecipeErrorCode {
+    InvalidRecipeId,
+    InvalidOption,
+    IncompatibleBlockSelection,
+    InvalidCustomDependency,
+    TemplateMissing,
+    GenerationFailed,
+}
+
+impl fmt::Display for RecipeErrorCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let value = match self {
+            Self::InvalidRecipeId => "invalid-recipe-id",
+            Self::InvalidOption => "invalid-option",
+            Self::IncompatibleBlockSelection => "incompatible-block-selection",
+            Self::InvalidCustomDependency => "invalid-custom-dependency",
+            Self::TemplateMissing => "template-missing",
+            Self::GenerationFailed => "generation-failed",
+        };
+        f.write_str(value)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, TS, ToSchema)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct RecipeApiError {
+    pub code: RecipeErrorCode,
+    pub message: String,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub details: BTreeMap<String, String>,
 }
 
 struct RecipeRegistry {
@@ -268,16 +322,21 @@ pub fn preview_recipe_project(
     let (_workspace, project_root, resolved) = materialize_recipe_project(recipe_id, &request)?;
     let tree = project_tree_from_path(&project_root)?;
     let package_json = read_package_json(&project_root)?;
-    let files = preview_files(&project_root, &resolved.recipe.preview.curated_files)?;
+    let selected_files = preview_files(&project_root, &resolved.recipe.preview.curated_files)?;
+    let curated_tree = curated_tree_from_files(&project_root, &selected_files);
     let dependencies = package_dependencies(&package_json, "dependencies");
     let dev_dependencies = package_dependencies(&package_json, "devDependencies");
     let commands = commands_from_package_json(&package_json);
+    let support_status = support_status_for_recipe(&resolved.recipe);
+    let warnings = warnings_for_preview(&request, &resolved);
 
     Ok(RecipePreviewDetailsResponse {
         recipe_id: resolved.recipe.id,
         project_name: request.project_name,
         tree,
-        files,
+        curated_tree,
+        files: selected_files.clone(),
+        selected_files,
         dependencies,
         dev_dependencies,
         commands,
@@ -286,9 +345,11 @@ pub fn preview_recipe_project(
         custom_dev_dependencies: request.extras.dev_dependencies,
         recipe_tier: resolved.recipe.tier,
         recipe_status: resolved.recipe.status,
+        support_status,
         base_template: resolved.recipe.base_template,
         template_snapshot: resolved.base_template.snapshot_path,
         verification: resolved.recipe.verification,
+        warnings,
     })
 }
 
@@ -1095,6 +1156,68 @@ fn preview_files(project_root: &Path, paths: &[String]) -> Result<Vec<PreviewFil
     Ok(files)
 }
 
+#[derive(Default)]
+struct PreviewTreeBuilder {
+    is_file: bool,
+    children: BTreeMap<String, PreviewTreeBuilder>,
+}
+
+fn curated_tree_from_files(project_root: &Path, files: &[PreviewFile]) -> ProjectTreeNode {
+    let root_name = project_root
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "project".to_owned());
+    let mut root = PreviewTreeBuilder::default();
+
+    for file in files {
+        let parts = file
+            .path
+            .split('/')
+            .filter(|part| !part.is_empty())
+            .collect::<Vec<_>>();
+        insert_preview_path(&mut root, &parts);
+    }
+
+    preview_builder_to_node(root_name, root)
+}
+
+fn insert_preview_path(builder: &mut PreviewTreeBuilder, parts: &[&str]) {
+    let Some((head, tail)) = parts.split_first() else {
+        return;
+    };
+    let child = builder.children.entry((*head).to_owned()).or_default();
+    if tail.is_empty() {
+        child.is_file = true;
+        return;
+    }
+    insert_preview_path(child, tail);
+}
+
+fn preview_builder_to_node(name: String, builder: PreviewTreeBuilder) -> ProjectTreeNode {
+    let mut children = builder
+        .children
+        .into_iter()
+        .map(|(name, child)| preview_builder_to_node(name, child))
+        .collect::<Vec<_>>();
+    children.sort_by(|left, right| {
+        let left_is_dir = left.node_type == "folder";
+        let right_is_dir = right.node_type == "folder";
+        right_is_dir
+            .cmp(&left_is_dir)
+            .then_with(|| left.name.cmp(&right.name))
+    });
+
+    ProjectTreeNode {
+        name,
+        node_type: if builder.is_file {
+            "file".to_owned()
+        } else {
+            "folder".to_owned()
+        },
+        children,
+    }
+}
+
 fn package_dependencies(package_json: &Value, key: &str) -> Vec<String> {
     let mut dependencies = package_json
         .get(key)
@@ -1254,17 +1377,99 @@ fn language_for_path(path: &str) -> &'static str {
 
 pub fn recipe_error_response(err: color_eyre::Report) -> axum::response::Response {
     let message = err.to_string();
-    let status = if message.contains("unknown recipe")
-        || message.contains("unknown option")
+    let (status, code, user_message) = classify_recipe_error(&message);
+    let mut details = BTreeMap::new();
+    details.insert("cause".to_owned(), message);
+
+    (
+        status,
+        Json(RecipeApiError {
+            code,
+            message: user_message.to_owned(),
+            details,
+        }),
+    )
+        .into_response()
+}
+
+fn classify_recipe_error(message: &str) -> (axum::http::StatusCode, RecipeErrorCode, &'static str) {
+    if message.contains("unknown recipe") {
+        return (
+            axum::http::StatusCode::NOT_FOUND,
+            RecipeErrorCode::InvalidRecipeId,
+            "Recipe id is not available.",
+        );
+    }
+    if message.contains("unknown option")
         || message.contains("invalid value")
         || message.contains("projectName")
-        || message.contains("dependency")
     {
-        axum::http::StatusCode::BAD_REQUEST
+        return (
+            axum::http::StatusCode::BAD_REQUEST,
+            RecipeErrorCode::InvalidOption,
+            "Recipe options are invalid for the selected recipe.",
+        );
+    }
+    if message.contains("dependency") || message.contains("package name") {
+        return (
+            axum::http::StatusCode::BAD_REQUEST,
+            RecipeErrorCode::InvalidCustomDependency,
+            "Custom dependency input is invalid.",
+        );
+    }
+    if message.contains("requires missing")
+        || message.contains("conflicts with")
+        || message.contains("does not support base template")
+        || message.contains("requires missing capability")
+    {
+        return (
+            axum::http::StatusCode::CONFLICT,
+            RecipeErrorCode::IncompatibleBlockSelection,
+            "Selected recipe blocks are not compatible.",
+        );
+    }
+    if message.contains("template")
+        || message.contains("Template inventory")
+        || message.contains("base template path")
+    {
+        return (
+            axum::http::StatusCode::SERVICE_UNAVAILABLE,
+            RecipeErrorCode::TemplateMissing,
+            "Required template files are not available.",
+        );
+    }
+
+    (
+        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+        RecipeErrorCode::GenerationFailed,
+        "Recipe project generation failed.",
+    )
+}
+
+fn support_status_for_recipe(recipe: &RecipeManifest) -> String {
+    if recipe.status == "deprecated" || recipe.tier == "deprecated" {
+        "deprecated".to_owned()
+    } else if recipe.tier == "recommended" && recipe.status == "active" {
+        "supported".to_owned()
     } else {
-        axum::http::StatusCode::INTERNAL_SERVER_ERROR
-    };
-    (status, message).into_response()
+        "experimental".to_owned()
+    }
+}
+
+fn warnings_for_preview(request: &RecipeProjectRequest, resolved: &ResolvedRecipe) -> Vec<String> {
+    let mut warnings = Vec::new();
+    if resolved.recipe.tier != "recommended" || resolved.recipe.status != "active" {
+        warnings.push(
+            "Recipe is not recommended yet; treat generated output as experimental.".to_owned(),
+        );
+    }
+    if !request.extras.dependencies.is_empty() || !request.extras.dev_dependencies.is_empty() {
+        warnings.push(
+            "Custom dependencies are merged into package.json but are outside recipe verification."
+                .to_owned(),
+        );
+    }
+    warnings
 }
 
 #[cfg(test)]
@@ -1316,5 +1521,61 @@ mod tests {
             parsed,
             ("@hookform/resolvers".to_owned(), "3.10.0".to_owned())
         );
+    }
+
+    #[test]
+    fn preview_response_contains_stable_phase_three_fields() {
+        let response = preview_recipe_project(
+            "react-router-app",
+            RecipeProjectRequest {
+                project_name: "phase-three".to_owned(),
+                options: BTreeMap::from([("ui".to_owned(), "shadcn".to_owned())]),
+                extras: RecipeProjectExtras {
+                    dependencies: vec!["react-hook-form".to_owned()],
+                    dev_dependencies: vec![],
+                },
+            },
+        )
+        .expect("recipe preview should generate");
+
+        assert_eq!(response.recipe_id, "react-router-app");
+        assert_eq!(response.support_status, "experimental");
+        assert!(!response.tree.children.is_empty());
+        assert_eq!(response.curated_tree.node_type, "folder");
+        assert!(
+            response
+                .selected_files
+                .iter()
+                .any(|file| file.path == "package.json")
+        );
+        assert!(
+            response
+                .selected_files
+                .iter()
+                .any(|file| file.path == "README.md")
+        );
+        assert_eq!(response.files.len(), response.selected_files.len());
+        assert!(
+            response
+                .dependencies
+                .contains(&"react-hook-form".to_owned())
+        );
+        assert!(!response.warnings.is_empty());
+    }
+
+    #[test]
+    fn classifies_recipe_api_errors() {
+        let (status, code, _) = classify_recipe_error("unknown recipe: nope");
+        assert_eq!(status, axum::http::StatusCode::NOT_FOUND);
+        assert!(matches!(code, RecipeErrorCode::InvalidRecipeId));
+
+        let (status, code, _) = classify_recipe_error("invalid package name: bad name");
+        assert_eq!(status, axum::http::StatusCode::BAD_REQUEST);
+        assert!(matches!(code, RecipeErrorCode::InvalidCustomDependency));
+
+        let (status, code, _) =
+            classify_recipe_error("block shadcn requires missing block tailwind-vite");
+        assert_eq!(status, axum::http::StatusCode::CONFLICT);
+        assert!(matches!(code, RecipeErrorCode::IncompatibleBlockSelection));
     }
 }

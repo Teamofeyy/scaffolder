@@ -147,6 +147,11 @@ More detail:
 - [CLI design](docs/cli.md)
 - [Recipe model](docs/recipes.md)
 
+Recipe endpoint errors return JSON with `code`, `message`, and `details` so
+frontend clients can distinguish invalid recipe ids, invalid option values,
+custom dependency errors, incompatible block selections, missing templates, and
+generation failures.
+
 ## Updating preset dependencies
 
 Feature dependencies are stored in:

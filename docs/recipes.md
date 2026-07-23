@@ -135,6 +135,41 @@ recipe request
   -> return preview or ZIP
 ```
 
+The preview response is intended to be enough for a recipe workspace UI without
+calling legacy `ProjectConfig` endpoints. It includes:
+
+- `tree` - full generated file tree;
+- `curatedTree` - tree built from selected preview files;
+- `selectedFiles` - curated file contents such as `package.json`, `README.md`,
+  config files, and route files;
+- `dependencies` and `devDependencies`;
+- `commands`;
+- `recipeTier`, `recipeStatus`, and `supportStatus`;
+- `verification`;
+- `templateSnapshot`;
+- `warnings`.
+
+Recipe errors are JSON objects:
+
+```json
+{
+  "code": "invalid-option",
+  "message": "Recipe options are invalid for the selected recipe.",
+  "details": {
+    "cause": "invalid value for option ui: unknown"
+  }
+}
+```
+
+Stable error codes:
+
+- `invalid-recipe-id`
+- `invalid-option`
+- `incompatible-block-selection`
+- `invalid-custom-dependency`
+- `template-missing`
+- `generation-failed`
+
 ## Trust tiers
 
 ### Recommended

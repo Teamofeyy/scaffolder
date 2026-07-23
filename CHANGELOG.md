@@ -9,6 +9,12 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- Stable recipe-first API response and error contract: recipe preview now
+  includes full and curated trees, selected file contents, dependency lists,
+  commands, support status, verification metadata, template snapshot, warnings,
+  and typed JSON errors for invalid recipe ids, invalid options, incompatible
+  blocks, invalid custom dependencies, missing templates, and generation
+  failures. Generated TypeScript bindings now cover recipe API types.
 - Recipe engine MVP with `GET /recipes`, `GET /recipes/{id}`,
   `POST /recipes/{id}/preview`, and `POST /recipes/{id}/generate` endpoints
   that materialize pinned base templates, compose blocks, apply structured
