@@ -7,6 +7,8 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-23
+
 ### Added
 
 - Phase 7 public feedback launch materials: polished README messaging,

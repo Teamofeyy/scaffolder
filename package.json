@@ -1,6 +1,6 @@
 {
   "name": "scaffolder",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "bootstrap": "pnpm install && cargo fetch --manifest-path apps/api/Cargo.toml --locked",

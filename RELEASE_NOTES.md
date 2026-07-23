@@ -1,74 +1,114 @@
-# Scaffolder 1.1.0
+# Scaffolder 1.2.0
 
-Scaffolder `1.1.0` focuses on trust in generated output: backend-defined
-presets, visible support levels, deterministic preview details, generated
-project README files, and a verification matrix that the UI can display.
+Scaffolder `1.2.0` is the first recipe-first MVP release. It turns the project
+from a framework dropdown generator into a verified frontend Initializr: choose
+a recipe, configure options, inspect the real generated files, and download the
+same ZIP that the preview pipeline produced.
+
+## Why only two recipes?
+
+The catalog is intentionally small.
+
+This release is not trying to win by recipe count. It is testing whether the
+recipe format, block composition, generated project quality, and verification
+pipeline are good enough for real developers to trust.
+
+Current catalog:
+
+- `react-router-app` is the recommended MVP recipe. It exercises the hard parts:
+  Vite template materialization, Tailwind, React Router files, optional shadcn
+  setup, optional Vitest/Zustand blocks, custom dependency injection, preview,
+  ZIP generation, install, build, and verification.
+- `react-vite-app` is the community baseline recipe. It keeps the contribution
+  path visible without pretending that every stack is already recommended.
+
+New recipes should arrive through recipe requests and pull requests. A recipe
+can become recommended only after it is stable, reviewable, and verified.
 
 ## Highlights
 
-- Choose stable presets from the first configuration step.
-- See Supported, Experimental, and Coming later badges for framework cards and
-  presets.
-- Inspect `package.json`, README, entry files, dependencies, and post-download
-  commands before generating the ZIP archive.
-- Use `GET /presets`, `GET /verification-matrix`, and
-  `POST /preview/details` as the new 1.1.0 API surface.
-- Generate README files that document the selected stack, npm commands,
-  Scaffolder version, and support status.
-- Verify supported presets in the stable matrix script in addition to the base
-  React, Vue, and Next.js matrix.
-
-## Stable support
-
-The stable 1.1.0 matrix remains intentionally narrow:
-
-- React with no router, React Router, or React Router Data APIs.
-- Vue with no router or Vue Router.
-- Next.js with App Router or Pages Router.
-- Base CSS/CSS Modules and Tailwind CSS variants for those profiles.
-
-Angular, Svelte, Solid, Preact, Nuxt, Qwik, Lit, Ember, and Marko remain
-experimental unless a future release promotes them after install and build
-verification.
+- Recipe catalog first UI with Recommended and Community tabs.
+- Developer workbench with options, custom dependencies, file explorer, file
+  viewer, summary, verification metadata, and ZIP generation.
+- Recipe-first API:
+  - `GET /recipes`
+  - `GET /recipes/{id}`
+  - `POST /recipes/{id}/preview`
+  - `POST /recipes/{id}/generate`
+- Preview responses include full tree, curated tree, selected file contents,
+  dependencies, dev dependencies, commands, recipe tier, support status,
+  verification metadata, template snapshot, and warnings.
+- Preview and generate now use the same recipe pipeline.
+- Recommended recipe verification now runs manifest validation, generation,
+  install, build, optional tests, preview smoke checks, forbidden script checks,
+  and dependency review.
+- Template update tooling tracks candidate, verified, and promoted snapshots so
+  runtime generation uses local promoted templates instead of fetching GitHub
+  live.
+- GitHub issue templates are ready for recipe requests and technical feedback.
+- The recipe catalog cards now keep stack descriptions readable on narrow
+  viewports instead of truncating decision-critical text.
 
 ## API and compatibility
 
-- `ProjectConfig.testing` is additive and defaults to `none` when omitted.
-- Existing `/generate`, `/preview`, `/features`, `/capabilities`, `/ready`,
-  `/live`, and `/metrics` endpoints remain available.
-- Package manager or installer selection is still intentionally absent from
-  the public contract.
+- Recipe-first endpoints are the new primary API surface.
+- Legacy `/generate`, `/preview`, `/preview/details`, `/presets`, and
+  `/verification-matrix` endpoints remain temporarily for compatibility.
+- API errors distinguish invalid recipe ids, invalid options, incompatible block
+  selections, invalid custom dependencies, missing templates, and generation
+  failures.
+- The legacy stable matrix is still the `1.1.0` ProjectConfig matrix. The new
+  recipe trust model is covered by `pnpm verify:recipes`.
+
+## Template repository
+
+Scaffolder now consumes promoted base template snapshots through the
+`apps/api/templates` submodule. The intended repository split is:
+
+- core app: this repository;
+- promoted template snapshots: `Teamofeyy/scaffolder-templates`;
+- future maintenance automation: only when scheduled update volume justifies a
+  separate repository;
+- future community registry: only when recipe PR volume justifies it.
+
+User generation is deterministic: production generation uses pinned local
+snapshots, not live GitHub fetches.
 
 ## Upgrade notes
 
-- Frontend clients should fetch presets from `/presets`; do not duplicate
-  preset definitions in UI code.
-- Frontend clients should use `/features` or detailed preview responses for
-  support status rather than maintaining local stable/experimental lists.
-- Consumers that want richer preview should move from `/preview` to
-  `/preview/details`; the old file-tree endpoint remains compatible.
+- Initialize submodules before building from a fresh clone:
+
+```bash
+git submodule update --init --recursive
+```
+
+- Backend Docker builds must use the repository root as the build context so
+  recipe manifests and recipe file templates are present during Rust
+  compilation.
+- The web and API packages are aligned on version `1.2.0`.
+- Keep legacy clients on old endpoints for now, but new frontend work should use
+  the recipe API.
 
 ## Verification status
 
-Completed locally during release preparation:
+Completed before release preparation:
 
 ```bash
-cargo test --manifest-path apps/api/Cargo.toml --locked
-pnpm --filter nextjs-scaffolder typecheck
-pnpm --filter nextjs-scaffolder test
-pnpm --filter nextjs-scaffolder lint
-pnpm --filter nextjs-scaffolder test:e2e
-pnpm run build:web
-cargo clippy --manifest-path apps/api/Cargo.toml --workspace --all-targets -- -D warnings
-pnpm run check
-pnpm run verify:stable-matrix
+pnpm check
+pnpm build
+pnpm verify:recipes
+pnpm verify:templates
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/run/current-system/sw/bin/google-chrome-stable pnpm --filter nextjs-scaffolder test:e2e
 ```
 
-HTTP smoke checks were also completed for `/presets`, `/verification-matrix`,
-`/features`, and `/preview/details`.
+The deployment for `master` completed successfully after the Docker recipe
+include fix. The final UI readability fix was verified with frontend lint,
+typecheck, format check, Playwright snapshot update, Playwright e2e, and
+`git diff --check`.
 
-`pnpm run verify:stable-matrix` generated, previewed, installed, and built all
-14 stable combinations and all 8 supported presets.
+## Release checklist
 
-The production deployment for the release commit must complete successfully on
-`master` before creating the `v1.1.0` tag.
+- Push `master`.
+- Create tag `v1.2.0` from the release commit.
+- Create a GitHub Release using this file as the body.
+- Post a technical feedback request after the release URL is live.
