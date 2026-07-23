@@ -97,6 +97,11 @@ structure recommended by [Keep a Changelog](https://keepachangelog.com/).
 - Frontend preset definitions and support statuses now come from the backend
   instead of being duplicated in the UI.
 
+### Fixed
+
+- Recipe catalog cards now give recipe descriptions enough width and line
+  height instead of truncating the stack summary on narrow viewports.
+
 ## [1.0.0] - 2026-07-02
 
 ### Added

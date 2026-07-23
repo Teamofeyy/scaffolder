@@ -379,7 +379,7 @@ export function RecipeWorkbench({ dictionary, errors }: RecipeWorkbenchProps) {
             </p>
           )}
 
-          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
             {visibleRecipes.map((item) => (
               <RecipeCard
                 key={item.id}
@@ -728,14 +728,11 @@ function RecipeCard({
 }) {
   return (
     <Card className={cn('gap-2 py-3', selected && 'border-primary')}>
-      <CardHeader className="px-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle className="truncate text-base">{recipe.name}</CardTitle>
-            <CardDescription className="mt-0.5 line-clamp-1">
-              {recipe.description}
-            </CardDescription>
-          </div>
+      <CardHeader className="space-y-1.5 px-3">
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+          <CardTitle className="min-w-0 break-words text-base leading-5">
+            {recipe.name}
+          </CardTitle>
           {recipe.tier === 'experimental' || recipe.status === 'draft' ? (
             <span className="inline-flex shrink-0 items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-900 dark:text-amber-200">
               <FlaskConical className="h-3 w-3" />
@@ -748,6 +745,9 @@ function RecipeCard({
             </span>
           )}
         </div>
+        <CardDescription className="text-sm leading-5">
+          {recipe.description}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2 px-3">
         <div className="grid grid-cols-3 gap-2 text-xs">
